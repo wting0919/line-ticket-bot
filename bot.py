@@ -143,10 +143,10 @@ def handle_message(event):
             for i, show in enumerate(shows, start=1):
                 reply += (
                     f"{i}\n"
-                    f"🎤 {s['演出名稱']}\n"
-                    f"📅 演出：{s['演出日期']}\n"
-                    f"🎟 搶票：{s['搶票日期']}\n"
-                    f"📦 取票提醒：{s['取票日期']}\n\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    f"📅 演出：{show['演出日期']}\n"
+                    f"🎟 搶票：{show['搶票日期']}\n"
+                    f"📦 取票提醒：{show['取票日期']}\n\n"
                 )
 
     # 新增功能
