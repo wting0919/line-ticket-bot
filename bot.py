@@ -123,6 +123,7 @@ def handle_message(event):
         reply = "已發送測試提醒"
 
 
+    # 查詢功能
     elif text == "查詢":
 
         shows = load_data()
@@ -169,9 +170,18 @@ def handle_message(event):
             )
 
 
-            ticket_date = (
-                event_date - timedelta(days=5)
-            ).strftime("%Y/%m/%d")
+            ticket_text = data.get("取票日期", "")
+            
+            if "天前" in ticket_text:
+                days = int(ticket_text.replace("天前", ""))
+
+                ticket_date = (
+                    event_date - timedelta(days=days)
+                ).strftime("%Y/%m/%d")
+
+            else:
+                ticket_date = ticket_text
+
 
 
             show = {
@@ -211,6 +221,8 @@ def handle_message(event):
                 "演出日期：2026/08/20"
             )
 
+
+    # 刪除功能
     elif text.startswith("刪除"):
 
         shows = load_data()
@@ -263,7 +275,7 @@ if __name__ == "__main__":
         minute=0,
         timezone="Asia/Taipei"
     )
-    
+
     scheduler.start()
 
 
