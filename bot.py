@@ -109,9 +109,20 @@ def handle_message(event):
 
     text = event.message.text.strip()
 
+if text == "測試提醒":
+
+    line_bot_api.push_message(
+        USER_ID,
+        TextSendMessage(
+            text="🔔 測試成功！\n自動提醒功能已連線。"
+        )
+    )
+
+    reply = "已發送測試提醒"
+
 
     # 查詢功能
-    if text == "查詢":
+    elif text == "查詢":
 
         shows = load_data()
 
