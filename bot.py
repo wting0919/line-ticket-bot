@@ -49,11 +49,11 @@ def check_reminders():
     for show in shows:
 
         # 搶票前一天提醒
-        if show.get("搶票日期"):
+        if show.get("搶票時間"):
 
             try:
                 ticket_day = datetime.strptime(
-                    show["搶票日期"],
+                    show["搶票時間"],
                     "%Y/%m/%d"
                 )
 
@@ -70,7 +70,7 @@ def check_reminders():
                             text=(
                                 "⏰ 明日搶票提醒\n\n"
                                 f"🎤 {show['演出名稱']}\n"
-                                f"🎟 搶票日期：{show['搶票日期']}\n"
+                                f"🎟 搶票時間：{show['搶票時間']}\n"
                                 f"🌐 網站：{show['搶票網站']}"
                             )
                         )
@@ -130,7 +130,7 @@ def handle_message(event):
 
         shows.sort(
             key=lambda x: datetime.strptime(
-                x["搶票日期"],
+                x["搶票時間"],
                 "%Y/%m/%d"
             )
         )
@@ -146,7 +146,7 @@ def handle_message(event):
                     f"{i}\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 演出：{show['演出日期']}\n"
-                    f"🎟 搶票：{show['搶票日期']}\n"
+                    f"🎟 搶票：{show['搶票時間']}\n"
                     f"📦 取票提醒：{show['取票日期']}\n\n"
                 )
 
@@ -187,7 +187,7 @@ def handle_message(event):
             show = {
                 "演出名稱": data.get("演出名稱", ""),
                 "演出日期": data.get("演出日期", ""),
-                "搶票日期": data.get("搶票日期", ""),
+                "搶票時間": data.get("搶票時間", ""),
                 "價格張數": data.get("價格張數", ""),
                 "搶票網站": data.get("搶票網站", ""),
                 "取票日期": ticket_date,
@@ -204,7 +204,7 @@ def handle_message(event):
                 "✅ 新增成功\n\n"
                 f"🎤 {show['演出名稱']}\n"
                 f"📅 演出日期：{show['演出日期']}\n"
-                f"🎟 搶票日期：{show['搶票日期']}\n"
+                f"🎟 搶票時間：{show['搶票時間']}\n"
                 f"💰 {show['價格張數']}\n"
                 f"🌐 {show['搶票網站']}\n"
                 f"🎫 取票提醒：{show['取票日期']}\n"
