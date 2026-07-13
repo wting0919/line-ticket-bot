@@ -143,13 +143,13 @@ def handle_message(event):
 
             for i, show in enumerate(shows, start=1):
                 reply += (
-                    f"{i}\n"
+                    f"{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"🎟 搶票：{show['搶票時間']}\n"
+                    f"🎟 搶票時間：{show['搶票時間']}\n"
                 )
 
 
-            reply += "👉 查看詳細資料：\n查看 1"
+            reply += "👉 查看詳細資料：\n輸入：查看 1"
 
 
 
