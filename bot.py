@@ -124,7 +124,7 @@ def handle_message(event):
 
 
     # 查詢功能
-    elif text == "查詢":
+    elif text == "列表":
 
         shows = load_data()
 
@@ -139,16 +139,19 @@ def handle_message(event):
             reply = "目前沒有演出資料"
 
         else:
-            reply = "🎫 目前演出：\n\n"
+            reply = "🎫 演出列表\n\n"
 
-            for i, show in enumerate(shows, start=1):
+            for i, show in enumerate(shows, start=1.):
                 reply += (
                     f"{i}\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅 演出：{show['演出日期']}\n"
                     f"🎟 搶票：{show['搶票時間']}\n"
-                    f"📦 取票提醒：{show['取票日期']}\n\n"
                 )
+
+
+            reply += "👉 查看詳細資料：\n查看 1"
+
+
 
     # 新增功能
     elif text.startswith("新增"):
@@ -220,6 +223,43 @@ def handle_message(event):
                 "演出名稱：XXX\n"
                 "演出日期：2026/08/20"
             )
+
+
+
+    # 查看功能
+    elif text.startswith("查看"):
+
+        shows = load_data()
+
+        # 保持跟列表一樣的排序
+        shows.sort(
+            key=lambda x: datetime.strptime(
+                x["搶票時間"],
+                "%Y/%m/%d %H:%M"
+            )
+        )
+
+        try:
+            index = int(text.replace("查看", "").strip()) - 1
+
+            if index < 0 or index >= len(shows):
+                reply = "❌ 找不到這筆演出"
+
+            else:
+                show = shows[index]
+
+                reply = (
+                    f"🎤 {show['演出名稱']}\n"
+                    f"📅 演出日期：{show['演出日期']}\n"
+                    f"🎟 搶票時間：{show['搶票時間']}\n"
+                    f"💰 {show['價格張數']}\n"
+                    f"🌐 {show['搶票網站']}\n\n"
+                    f"📝 {show['備註']}"
+                )
+
+        except:
+            reply = "請輸入格式：\n查看 1"
+
 
 
     # 刪除功能
