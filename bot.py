@@ -54,7 +54,7 @@ def check_reminders():
             try:
                 ticket_day = datetime.strptime(
                     show["搶票時間"],
-                    "%Y/%m/%d"
+                    "%Y/%m/%d %H:%M"
                 )
 
                 remind_day = (
@@ -131,7 +131,7 @@ def handle_message(event):
         shows.sort(
             key=lambda x: datetime.strptime(
                 x["搶票時間"],
-                "%Y/%m/%d"
+                "%Y/%m/%d %H:%M"
             )
         )
 
