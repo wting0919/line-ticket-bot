@@ -4,6 +4,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from datetime import datetime, timedelta
 import json
 import os
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ load_dotenv()
 CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 USER_ID = os.getenv("USER_ID")
+scheduler = BackgroundScheduler()
 
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
@@ -35,6 +37,61 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def check_reminders():
+
+    today = datetime.now().strftime("%Y/%m/%d")
+
+    shows = load_data()
+
+    for show in shows:
+
+        # 搶票前一天提醒
+        if show.get("搶票日期"):
+
+            try:
+                ticket_day = datetime.strptime(
+                    show["搶票日期"],
+                    "%Y/%m/%d"
+                )
+
+                remind_day = (
+                    ticket_day - timedelta(days=1)
+                ).strftime("%Y/%m/%d")
+
+
+                if today == remind_day:
+
+                    line_bot_api.push_message(
+                        USER_ID,
+                        TextSendMessage(
+                            text=(
+                                "⏰ 明日搶票提醒\n\n"
+                                f"🎤 {show['演出名稱']}\n"
+                                f"🎟 搶票日期：{show['搶票日期']}\n"
+                                f"🌐 網站：{show['搶票網站']}"
+                            )
+                        )
+                    )
+
+            except:
+                pass
+
+
+        # 取票提醒
+        if today == show.get("取票日期"):
+
+            line_bot_api.push_message(
+                USER_ID,
+                TextSendMessage(
+                    text=(
+                        "🎫 取票提醒\n\n"
+                        f"🎤 {show['演出名稱']}\n"
+                        "今天可以取票囉！"
+                    )
+                )
+            )
 
 
 @app.route("/callback", methods=["POST"])
@@ -149,6 +206,15 @@ def handle_message(event):
 import os
 
 if __name__ == "__main__":
+
+    scheduler.add_job(
+        check_reminders,
+        "interval",
+        hours=24
+    )
+
+    scheduler.start()
+
     app.run(
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 5000))
