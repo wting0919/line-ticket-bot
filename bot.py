@@ -114,9 +114,9 @@ def handle_message(event):
     if text == "測試提醒":
 
         line_bot_api.push_message(
-            USER_ID,
+            GROUP_ID,
             TextSendMessage(
-                text="🔔 測試成功！\n自動提醒功能已連線。"
+                text="🔔 測試成功！\n群組提醒功能已連線。"
             )
         )
 
