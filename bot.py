@@ -127,14 +127,22 @@ def handle_message(event):
 
         shows = load_data()
 
+        shows.sort(
+            key=lambda x: datetime.strptime(
+                x["搶票日期"],
+                "%Y/%m/%d"
+            )
+        )
+
         if not shows:
             reply = "目前沒有演出資料"
 
         else:
             reply = "🎫 目前演出：\n\n"
 
-            for s in shows:
+            for i, show in enumerate(shows, start=1):
                 reply += (
+                    f"{i}\n"
                     f"🎤 {s['演出名稱']}\n"
                     f"📅 演出：{s['演出日期']}\n"
                     f"🎟 搶票：{s['搶票日期']}\n"
@@ -202,6 +210,31 @@ def handle_message(event):
                 "演出名稱：XXX\n"
                 "演出日期：2026/08/20"
             )
+
+    elif text.startswith("刪除"):
+
+        shows = load_data()
+
+        try:
+            index = int(text.replace("刪除", "").strip()) - 1
+
+            if index < 0 or index >= len(shows):
+                reply = "❌ 找不到這筆演出"
+
+            else:
+                deleted = shows.pop(index)
+
+                save_data(shows)
+
+                reply = (
+                    "✅ 刪除成功\n\n"
+                    f"🎤 {deleted['演出名稱']}\n"
+                    f"📅 演出日期：{deleted['演出日期']}"
+                )
+
+        except:
+            reply = "請輸入格式：\n刪除 1"
+
 
 
     elif text == "ID":
