@@ -225,11 +225,14 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         check_reminders,
-        "interval",
-        hours=24
+        "cron",
+        hour=9,
+        minute=0,
+        timezone="Asia/Taipei"
     )
 
     scheduler.start()
+
 
     app.run(
         host="0.0.0.0",
