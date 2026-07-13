@@ -17,6 +17,7 @@ load_dotenv()
 CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 USER_ID = os.getenv("USER_ID")
+GROUP_ID = os.getenv("GROUP_ID")
 scheduler = BackgroundScheduler()
 
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
@@ -64,7 +65,7 @@ def check_reminders():
                 if today == remind_day:
 
                     line_bot_api.push_message(
-                        USER_ID,
+                        GROUP_ID,
                         TextSendMessage(
                             text=(
                                 "⏰ 明日搶票提醒\n\n"
@@ -83,7 +84,7 @@ def check_reminders():
         if today == show.get("取票日期"):
 
             line_bot_api.push_message(
-                USER_ID,
+                GROUP_ID,
                 TextSendMessage(
                     text=(
                         "🎫 取票提醒\n\n"
