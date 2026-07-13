@@ -141,7 +141,7 @@ def handle_message(event):
         else:
             reply = "🎫 演出列表\n\n"
 
-            for i, show in enumerate(shows, start=1.):
+            for i, show in enumerate(shows, start=1):
                 reply += (
                     f"{i}\n"
                     f"🎤 {show['演出名稱']}\n"
