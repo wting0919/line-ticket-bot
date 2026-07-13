@@ -204,7 +204,12 @@ def handle_message(event):
 
 
     elif text == "ID":
-        reply = event.source.user_id
+
+        if event.source.type == "group":
+            reply = event.source.group_id
+
+        else:
+            reply = event.source.user_id
 
 
     line_bot_api.reply_message(
