@@ -248,6 +248,8 @@ def handle_message(event):
             else:
                 show = shows[index]
 
+                note = show["備註"] if show["備註"] else "無"
+
                 reply = (
                         "🎫 演出資訊\n\n"
                             f"🎤 {show['演出名稱']}\n\n"
@@ -270,6 +272,40 @@ def handle_message(event):
 
         except:
             reply = "請輸入格式：\n查看 1"
+
+
+
+    # =====================
+    # 修改功能
+    # =====================
+    elif text.startswith("修改"):
+
+        shows = load_data()
+
+        try:
+            index = int(text.replace("修改", "").strip()) - 1
+
+            if index < 0 or index >= len(shows):
+                reply = "❌ 找不到這筆演出"
+
+            else:
+                reply = (
+                    "✏️ 修改演出\n\n"
+                    "目前可修改以下欄位：\n\n"
+                    "演出名稱：\n"
+                    "演出日期：\n"
+                    "搶票時間：\n"
+                    "價格張數：\n"
+                    "搶票網站：\n"
+                    "取票日期：\n"
+                    "備註：\n\n"
+                    "例如：\n"
+                    "修改 1\n"
+                    "搶票時間：2026/07/20 12:30"
+                )
+
+        except Exception:
+            reply = "請輸入格式：\n修改 1"
 
 
 
