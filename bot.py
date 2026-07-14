@@ -74,53 +74,98 @@ def sort_shows(shows):
 
 def check_reminders():
 
-    today = datetime.now().strftime("%Y/%m/%d")
-
+    now = datetime.now()
 
     shows = load_data()
 
-
     for show in shows:
 
+        try:
 
-        # 搶票前一天提醒
-
-        if show.get("搶票時間"):
-
-            try:
-
-                ticket_time = datetime.strptime(
-                    show["搶票時間"],
-                    "%Y/%m/%d %H:%M"
-                )
+            ticket_time = datetime.strptime(
+                show["搶票時間"],
+                "%Y/%m/%d %H:%M"
+            )
 
 
-                remind_day = (
-                    ticket_time - timedelta(days=1)
-                ).strftime("%Y/%m/%d")
+            # 前一天 21:00
+
+            remind_time = (
+                ticket_time - timedelta(days=1)
+            ).replace(
+                hour=21,
+                minute=0,
+                second=0,
+                microsecond=0
+            )
 
 
-                if today == remind_day:
+            if now.strftime("%Y/%m/%d %H:%M") == remind_time.strftime("%Y/%m/%d %H:%M"):
 
-                    line_bot_api.push_message(
-                        GROUP_ID,
-                        TextSendMessage(
-                            text=(
-                                "⏰ 明日搶票提醒\n\n"
-                                f"🎤 {show['演出名稱']}\n"
-                                f"🎟 搶票時間：{show['搶票時間']}\n"
-                                f"🌐 網站：{show['售票平台']}"
-                            )
+                line_bot_api.push_message(
+                    GROUP_ID,
+                    TextSendMessage(
+                        text=(
+                            "⏰ 明日搶票提醒\n\n"
+                            f"🎤 {show['演出名稱']}\n"
+                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🌐 售票平台：{show['售票平台']}"
                         )
                     )
-
-
-            except Exception as e:
-
-                print(
-                    f"提醒錯誤：{e}"
                 )
 
+
+            diff = ticket_time - now
+
+
+            # 前30分鐘
+
+            if (
+                timedelta(minutes=29)
+                < diff <= timedelta(minutes=30)
+            ):
+
+                line_bot_api.push_message(
+                    GROUP_ID,
+                    TextSendMessage(
+                        text=(
+                            "⏰ 搶票倒數 30 分鐘\n\n"
+                            f"🎤 {show['演出名稱']}\n"
+                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🌐 售票平台：{show['售票平台']}\n"
+                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                        )
+                    )
+                )
+
+
+            # 前10分鐘
+
+            if (
+                timedelta(minutes=9)
+                < diff <= timedelta(minutes=10)
+            ):
+
+                line_bot_api.push_message(
+                    GROUP_ID,
+                    TextSendMessage(
+                        text=(
+                            "🔐 搶票倒數 10 分鐘\n\n"
+                            f"🎤 {show['演出名稱']}\n"
+                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🌐 售票平台：{show['售票平台']}\n"
+                            f"💰 價格張數：{show['價格張數']}\n"
+                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                        )
+                    )
+                )
+
+
+        except Exception as e:
+
+            print(
+                f"提醒錯誤：{e}"
+            )
 
 
         # 取票提醒
@@ -623,9 +668,8 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         check_reminders,
-        "cron",
-        hour=9,
-        minute=0,
+        "interval",
+        minutes=1,
         timezone="Asia/Taipei"
     )
 
