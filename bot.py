@@ -139,7 +139,7 @@ def handle_message(event):
             reply = "目前沒有演出資料"
 
         else:
-            reply = "🎫 演出列表\n\n"
+            reply = "🎫 演出列表\n"
 
             for i, show in enumerate(shows, start=1):
                 reply += (
@@ -249,12 +249,23 @@ def handle_message(event):
                 show = shows[index]
 
                 reply = (
-                    f"🎤 {show['演出名稱']}\n"
-                    f"📅 演出日期：{show['演出日期']}\n"
-                    f"🎟 搶票時間：{show['搶票時間']}\n"
-                    f"💰 {show['價格張數']}\n"
-                    f"🌐 {show['搶票網站']}\n\n"
-                    f"📝 {show['備註']}"
+                        "🎫 演出資訊\n\n"
+                            f"🎤 {show['演出名稱']}\n\n"
+
+                            "📅 演出日期\n"
+                            f"{show['演出日期']}\n\n"
+
+                            "🎟 搶票時間\n"
+                            f"{show['搶票時間']}\n\n"
+
+                            "💰 價格 / 張數\n"
+                            f"{show['價格張數']}\n\n"
+
+                            "🌐 售票平台\n"
+                            f"{show['搶票網站']}\n\n"
+
+                            "📝 備註\n"
+                            f"{note}"
                 )
 
         except:
