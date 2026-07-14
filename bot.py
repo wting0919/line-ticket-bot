@@ -671,10 +671,9 @@ if __name__ == "__main__":
     scheduler.add_job(
         check_reminders,
         "interval",
-        minutes=1,
-        id="ticket_reminder",
-        replace_existing=True,
-        timezone="Asia/Taipei"
+        seconds=10,
+        id="check_reminders",
+        replace_existing=True
     )
 
 
