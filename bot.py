@@ -84,6 +84,8 @@ def check_reminders():
 
     shows = load_data()
 
+    print("目前演出資料：", shows)
+
     for show in shows:
 
         try:
