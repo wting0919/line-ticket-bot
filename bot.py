@@ -4,6 +4,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from datetime import datetime, timedelta
 import json
 import os
+import threading
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 
@@ -187,6 +189,18 @@ def check_reminders():
                 )
             )
 
+
+def reminder_loop():
+
+    while True:
+
+        try:
+            check_reminders()
+
+        except Exception as e:
+            print("提醒錯誤：", e)
+
+        time.sleep(60)
 
 
 # =====================
@@ -670,16 +684,10 @@ def handle_message(event):
 if __name__ == "__main__":
 
 
-    scheduler.add_job(
-        check_reminders,
-        "interval",
-        seconds=10,
-        id="check_reminders",
-        replace_existing=True
-    )
-
-
-    scheduler.start()
+    threading.Thread(
+        target=reminder_loop,
+        daemon=True
+    ).start()
 
 
     print("提醒排程已啟動")
