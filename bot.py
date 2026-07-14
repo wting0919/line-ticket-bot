@@ -109,7 +109,7 @@ def check_reminders():
                                 "⏰ 明日搶票提醒\n\n"
                                 f"🎤 {show['演出名稱']}\n"
                                 f"🎟 搶票時間：{show['搶票時間']}\n"
-                                f"🌐 網站：{show['搶票網站']}"
+                                f"🌐 網站：{show['售票平台']}"
                             )
                         )
                     )
@@ -303,8 +303,8 @@ def handle_message(event):
                 "價格張數":
                     data.get("價格張數", ""),
 
-                "搶票網站":
-                    data.get("搶票網站", ""),
+                "售票平台":
+                    data.get("售票平台", ""),
 
                 "取票日期":
                     ticket_date,
@@ -335,7 +335,7 @@ def handle_message(event):
 
                 f"💰 {show['價格張數']}\n"
 
-                f"🌐 {show['搶票網站']}\n"
+                f"🌐 {show['售票平台']}\n"
 
                 f"🎫 取票提醒：{show['取票日期']}\n"
 
@@ -401,11 +401,11 @@ def handle_message(event):
                     "🎟 搶票時間\n"
                     f"{show['搶票時間']}\n\n"
 
-                    "💰 價格 / 張數\n"
+                    "💰 價格張數\n"
                     f"{show['價格張數']}\n\n"
 
                     "🌐 售票平台\n"
-                    f"{show['搶票網站']}\n\n"
+                    f"{show['售票平台']}\n\n"
 
                     "📝 備註\n"
                     f"{note}"
@@ -520,7 +520,7 @@ def handle_message(event):
                     f"{show['價格張數']}\n\n"
 
                     "🌐 售票平台\n"
-                    f"{show['搶票網站']}\n\n"
+                    f"{show['售票平台']}\n\n"
 
                     "📝 備註\n"
                     f"{note}"
