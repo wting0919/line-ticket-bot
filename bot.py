@@ -29,7 +29,7 @@ line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
 
-DATA_FILE = "shows.json"
+DATA_FILE = "./shows.json"
 
 
 # =====================
@@ -108,7 +108,7 @@ def check_reminders():
             )
 
 
-            if now.strftime("%Y/%m/%d %H:%M") == remind_time.strftime("%Y/%m/%d %H:%M"):
+            if remind_time <= now <= remind_time + timedelta(minutes=1):
 
                 line_bot_api.push_message(
                     GROUP_ID,
@@ -139,7 +139,7 @@ def check_reminders():
 
             if (
                 timedelta(minutes=29)
-                < diff <= timedelta(minutes=30)
+                <= diff <= timedelta(minutes=31)
             ):
 
                 line_bot_api.push_message(
@@ -160,7 +160,7 @@ def check_reminders():
 
             if (
                 timedelta(minutes=9)
-                < diff <= timedelta(minutes=10)
+                <= diff <= timedelta(minutes=11)
             ):
 
                 line_bot_api.push_message(
