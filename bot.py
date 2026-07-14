@@ -78,6 +78,8 @@ def check_reminders():
 
     now = datetime.now()
 
+    today = now.strftime("%Y/%m/%d")
+
     shows = load_data()
 
     for show in shows:
