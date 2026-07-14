@@ -677,6 +677,10 @@ if __name__ == "__main__":
     )
 
 
+    print("目前排程：")
+    print(scheduler.get_jobs())
+
+
     scheduler.start()
 
 
