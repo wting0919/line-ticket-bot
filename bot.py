@@ -677,20 +677,10 @@ if __name__ == "__main__":
     )
 
 
-    print("目前排程：")
-    print(scheduler.get_jobs())
-
-
     scheduler.start()
 
 
     print("提醒排程已啟動")
-
-
-    import time
-
-    while True:
-        time.sleep(60)
 
 
     app.run(
