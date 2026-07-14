@@ -74,6 +74,8 @@ def sort_shows(shows):
 
 def check_reminders():
 
+    print("提醒檢查執行", datetime.now())
+
     now = datetime.now()
 
     shows = load_data()
