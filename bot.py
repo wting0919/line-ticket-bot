@@ -672,12 +672,16 @@ if __name__ == "__main__":
         check_reminders,
         "interval",
         minutes=1,
+        id="ticket_reminder",
+        replace_existing=True,
         timezone="Asia/Taipei"
     )
 
 
     scheduler.start()
 
+
+    print("提醒排程已啟動")
 
 
     app.run(
