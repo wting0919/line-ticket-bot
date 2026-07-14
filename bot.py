@@ -386,6 +386,7 @@ def handle_message(event):
 
             save_data(shows)
 
+            print("新增後資料：", shows)
 
 
             reply = (
