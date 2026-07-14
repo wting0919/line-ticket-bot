@@ -125,6 +125,15 @@ def check_reminders():
 
             diff = ticket_time - now
 
+            print(
+                "演出:",
+                show["演出名稱"],
+                "搶票:",
+                ticket_time,
+                "剩餘:",
+                diff
+            )
+
 
             # 前30分鐘
 
