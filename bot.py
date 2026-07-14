@@ -384,9 +384,11 @@ def handle_message(event):
 
             shows.append(show)
 
+            print("準備寫入：", shows)
+
             save_data(shows)
 
-            print("新增後資料：", shows)
+            print("寫入完成")
 
 
             reply = (
