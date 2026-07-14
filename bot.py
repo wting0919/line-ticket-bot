@@ -187,7 +187,12 @@ def check_reminders():
 
         # 取票提醒
 
-        if today == show.get("取票日期"):
+        pickup_time = datetime.strptime(
+            show.get("取票日期") + " 19:55",
+            "%Y/%m/%d %H:%M"
+        )
+
+        if pickup_time <= now < pickup_time + timedelta(minutes=1):
 
             line_bot_api.push_message(
                 GROUP_ID,
