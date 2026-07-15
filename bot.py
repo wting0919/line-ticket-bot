@@ -374,6 +374,7 @@ def handle_message(event):
                     f"🎟 {show['搶票時間']}\n"
                     f"🌐 售票平台：{show['售票平台']}\n"
                     f"📝 備註：{show['備註'] if show['備註'] else '無'}\n"
+                    f"📌 狀態：{show.get('搶票狀態', '等待搶票')}\n"
                 )
 
             reply += "\n👉查看詳細資料：\n輸入：搶票1"
@@ -414,6 +415,7 @@ def handle_message(event):
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 取票日期：{show['取票日期']}\n"
+                    f"📌 狀態：{show.get('取票狀態', '未取票')}\n"
                 )
 
     # =====================
