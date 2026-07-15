@@ -339,13 +339,25 @@ def check_reminders():
                 and not show["提醒"]["取票"]
             ):
 
+                participants = show.get("參加者", [])
+
+                if participants:
+                    mention_text = ""
+
+                    for name in participants:
+                        mention_text += f"@{name}\n"
+
+                else:
+                    mention_text = ""
+
                 line_bot_api.push_message(
                     GROUP_ID,
                     TextSendMessage(
                         text=(
                             "🎫 取票提醒\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            "今天可以取票囉！"
+                            f"🎤 {show['演出名稱']}\n\n"
+                            f"{mention_text}"
+                            "🎫可以取票囉~"
                         )
                     )
                 )
