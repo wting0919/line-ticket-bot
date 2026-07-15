@@ -955,11 +955,16 @@ def handle_message(event):
 
         try:
 
+            lines = text.split("\n")
+
+
             index = int(
-                text.replace(
+                lines[0]
+                .replace(
                     "完成搶票",
                     ""
-                ).strip()
+                )
+                .strip()
             ) - 1
 
             if index < 0 or index >= len(waiting):
@@ -970,15 +975,65 @@ def handle_message(event):
 
                 show = waiting[index]
 
+
                 show["搶票狀態"] = "已搶票"
 
+
+                show.setdefault(
+                    "搶票大師",
+                    ""
+                )
+
+                show.setdefault(
+                    "參加者",
+                    []
+                )
+
+
+                for line in lines[1:]:
+
+
+                    if line.startswith("搶票大師："):
+
+                        show["搶票大師"] = (
+                            line
+                            .replace(
+                                "搶票大師：",
+                                ""
+                            )
+                            .strip()
+                        )
+            
+
+                    elif line.startswith("參加者："):
+
+                        members = (
+                            line
+                            .replace(
+                                "參加者：",
+                                ""
+                            )
+                            .strip()
+                        )
+
+
+                        show["參加者"] = [
+                            x.strip()
+                            for x in members.split("、")
+                        ]
+
+
                 save_data(shows)
+
 
                 reply = (
                     "✅ 已完成搶票\n\n"
                     f"🎤 {show['演出名稱']}\n"
+                    f"🎟 搶票大師：{show['搶票大師']}\n"
+                    f"👥 參加者：{'、'.join(show['參加者'])}\n"
                     "📌 狀態：已搶票"
                 )
+
 
         except Exception as e:
 
