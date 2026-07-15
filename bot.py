@@ -776,6 +776,59 @@ def handle_message(event):
 
 
     # =====================
+    # 完成搶票
+    # =====================
+
+    elif text.startswith("完成搶票"):
+
+        shows = sort_shows(load_data())
+
+        waiting = []
+
+        for show in shows:
+
+            show.setdefault("搶票狀態", "等待搶票")
+
+            if show["搶票狀態"] == "等待搶票":
+
+                waiting.append(show)
+
+        try:
+
+            index = int(
+                text.replace(
+                    "完成搶票",
+                    ""
+                ).strip()
+            ) - 1
+
+            if index < 0 or index >= len(waiting):
+
+                reply = "❌ 找不到這筆搶票資料"
+
+            else:
+
+                show = waiting[index]
+
+                show["搶票狀態"] = "已搶票"
+
+                save_data(shows)
+
+                reply = (
+                    "✅ 已完成搶票\n\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    "📌 狀態：已搶票"
+                )
+
+        except Exception as e:
+
+            print(e)
+
+            reply = "請輸入格式：\n完成搶票 1"
+
+
+
+    # =====================
     # 刪除功能
     # =====================
 
