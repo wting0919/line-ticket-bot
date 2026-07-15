@@ -88,6 +88,14 @@ def check_reminders():
 
     for show in shows:
 
+        show.setdefault("提醒", {
+            "前一天": False,
+            "30分鐘": False,
+            "10分鐘": False,
+            "取票": False,
+            "演出日": False
+        })
+
         try:
 
             ticket_time = datetime.strptime(
@@ -108,7 +116,10 @@ def check_reminders():
             )
 
 
-            if remind_time <= now <= remind_time + timedelta(minutes=1):
+            if (
+                remind_time <= now <= remind_time + timedelta(minutes=1)
+                and not show["提醒"]["前一天"]
+            ):
 
                 line_bot_api.push_message(
                     GROUP_ID,
@@ -121,6 +132,10 @@ def check_reminders():
                         )
                     )
                 )
+
+
+                show["提醒"]["前一天"] = True
+                save_data(shows)
 
 
             diff = ticket_time - now
@@ -140,6 +155,7 @@ def check_reminders():
             if (
                 timedelta(minutes=29)
                 <= diff <= timedelta(minutes=31)
+                and not show["提醒"]["30分鐘"]
             ):
 
                 line_bot_api.push_message(
@@ -156,11 +172,16 @@ def check_reminders():
                 )
 
 
+                show["提醒"]["30分鐘"] = True
+                save_data(shows)
+
+
             # 前10分鐘
 
             if (
                 timedelta(minutes=9)
                 <= diff <= timedelta(minutes=11)
+                and not show["提醒"]["10分鐘"]
             ):
 
                 line_bot_api.push_message(
@@ -177,6 +198,9 @@ def check_reminders():
                     )
                 )
 
+                show["提醒"]["10分鐘"] = True
+                save_data(shows)
+
 
         except Exception as e:
 
@@ -186,24 +210,31 @@ def check_reminders():
 
 
         # 取票提醒
+        if show.get("取票日期"):
 
-        pickup_time = datetime.strptime(
-            show.get("取票日期") + " 19:55",
-            "%Y/%m/%d %H:%M"
-        )
+            pickup_time = datetime.strptime(
+                show["取票日期"] + " 12:00",
+                "%Y/%m/%d %H:%M"
+            )
 
-        if pickup_time <= now < pickup_time + timedelta(minutes=1):
+            if (
+                pickup_time <= now < pickup_time + timedelta(minutes=1)
+                and not show["提醒"]["取票"]
+            ):
 
-            line_bot_api.push_message(
-                GROUP_ID,
-                TextSendMessage(
-                    text=(
-                        "🎫 取票提醒\n\n"
-                        f"🎤 {show['演出名稱']}\n"
-                        "今天可以取票囉！"
+                line_bot_api.push_message(
+                    GROUP_ID,
+                    TextSendMessage(
+                        text=(
+                            "🎫 取票提醒\n\n"
+                            f"🎤 {show['演出名稱']}\n"
+                            "今天可以取票囉！"
+                        )
                     )
                 )
-            )
+
+                show["提醒"]["取票"] = True
+                save_data(shows)
 
 
 def reminder_loop():
@@ -389,7 +420,17 @@ def handle_message(event):
                     ticket_date,
 
                 "備註":
-                    data.get("備註", "")
+                    data.get("備註", ""),
+
+
+                # 提醒狀態
+                "提醒": {
+                "前一天": False,
+                "30分鐘": False,
+                "10分鐘": False,
+                "取票": False,
+                "演出日": False
+                }
             }
 
 
