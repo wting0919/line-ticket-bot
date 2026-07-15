@@ -117,7 +117,8 @@ def check_reminders():
             "演出日": False
         })
 
-        show.setdefault("狀態", "等待搶票")
+        show.setdefault("搶票狀態", "等待搶票")
+        show.setdefault("取票狀態", "未取票")
 
 
         try:
@@ -265,14 +266,18 @@ def reminder_loop():
 
     while True:
 
+        now = datetime.now()
+
+        # 等到下一個整分
+        sleep_seconds = 60 - now.second
+
+        time.sleep(sleep_seconds)
+
         try:
             check_reminders()
 
         except Exception as e:
             print("提醒錯誤：", e)
-
-        time.sleep(60)
-
 
 # =====================
 # LINE Callback
@@ -340,9 +345,10 @@ def handle_message(event):
 
         for show in shows:
 
-            show.setdefault("狀態", "等待搶票")
+            show.setdefault("搶票狀態", "等待搶票")
+            show.setdefault("取票狀態", "未取票")
 
-            if show["狀態"] == "等待搶票":
+            if show["搶票狀態"] == "等待搶票":
 
                 ticket_time = datetime.strptime(
                     show["搶票時間"],
@@ -385,7 +391,10 @@ def handle_message(event):
 
         for show in shows:
 
-            if show.get("取票日期"):
+            if (
+                show.get("取票日期")
+                and show.get("取票狀態", "未取票") == "未取票"
+            ):
 
                 pickup_list.append(show)
 
@@ -526,7 +535,8 @@ def handle_message(event):
                 "備註":
                     data.get("備註", ""),
 
-                "狀態": "等待搶票",
+                "搶票狀態": "等待搶票",
+                "取票狀態": "未取票",
 
 
                 "提醒": {
