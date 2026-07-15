@@ -308,7 +308,7 @@ def handle_message(event):
 
 
     # =====================
-    # 列表功能
+    # 搶票列表功能
     # =====================
 
     elif text == "搶票列表":
@@ -352,6 +352,44 @@ def handle_message(event):
             reply += "\n👉查看詳細資料：\n輸入：搶票1"
 
 
+    # =====================
+    # 取票列表功能
+    # =====================
+
+    elif text == "取票列表":
+
+        shows = sort_shows(load_data())
+
+        pickup_list = []
+
+        for show in shows:
+
+            if show.get("取票日期"):
+
+                pickup_list.append(show)
+
+
+        if not pickup_list:
+
+            reply = "目前沒有取票資料"
+
+
+        else:
+
+            reply = "🎫 取票列表\n"
+
+            for i, show in enumerate(pickup_list, start=1):
+
+                reply += (
+                    f"\n{i}.\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    f"📅 取票日期：{show['取票日期']}\n"
+                )
+
+    # =====================
+    # 演出列表功能
+    # =====================
+
 
     elif text == "演出列表":
 
@@ -379,7 +417,7 @@ def handle_message(event):
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅 演出時間：{show['演出時間']}\n"
+                    f"📅 演出日期：{show['演出日期']}\n"
                 )
 
 
