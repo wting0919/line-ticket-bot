@@ -96,6 +96,9 @@ def check_reminders():
             "演出日": False
         })
 
+        show.setdefault("狀態", "等待搶票")
+
+
         try:
 
             ticket_time = datetime.strptime(
@@ -308,7 +311,47 @@ def handle_message(event):
     # 列表功能
     # =====================
 
-    elif text == "列表":
+    elif text == "搶票列表":
+
+        shows = sort_shows(load_data())
+
+        waiting = []
+
+        for show in shows:
+
+            show.setdefault("狀態", "等待搶票")
+
+            if show["狀態"] == "等待搶票":
+
+                ticket_time = datetime.strptime(
+                    show["搶票時間"],
+                    "%Y/%m/%d %H:%M"
+                )
+
+                if ticket_time > datetime.now() + timedelta(hours=8):
+                    waiting.append(show)
+
+        if not waiting:
+
+            reply = "目前沒有待搶票演出"
+
+        else:
+
+            reply = "🎟️ 搶票列表\n"
+
+            for i, show in enumerate(waiting, start=1):
+
+                reply += (
+                    f"\n{i}.\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    f"🎟 {show['搶票時間']}\n"
+                )
+
+            reply += "\n\n查看詳細：\n輸入：搶票1"
+
+
+
+    elif text == "演出列表":
 
 
         shows = sort_shows(
@@ -422,14 +465,15 @@ def handle_message(event):
                 "備註":
                     data.get("備註", ""),
 
+                "狀態": "等待搶票",
 
-                # 提醒狀態
+
                 "提醒": {
-                "前一天": False,
-                "30分鐘": False,
-                "10分鐘": False,
-                "取票": False,
-                "演出日": False
+                    "前一天": False,
+                    "30分鐘": False,
+                    "10分鐘": False,
+                    "取票": False,
+                    "演出日": False
                 }
             }
 
