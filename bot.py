@@ -8,6 +8,8 @@ import threading
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 app = Flask(__name__)
@@ -33,6 +35,38 @@ DATA_FILE = "./shows.json"
 
 
 # =====================
+# Google Sheets 設定
+# =====================
+
+SHEET_NAME = "你的試算表名稱"
+
+
+def connect_google_sheet():
+
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+
+
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        "service_account.json",
+        scope
+    )
+
+
+    client = gspread.authorize(creds)
+
+
+    sheet = client.open(
+        SHEET_NAME
+    ).sheet1
+
+
+    return sheet
+
+
+# =====================
 # 資料處理
 # =====================
 
@@ -55,6 +89,49 @@ def save_data(data):
             ensure_ascii=False,
             indent=4
         )
+
+
+def get_sheet_shows():
+
+    sheet = connect_google_sheet()
+
+    records = sheet.get_all_records()
+
+    return records
+
+
+
+def find_ticket_master(show_name):
+
+    shows = get_sheet_shows()
+
+
+    for show in shows:
+
+        if show["演唱會名稱"] == show_name:
+
+            return show["搶票大師"]
+
+
+    return None
+
+
+
+def get_line_id(nickname):
+
+    sheet = connect_google_sheet()
+
+    users = sheet.get_all_records()
+
+
+    for user in users:
+
+        if user["暱稱"] == nickname:
+
+            return user["LINE_ID"]
+
+
+    return None
 
 
 
