@@ -59,7 +59,7 @@ def save_data(data):
 
 
 def sort_shows(shows):
-
+    # 搶票時間排序
     return sorted(
         shows,
         key=lambda x: datetime.strptime(
@@ -68,6 +68,27 @@ def sort_shows(shows):
         )
     )
 
+
+def sort_by_show_date(shows):
+    # 演出日期排序
+    return sorted(
+        shows,
+        key=lambda x: datetime.strptime(
+            x["演出日期"],
+            "%Y/%m/%d"
+        )
+    )
+
+
+def sort_by_pickup_date(shows):
+    # 取票日期排序
+    return sorted(
+        shows,
+        key=lambda x: datetime.strptime(
+            x["取票日期"],
+            "%Y/%m/%d"
+        )
+    )
 
 
 # =====================
@@ -358,7 +379,7 @@ def handle_message(event):
 
     elif text == "取票列表":
 
-        shows = sort_shows(load_data())
+        shows = sort_by_pickup_date(load_data())
 
         pickup_list = []
 
@@ -394,7 +415,7 @@ def handle_message(event):
     elif text == "演出列表":
 
 
-        shows = sort_shows(
+        shows = sort_by_show_date(
             load_data()
         )
 
