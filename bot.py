@@ -58,37 +58,129 @@ def save_data(data):
 
 
 
+# =====================
+# 排序功能
+# =====================
+
 def sort_shows(shows):
     # 搶票時間排序
+
     return sorted(
         shows,
         key=lambda x: datetime.strptime(
-            x["搶票時間"],
+            x.get("搶票時間", "9999/12/31 23:59"),
             "%Y/%m/%d %H:%M"
         )
     )
 
 
+
 def sort_by_show_date(shows):
     # 演出日期排序
+
     return sorted(
         shows,
         key=lambda x: datetime.strptime(
-            x["演出日期"],
+            x.get("演出日期", "9999/12/31"),
             "%Y/%m/%d"
         )
     )
+
 
 
 def sort_by_pickup_date(shows):
     # 取票日期排序
+
     return sorted(
         shows,
         key=lambda x: datetime.strptime(
-            x["取票日期"],
+            x.get("取票日期", "9999/12/31"),
             "%Y/%m/%d"
         )
     )
+
+
+
+# =====================
+# 共用列表功能
+# =====================
+
+def get_waiting_shows():
+
+    shows = sort_shows(
+        load_data()
+    )
+
+    waiting = []
+
+    for show in shows:
+
+        show.setdefault(
+            "搶票狀態",
+            "等待搶票"
+        )
+
+        if show["搶票狀態"] == "等待搶票":
+
+            try:
+
+                ticket_time = datetime.strptime(
+                    show["搶票時間"],
+                    "%Y/%m/%d %H:%M"
+                )
+
+
+                if ticket_time > datetime.now() + timedelta(hours=8):
+
+                    waiting.append(show)
+
+
+            except Exception as e:
+
+                print(
+                    "搶票時間錯誤：",
+                    e
+                )
+
+
+    return waiting
+
+
+
+def get_pickup_shows():
+
+    shows = sort_by_pickup_date(
+        load_data()
+    )
+
+    pickup = []
+
+    for show in shows:
+
+        show.setdefault(
+            "取票狀態",
+            "未取票"
+        )
+
+        if (
+            show.get("取票日期")
+            and show["取票狀態"] == "未取票"
+        ):
+
+            pickup.append(show)
+
+
+    return pickup
+
+
+
+def get_all_shows():
+
+    shows = sort_by_show_date(
+        load_data()
+    )
+
+    return shows
 
 
 # =====================
@@ -339,34 +431,23 @@ def handle_message(event):
 
     elif text == "搶票列表":
 
-        shows = sort_shows(load_data())
+        waiting = get_waiting_shows()
 
-        waiting = []
-
-        for show in shows:
-
-            show.setdefault("搶票狀態", "等待搶票")
-            show.setdefault("取票狀態", "未取票")
-
-            if show["搶票狀態"] == "等待搶票":
-
-                ticket_time = datetime.strptime(
-                    show["搶票時間"],
-                    "%Y/%m/%d %H:%M"
-                )
-
-                if ticket_time > datetime.now() + timedelta(hours=8):
-                    waiting.append(show)
 
         if not waiting:
 
             reply = "目前沒有待搶票演出"
 
+
         else:
 
             reply = "🎟️ 搶票列表\n"
 
-            for i, show in enumerate(waiting, start=1):
+
+            for i, show in enumerate(
+                waiting,
+                start=1
+            ):
 
                 reply += (
                     f"\n{i}.\n"
@@ -374,10 +455,14 @@ def handle_message(event):
                     f"🎟 {show['搶票時間']}\n"
                     f"🌐 售票平台：{show['售票平台']}\n"
                     f"📝 備註：{show['備註'] if show['備註'] else '無'}\n"
-                    f"📌 狀態：{show.get('搶票狀態', '等待搶票')}\n"
+                    f"📌 狀態：{show.get('搶票狀態','等待搶票')}\n"
                 )
 
-            reply += "\n👉查看詳細資料：\n輸入：搶票1"
+
+            reply += (
+                "\n👉 查看詳細資料：\n"
+                "輸入：查看 1"
+            )
 
 
     # =====================
@@ -386,18 +471,7 @@ def handle_message(event):
 
     elif text == "取票列表":
 
-        shows = sort_by_pickup_date(load_data())
-
-        pickup_list = []
-
-        for show in shows:
-
-            if (
-                show.get("取票日期")
-                and show.get("取票狀態", "未取票") == "未取票"
-            ):
-
-                pickup_list.append(show)
+        pickup_list = get_pickup_shows()
 
 
         if not pickup_list:
@@ -409,19 +483,23 @@ def handle_message(event):
 
             reply = "🎫 取票列表\n"
 
-            for i, show in enumerate(pickup_list, start=1):
+
+            for i, show in enumerate(
+                pickup_list,
+                start=1
+            ):
 
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 取票日期：{show['取票日期']}\n"
-                    f"📌 狀態：{show.get('取票狀態', '未取票')}\n"
+                    f"📌 狀態：{show.get('取票狀態','未取票')}\n"
                 )
+
 
     # =====================
     # 演出列表功能
     # =====================
-
 
     elif text == "演出列表":
 
@@ -450,6 +528,8 @@ def handle_message(event):
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 演出日期：{show['演出日期']}\n"
+                    f"🎟 搶票：{show.get('搶票狀態','等待搶票')}\n"
+                    f"🎫 取票：{show.get('取票狀態','未取票')}\n"
                 )
 
 
@@ -457,6 +537,7 @@ def handle_message(event):
                 "\n👉 查看詳細資料：\n"
                 "輸入：查看 1"
             )
+
 
     # =====================
     # 新增功能
@@ -597,9 +678,7 @@ def handle_message(event):
 
     elif text.startswith("查看"):
 
-        shows = sort_shows(
-            load_data()
-        )
+        shows = get_all_shows()
 
 
         try:
@@ -647,6 +726,12 @@ def handle_message(event):
                     "🌐 售票平台\n"
                     f"{show['售票平台']}\n\n"
 
+                    "📌 搶票狀態\n"
+                    f"{show.get('搶票狀態','等待搶票')}\n\n"
+
+                    "🎫 取票狀態\n"
+                    f"{show.get('取票狀態','未取票')}\n\n"
+
                     "📝 備註\n"
                     f"{note}"
                 )
@@ -667,9 +752,7 @@ def handle_message(event):
     elif text.startswith("修改"):
 
 
-        shows = sort_shows(
-            load_data()
-        )
+        shows = get_all_shows()
 
 
         try:
@@ -827,6 +910,75 @@ def handle_message(event):
             reply = "請輸入格式：\n完成搶票 1"
 
 
+    # =====================
+    # 完成取票
+    # =====================
+
+    elif text.startswith("完成取票"):
+
+
+        pickup_list = get_pickup_shows()
+
+
+        try:
+
+            index = int(
+                text.replace(
+                    "完成取票",
+                    ""
+                ).strip()
+            ) - 1
+
+
+
+            if index < 0 or index >= len(pickup_list):
+
+                reply = "❌ 找不到這筆取票資料"
+
+
+            else:
+
+                target = pickup_list[index]
+
+
+                shows = load_data()
+
+
+                for show in shows:
+
+                    if (
+                        show.get("演出名稱") == target.get("演出名稱")
+                        and show.get("演出日期") == target.get("演出日期")
+                    ):
+
+                        show["取票狀態"] = "已取票"
+
+                        save_data(shows)
+
+                        break
+
+
+
+                reply = (
+
+                    "✅ 已完成取票\n\n"
+
+                    f"🎤 {target['演出名稱']}\n"
+
+                    f"📅 演出日期：{target['演出日期']}\n"
+
+                    "🎫 狀態：已取票"
+                )
+
+
+
+        except Exception as e:
+
+            print(e)
+
+            reply = "請輸入格式：\n完成取票 1"
+    
+
 
     # =====================
     # 刪除功能
@@ -835,9 +987,7 @@ def handle_message(event):
     elif text.startswith("刪除"):
 
 
-        shows = sort_shows(
-            load_data()
-        )
+        shows = get_all_shows()
 
 
         try:
