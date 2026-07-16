@@ -206,6 +206,13 @@ def check_reminders():
             "演出日": False
         })
 
+        print(
+            "提醒狀態：",
+            show["演出名稱"],
+            show["提醒"]
+        )
+
+
         show.setdefault("搶票狀態", "等待搶票")
         show.setdefault("取票狀態", "未取票")
 
