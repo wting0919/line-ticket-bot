@@ -24,8 +24,14 @@ line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
 scheduler = BackgroundScheduler(
-    timezone="Asia/Taipei"
+    timezone="Asia/Taipei",
+    job_defaults={
+        "coalesce": False,
+        "max_instances": 3,
+        "misfire_grace_time": 120
+    }
 )
+
 
 DATA_FILE = "./shows.json"
 
@@ -261,14 +267,13 @@ def check_reminders():
 
             diff = ticket_time - now
 
-            print(
-                "演出:",
-                show["演出名稱"],
-                "搶票:",
-                ticket_time,
-                "剩餘:",
-                diff
-            )
+            print("=" * 50)
+            print("現在時間：", now)
+            print("演出：", show["演出名稱"])
+            print("搶票時間：", ticket_time)
+            print("剩餘：", diff)
+            print("30分鐘：", show["提醒"]["30分鐘"])
+            print("10分鐘：", show["提醒"]["10分鐘"])
 
 
             # 前30分鐘
@@ -279,6 +284,10 @@ def check_reminders():
                 <= timedelta(minutes=32)
                 and not show["提醒"]["30分鐘"]
             ):
+
+
+                print(">>> 發送30分鐘提醒")
+
 
                 line_bot_api.push_message(
                     GROUP_ID,
@@ -306,6 +315,9 @@ def check_reminders():
                 <= timedelta(minutes=12)
                 and not show["提醒"]["10分鐘"]
             ):
+
+                print(">>> 發送10分鐘提醒")
+
 
                 line_bot_api.push_message(
                     GROUP_ID,
