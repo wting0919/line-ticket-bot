@@ -23,8 +23,9 @@ GROUP_ID = os.getenv("GROUP_ID")
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
-scheduler = BackgroundScheduler()
-
+scheduler = BackgroundScheduler(
+    timezone="Asia/Taipei"
+)
 
 DATA_FILE = "./shows.json"
 
@@ -1119,6 +1120,11 @@ if __name__ == "__main__":
 
     print("提醒排程已啟動")
 
+
+    print(
+        "目前排程：",
+        scheduler.get_jobs()
+    )
 
     app.run(
         host="0.0.0.0",
