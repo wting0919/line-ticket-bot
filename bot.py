@@ -4,8 +4,6 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from datetime import datetime, timedelta
 import json
 import os
-import threading
-import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 
@@ -22,11 +20,10 @@ USER_ID = os.getenv("USER_ID")
 GROUP_ID = os.getenv("GROUP_ID")
 
 
-scheduler = BackgroundScheduler()
-
-
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
+
+scheduler = BackgroundScheduler()
 
 
 DATA_FILE = "./shows.json"
@@ -130,8 +127,9 @@ def get_waiting_shows():
                 )
 
 
-                if ticket_time > datetime.now() + timedelta(hours=8):
+                now = datetime.now() + timedelta(hours=8)
 
+                if ticket_time > now:
                     waiting.append(show)
 
 
@@ -192,8 +190,6 @@ def check_reminders():
     print("提醒檢查執行", datetime.now())
 
     now = datetime.now() + timedelta(hours=8)
-
-    today = now.strftime("%Y/%m/%d")
 
     shows = load_data()
 
@@ -341,14 +337,11 @@ def check_reminders():
 
                 participants = show.get("參加者", [])
 
-                if participants:
-                    mention_text = ""
 
-                    for name in participants:
-                        mention_text += f"@{name}\n"
-
-                else:
-                    mention_text = ""
+                mention_text = "".join(
+                    f"@{name}\n"
+                    for name in participants
+                )
 
                 line_bot_api.push_message(
                     GROUP_ID,
@@ -365,23 +358,6 @@ def check_reminders():
                 show["提醒"]["取票"] = True
                 save_data(shows)
 
-
-def reminder_loop():
-
-    while True:
-
-        now = datetime.now()
-
-        # 等到下一個整分
-        sleep_seconds = 60 - now.second
-
-        time.sleep(sleep_seconds)
-
-        try:
-            check_reminders()
-
-        except Exception as e:
-            print("提醒錯誤：", e)
 
 # =====================
 # LINE Callback
@@ -1131,10 +1107,14 @@ def handle_message(event):
 if __name__ == "__main__":
 
 
-    threading.Thread(
-        target=reminder_loop,
-        daemon=True
-    ).start()
+    scheduler.add_job(
+        check_reminders,
+        "interval",
+        minutes=1
+    )
+
+
+    scheduler.start()
 
 
     print("提醒排程已啟動")
