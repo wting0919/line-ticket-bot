@@ -267,8 +267,9 @@ def check_reminders():
             # 前30分鐘
 
             if (
-                timedelta(minutes=29)
-                <= diff <= timedelta(minutes=31)
+                timedelta(minutes=28)
+                <= diff 
+                <= timedelta(minutes=32)
                 and not show["提醒"]["30分鐘"]
             ):
 
@@ -293,8 +294,9 @@ def check_reminders():
             # 前10分鐘
 
             if (
-                timedelta(minutes=9)
-                <= diff <= timedelta(minutes=11)
+                timedelta(minutes=8)
+                <= diff 
+                <= timedelta(minutes=12)
                 and not show["提醒"]["10分鐘"]
             ):
 
@@ -1110,8 +1112,8 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         check_reminders,
-        "interval",
-        minutes=1
+        "cron",
+        second=0
     )
 
 
