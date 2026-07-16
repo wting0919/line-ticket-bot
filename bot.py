@@ -1115,7 +1115,7 @@ def handle_message(event):
 
     else:
 
-        reply = "❓ 不知道這個指令"
+        return
 
 
 
