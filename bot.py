@@ -44,6 +44,10 @@ scheduler = BackgroundScheduler(
 DATA_FILE = "./shows.json"
 
 
+# 使用者操作狀態
+user_state = {}
+
+
 
 # =====================
 # 資料處理
@@ -399,16 +403,7 @@ def menu_reply(text):
                 QuickReplyButton(
                     action=MessageAction(
                         label="➕ 新增演出",
-                        text=(
-                            "新增\n"
-                            "演出名稱：\n"
-                            "演出日期：\n"
-                            "搶票時間：\n"
-                            "價格張數：\n"
-                            "售票平台：\n"
-                            "取票日期：\n"
-                            "備註："
-                        )
+                        text="新增演出"
                     )
                 ),
 
@@ -485,6 +480,8 @@ def handle_message(event):
 
     text = event.message.text.strip()
 
+    user_id = event.source.user_id
+
 
     # =====================
     # 選單
@@ -556,6 +553,8 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
+            user_state[user_id] = "搶票列表"
+
 
     # =====================
     # 取票列表功能
@@ -587,6 +586,9 @@ def handle_message(event):
                     f"📅 取票日期：{show['取票日期']}\n"
                     f"📌 狀態：{show.get('取票狀態','未取票')}\n"
                 )
+
+
+            user_state[user_id] = "取票列表"
 
 
     # =====================
@@ -630,12 +632,45 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
+            user_state[user_id] = "演出列表"
 
     # =====================
     # 新增功能
     # =====================
+   
 
-    elif text.startswith("新增"):
+    elif text == "取消新增":
+        user_state.pop(user_id, None)
+        reply = "已取消新增"
+
+
+
+    elif text == "新增演出":
+
+        user_state[user_id] = "新增模式"
+
+        reply = (
+            "➕ 新增演出模式\n\n"
+            "請輸入資料：\n\n"
+            "演出名稱：\n"
+            "演出日期：\n"
+            "搶票時間：\n"
+            "價格張數：\n"
+            "售票平台：\n"
+            "取票日期：\n"
+            "備註：\n\n"
+            "輸入「取消新增」可取消"
+        )
+
+
+    elif text.startswith("新增") or user_state.get(user_id) == "新增模式":
+
+
+        if user_state.get(user_id) == "新增模式":
+
+            text = "新增\n" + text
+
+
 
         try:
 
@@ -733,6 +768,8 @@ def handle_message(event):
 
             save_data(shows)
 
+            user_state.pop(user_id, None)
+
             print("寫入完成")
 
 
@@ -770,7 +807,20 @@ def handle_message(event):
 
     elif text.startswith("查看"):
 
-        shows = get_all_shows()
+
+        if user_state.get(user_id) == "搶票列表":
+
+            shows = get_waiting_shows()
+
+
+        elif user_state.get(user_id) == "取票列表":
+
+            shows = get_pickup_shows()
+
+
+        else:
+
+            shows = get_all_shows()
 
 
         try:
@@ -844,7 +894,19 @@ def handle_message(event):
     elif text.startswith("修改"):
 
 
-        shows = get_all_shows()
+        if user_state.get(user_id) == "搶票列表":
+
+            shows = get_waiting_shows()
+
+
+        elif user_state.get(user_id) == "取票列表":
+
+            shows = get_pickup_shows()
+
+
+        else:
+
+            shows = get_all_shows()
 
 
         try:
@@ -1134,9 +1196,6 @@ def handle_message(event):
     elif text.startswith("刪除"):
 
 
-        shows = get_all_shows()
-
-
         try:
 
             index = int(
@@ -1147,27 +1206,45 @@ def handle_message(event):
             ) - 1
 
 
+            if user_state.get(user_id) == "搶票列表":
 
-            if index < 0 or index >= len(shows):
+                target_list = get_waiting_shows()
 
-                reply = "❌ 找不到這筆演出"
+            elif user_state.get(user_id) == "取票列表":
 
+                target_list = get_pickup_shows()
 
             else:
 
-                deleted = shows.pop(index)
-
-                save_data(shows)
+                target_list = get_all_shows()
 
 
-                reply = (
 
-                    "✅ 刪除成功\n\n"
+            target = target_list[index]
 
-                    f"🎤 {deleted['演出名稱']}\n"
 
-                    f"📅 演出日期：{deleted['演出日期']}"
-                )
+            shows = load_data()
+
+
+            for i, show in enumerate(shows):
+
+                if (
+                    show.get("演出名稱") == target.get("演出名稱")
+                    and show.get("演出日期") == target.get("演出日期")
+                ):
+
+                    deleted = shows.pop(i)
+                    break
+
+
+            save_data(shows)
+
+
+            reply = (
+                "✅ 刪除成功\n\n"
+                f"🎤 {deleted['演出名稱']}\n"
+                f"📅 演出日期：{deleted['演出日期']}"
+            )
 
 
         except Exception as e:
