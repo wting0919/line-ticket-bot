@@ -1,6 +1,14 @@
 from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import (
+    MessageEvent,
+    TextMessage,
+    TextSendMessage,
+    QuickReply,
+    QuickReplyButton,
+    MessageAction
+)
+
 from datetime import datetime, timedelta
 import json
 import os
@@ -380,6 +388,68 @@ def check_reminders():
                 show["提醒"]["取票"] = True
                 save_data(shows)
 
+def menu_reply(text):
+
+    return TextSendMessage(
+        text=text,
+        quick_reply=QuickReply(
+            items=[
+
+                
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="➕ 新增演出",
+                        text=(
+                            "新增\n"
+                            "演出名稱：\n"
+                            "演出日期：\n"
+                            "搶票時間：\n"
+                            "價格張數：\n"
+                            "售票平台：\n"
+                            "取票日期：\n"
+                            "備註："
+                        )
+                    )
+                ),
+
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="🎟 搶票列表",
+                        text="搶票列表"
+                    )
+                ),
+
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="🎫 取票列表",
+                        text="取票列表"
+                    )
+                ),
+
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="📅 演出列表",
+                        text="演出列表"
+                    )
+                ),
+
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="❓ 幫助",
+                        text="幫助"
+                    )
+                ),
+
+                QuickReplyButton(
+                    action=MessageAction(
+                        label="🆔 我的ID",
+                        text="ID"
+                    )
+                ),
+
+            ]
+        )
+    )
 
 # =====================
 # LINE Callback
@@ -417,10 +487,22 @@ def handle_message(event):
 
 
     # =====================
+    # 選單
+    # =====================
+
+    if text in ["選單", "menu", "Menu", "MENU", "help", "Help", "HELP"]:
+
+        reply = (
+            "📋 演唱會小助手\n\n"
+            "請點選下方快捷按鈕 👇"
+        )
+
+
+    # =====================
     # 測試提醒
     # =====================
 
-    if text == "測試提醒":
+    elif text == "測試提醒":
 
 
         line_bot_api.push_message(
@@ -1095,6 +1177,25 @@ def handle_message(event):
             reply = "請輸入格式：\n刪除 1"
 
 
+    # =====================
+    # 幫助
+    # =====================
+
+    elif text == "幫助":
+
+        reply = (
+            "📖 功能選單\n\n"
+            "🎟 搶票列表\n"
+            "🎫 取票列表\n"
+            "📅 演出列表\n\n"
+            "🔍 查看 1\n"
+            "✏️ 修改 1\n"
+            "✅ 完成搶票 1\n"
+            "🎫 完成取票 1\n"
+            "🗑 刪除 1\n\n"
+            "💡 輸入「選單」可再次開啟快捷按鈕。"
+        )
+
 
     # =====================
     # ID
@@ -1121,7 +1222,7 @@ def handle_message(event):
 
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=reply)
+        menu_reply(reply)
     )
 
 
