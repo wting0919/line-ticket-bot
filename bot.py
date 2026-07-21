@@ -684,20 +684,18 @@ def handle_message(event):
 
     elif text == "新增演出":
 
-        show_menu = True
-
         user_state[user_id] = "新增模式"
 
         reply = (
             "➕ 新增演出模式\n\n"
-            "請輸入資料：\n\n"
-            "演出名稱：\n"
-            "演出日期：\n"
-            "搶票時間：\n"
-            "價格張數：\n"
-            "售票平台：\n"
-            "取票日期：\n"
-            "備註：\n\n"
+            "請複製以下格式填寫：\n\n"
+            "演出名稱：XXX演唱會\n"
+            "演出日期：10/01\n"
+            "搶票時間：09/01 12:00\n"
+            "價格張數：$3800*2\n"
+            "售票平台：拓元\n"
+            "取票日期：5天前\n"
+            "備註：會員預售\n\n"
             "輸入「取消新增」可取消"
         )
 
@@ -728,8 +726,26 @@ def handle_message(event):
 
 
 
+            event_date_text = data["演出日期"]
+
+
+            # 支援 8/23 自動補年份
+            if "/" in event_date_text and event_date_text.count("/") == 1:
+
+                year = datetime.now().year
+
+                event_date_text = (
+                    f"{year}/{event_date_text}"
+                )
+
+
             event_date = datetime.strptime(
-                data["演出日期"],
+                event_date_text,
+                "%Y/%m/%d"
+            )
+
+
+            data["演出日期"] = event_date.strftime(
                 "%Y/%m/%d"
             )
 
@@ -758,6 +774,33 @@ def handle_message(event):
             else:
 
                 ticket_date = ticket_text
+
+            ticket_time_text = data.get(
+                "搶票時間",
+                ""
+            )
+
+
+            # 支援 5/1 12:00 自動補年份
+            if "/" in ticket_time_text:
+
+                date_part, time_part = ticket_time_text.split(
+                    " ",
+                    1
+                )
+
+                if date_part.count("/") == 1:
+
+                    year = datetime.now().year
+
+                    ticket_time_text = (
+                        f"{year}/{date_part} {time_part}"
+                    )
+
+
+            data["搶票時間"] = ticket_time_text
+
+
 
 
 
@@ -1105,6 +1148,10 @@ def handle_message(event):
                     []
                 )
 
+                show.setdefault(
+                    "取票序號",
+                    ""
+                )
 
                 for line in lines[1:]:
 
@@ -1139,6 +1186,18 @@ def handle_message(event):
                         ]
 
 
+                    elif line.startswith("取票序號："):
+
+                            show["取票序號"] = (
+                                line
+                                .replace(
+                                    "取票序號：",
+                                    ""
+                                )
+                                .strip()
+                            )
+
+
                 save_data(shows)
 
 
@@ -1156,6 +1215,91 @@ def handle_message(event):
             print(e)
 
             reply = "請輸入格式：\n完成搶票 1"
+
+    # =====================
+    # 序號提醒
+    # =====================
+
+    elif text.startswith("序號"):
+
+        shows = get_all_shows()
+
+
+        try:
+
+            lines = text.split("\n")
+
+
+            index = int(
+                lines[0]
+                .replace(
+                    "序號",
+                    ""
+                )
+                .strip()
+            ) - 1
+
+
+            if index < 0 or index >= len(shows):
+
+                reply = "❌ 找不到這筆演出"
+
+
+            else:
+
+                show = shows[index]
+
+
+                for line in lines[1:]:
+
+                    if line.startswith("取票序號："):
+
+                        show["取票序號"] = (
+                            line
+                            .replace(
+                                "取票序號：",
+                                ""
+                            )
+                            .strip()
+                        )
+
+
+                save_data(shows)
+
+
+                reply = (
+                    "🎫 序號已出來！\n\n"
+                    f"🎤 {show['演出名稱']}\n\n"
+                    f"🎟 序號：\n"
+                    f"{show.get('取票序號','')}\n\n"
+                    f"👤 搶票大師：\n"
+                    f"{show.get('搶票大師','未設定')}\n\n"
+                    f"👥 參加者：\n"
+                    f"{'、'.join(show.get('參加者',[]))}\n\n"
+                    "請確認取票資訊～"
+                )
+
+
+                line_bot_api.push_message(
+                    GROUP_ID,
+                    TextSendMessage(
+                        text=reply
+                    )
+                )
+
+
+                reply = "✅ 已發送序號提醒"
+
+
+        except Exception as e:
+
+            print(e)
+
+            reply = (
+                "請輸入格式：\n"
+                "序號 1\n"
+                "取票序號：A123456"
+            )
 
 
     # =====================
