@@ -1,4 +1,4 @@
 flask
-line-bot-sdk
+line-bot-sdk==3.24.0
 apscheduler
 python-dotenv
