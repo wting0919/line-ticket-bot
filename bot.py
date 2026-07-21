@@ -482,12 +482,16 @@ def handle_message(event):
 
     user_id = event.source.user_id
 
+    show_menu = False
+
 
     # =====================
     # 選單
     # =====================
 
     if text in ["選單", "menu", "Menu", "MENU", "help", "Help", "HELP"]:
+
+        show_menu = True
 
         reply = (
             "📋 演唱會小助手\n\n"
@@ -646,6 +650,8 @@ def handle_message(event):
 
 
     elif text == "新增演出":
+
+        show_menu = True
 
         user_state[user_id] = "新增模式"
 
@@ -1297,10 +1303,19 @@ def handle_message(event):
 
 
 
-    line_bot_api.reply_message(
-        event.reply_token,
-        menu_reply(reply)
-    )
+    if show_menu:
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            menu_reply(reply)
+        )
+
+    else:
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=reply)
+        )
 
 
 
