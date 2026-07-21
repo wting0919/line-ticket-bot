@@ -183,6 +183,34 @@ def sort_by_pickup_date(shows):
     )
 
 
+def format_datetime(value):
+
+    if not value:
+        return ""
+
+    try:
+
+        # Supabase timestamp
+        if "T" in value:
+
+            dt = datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            )
+
+            return dt.strftime(
+                "%Y/%m/%d %H:%M"
+            )
+
+
+        return value
+
+
+    except Exception as e:
+
+        print("時間格式錯誤：", e)
+
+        return value
+
 
 # =====================
 # 共用列表功能
@@ -612,7 +640,7 @@ def handle_message(event):
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"🎟 {show['搶票時間']}\n"
+                    f"🎟 {format_datetime(show.get('搶票時間'))}\n"
                     f"🌐 售票平台：{show['售票平台']}\n"
                     f"📝 備註：{show['備註'] if show['備註'] else '無'}\n"
                     f"📌 狀態：{show.get('搶票狀態','等待搶票')}\n"
@@ -722,8 +750,8 @@ def handle_message(event):
             "➕ 新增演出模式\n\n"
             "請複製以下格式填寫：\n\n"
             "演出名稱：XXX演唱會\n"
-            "演出日期：10/01\n"
-            "搶票時間：09/01 12:00\n"
+            "演出日期：10/1\n"
+            "搶票時間：9/1 12:00\n"
             "價格張數：$3800*2\n"
             "售票平台：拓元\n"
             "取票日期：5天前\n"
@@ -830,7 +858,14 @@ def handle_message(event):
                     )
 
 
-            data["搶票時間"] = ticket_time_text
+            ticket_datetime = datetime.strptime(
+                ticket_time_text,
+                "%Y/%m/%d %H:%M"
+            )
+
+            data["搶票時間"] = ticket_datetime.strftime(
+                "%Y/%m/%d %H:%M"
+            )
 
 
 
@@ -970,7 +1005,7 @@ def handle_message(event):
                     f"{show['演出日期']}\n\n"
 
                     "🎟 搶票時間\n"
-                    f"{show['搶票時間']}\n\n"
+                    f"{format_datetime(show['搶票時間'])}\n\n"
 
                     "💰 價格張數\n"
                     f"{show['價格張數']}\n\n"
