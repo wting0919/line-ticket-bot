@@ -190,9 +190,7 @@ def sort_by_pickup_date(shows):
 
 def get_waiting_shows():
 
-    shows = sort_shows(
-        load_data()
-    )
+    shows = load_data()
 
     waiting = []
 
@@ -233,9 +231,7 @@ def get_waiting_shows():
 
 def get_pickup_shows():
 
-    shows = sort_by_pickup_date(
-        load_data()
-    )
+    shows = load_data()
 
     pickup = []
 
