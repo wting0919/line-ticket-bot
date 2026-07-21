@@ -16,12 +16,20 @@ import json
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
+from supabase import create_client
 
 
 app = Flask(__name__)
 
 
 load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
+)
 
 
 CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
@@ -697,12 +705,12 @@ def handle_message(event):
             "➕ 新增演出模式\n\n"
             "請複製以下格式填寫：\n\n"
             "演出名稱：XXX演唱會\n"
-            "演出日期：10/01\n"
-            "搶票時間：09/01 12:00\n"
+            "演出日期：10/1\n"
+            "搶票時間：9/1 12:00\n"
             "價格張數：$3800*2\n"
             "售票平台：拓元\n"
             "取票日期：5天前\n"
-            "備註：會員預售\n\n"
+            "備註：會員預售/XX卡友優先購\n\n"
             "輸入「取消新增」可取消"
         )
 
