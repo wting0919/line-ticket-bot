@@ -67,23 +67,27 @@ user_state = {}
 
 def load_data():
 
-    if not os.path.exists(DATA_FILE):
-        return []
+    response = (
+        supabase
+        .table("shows")
+        .select("*")
+        .execute()
+    )
 
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
+    return response.data
 
 
 def save_data(data):
 
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(
-            data,
-            f,
-            ensure_ascii=False,
-            indent=4
-        )
+    supabase.table("shows").delete().neq(
+        "id",
+        0
+    ).execute()
+
+    if data:
+        supabase.table("shows").insert(
+            data
+        ).execute()
 
 
 def load_members():
