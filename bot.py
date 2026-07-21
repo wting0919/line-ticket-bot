@@ -76,24 +76,11 @@ def load_data():
 
     shows = response.data
 
-
-    for show in shows:
-
-        show.pop("id", None)
-
-
     return shows
-
 
 def save_data(data):
 
     try:
-
-        for item in data:
-
-            if "id" in item:
-                item.pop("id")
-
 
         if data:
 
