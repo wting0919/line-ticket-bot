@@ -74,7 +74,15 @@ def load_data():
         .execute()
     )
 
-    return response.data
+    shows = response.data
+
+
+    for show in shows:
+
+        show.pop("id", None)
+
+
+    return shows
 
 
 def save_data(data):
