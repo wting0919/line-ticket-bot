@@ -721,7 +721,7 @@ def handle_message(event):
 
 
 
-    elif text == "新增演出":
+    elif text == "新增":
 
         user_state[user_id] = "新增模式"
 
@@ -729,8 +729,8 @@ def handle_message(event):
             "➕ 新增演出模式\n\n"
             "請複製以下格式填寫：\n\n"
             "演出名稱：XXX演唱會\n"
-            "演出日期：10/1\n"
-            "搶票時間：9/1 12:00\n"
+            "演出日期：10/01\n"
+            "搶票時間：09/01 12:00\n"
             "價格張數：$3800*2\n"
             "售票平台：拓元\n"
             "取票日期：5天前\n"
@@ -881,13 +881,9 @@ def handle_message(event):
 
 
 
-            shows = load_data()
+            print("準備寫入 Supabase：", show)
 
-            shows.append(show)
-
-            print("準備寫入：", shows)
-
-            save_data(shows)
+            supabase.table("shows").insert(show).execute()
 
             user_state.pop(user_id, None)
 
