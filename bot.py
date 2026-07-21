@@ -1456,21 +1456,16 @@ def handle_message(event):
             target = target_list[index]
 
 
-            shows = load_data()
+            deleted = target
 
 
-            for i, show in enumerate(shows):
-
-                if (
-                    show.get("演出名稱") == target.get("演出名稱")
-                    and show.get("演出日期") == target.get("演出日期")
-                ):
-
-                    deleted = shows.pop(i)
-                    break
-
-
-            save_data(shows)
+            supabase.table("shows") \
+                .delete() \
+                .eq(
+                    "id",
+                    target["id"]
+                ) \
+                .execute()
 
 
             reply = (
