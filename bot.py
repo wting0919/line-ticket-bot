@@ -485,6 +485,13 @@ def menu_reply(text):
 # LINE Callback
 # =====================
 
+@app.route("/health", methods=["GET"])
+def health():
+
+    return "OK", 200
+
+
+
 @app.route("/callback", methods=["POST"])
 def callback():
 
