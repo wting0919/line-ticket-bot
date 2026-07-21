@@ -260,12 +260,11 @@ def get_pickup_shows():
 
 def get_all_shows():
 
-    shows = sort_by_show_date(
-        load_data()
-    )
+    shows = load_data()
+
+    print("演出列表讀取：", shows)
 
     return shows
-
 
 # =====================
 # 提醒功能
@@ -674,9 +673,7 @@ def handle_message(event):
     elif text == "演出列表":
 
 
-        shows = sort_by_show_date(
-            load_data()
-        )
+        shows = load_data()
 
 
         if not shows:
