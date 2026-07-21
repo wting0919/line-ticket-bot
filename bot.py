@@ -11,20 +11,6 @@ from linebot.models import (
     MessageAction
 )
 
-from linebot.v3.messaging import (
-    Configuration,
-    ApiClient,
-    MessagingApi,
-    PushMessageRequest,
-    ReplyMessageRequest,
-    TextMessage as V3TextMessage
-)
-
-from linebot.v3.messaging.models import (
-    Mention,
-    Mentionee
-)
-
 from datetime import datetime, timedelta
 import json
 import os
@@ -46,10 +32,6 @@ GROUP_ID = os.getenv("GROUP_ID")
 
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
-
-configuration = Configuration(
-    access_token=CHANNEL_ACCESS_TOKEN
-)
 
 
 scheduler = BackgroundScheduler(
