@@ -912,9 +912,9 @@ def handle_message(event):
 
         except Exception as e:
 
-            print(e)
+            print("新增錯誤詳細：", repr(e))
 
-            reply = "❌ 新增格式錯誤"
+            reply = f"❌ 新增錯誤\n{e}"
 
 
 
