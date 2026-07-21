@@ -42,6 +42,7 @@ scheduler = BackgroundScheduler(
 
 
 DATA_FILE = "./shows.json"
+USER_FILE = "./users.json"
 
 
 # 使用者操作狀態
@@ -68,6 +69,28 @@ def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(
             data,
+            f,
+            ensure_ascii=False,
+            indent=4
+        )
+
+
+
+def load_users():
+
+    if not os.path.exists(USER_FILE):
+        return {}
+
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+
+def save_users(users):
+
+    with open(USER_FILE, "w", encoding="utf-8") as f:
+        json.dump(
+            users,
             f,
             ensure_ascii=False,
             indent=4
@@ -472,11 +495,9 @@ def callback():
 # 訊息處理
 # =====================
 
-@handler.add(
-    MessageEvent,
-    message=TextMessage
-)
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    print(event.source)
 
     text = event.message.text.strip()
 
@@ -1278,6 +1299,39 @@ def handle_message(event):
             "🗑 刪除 1\n\n"
             "💡 輸入「選單」可再次開啟快捷按鈕。"
         )
+
+
+    # =====================
+    # 登記暱稱
+    # =====================
+
+    elif text.startswith("登記 "):
+
+        nickname = text.replace(
+            "登記 ",
+            ""
+        ).strip()
+
+
+        if not nickname:
+
+            reply = "請輸入：登記 暱稱"
+
+
+        else:
+
+            users = load_users()
+
+            users[nickname] = user_id
+
+            save_users(users)
+
+
+            reply = (
+                "✅ 登記成功\n\n"
+                f"暱稱：{nickname}\n"
+                f"ID：{user_id}"
+            )
 
 
     # =====================
