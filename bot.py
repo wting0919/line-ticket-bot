@@ -79,15 +79,29 @@ def load_data():
 
 def save_data(data):
 
-    supabase.table("shows").delete().neq(
-        "id",
-        0
-    ).execute()
+    try:
 
-    if data:
-        supabase.table("shows").insert(
-            data
+        # 清空 shows 表
+        supabase.table("shows").delete().neq(
+            "演出名稱",
+            ""
         ).execute()
+
+
+        # 重新寫入全部資料
+        if data:
+
+            supabase.table("shows").insert(
+                data
+            ).execute()
+
+
+        print("Supabase 儲存成功")
+
+
+    except Exception as e:
+
+        print("Supabase 儲存錯誤：", e)
 
 
 def load_members():
