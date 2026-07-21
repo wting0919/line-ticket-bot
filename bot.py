@@ -1,3 +1,5 @@
+import linebot
+
 from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import (
@@ -73,6 +75,15 @@ def save_data(data):
             ensure_ascii=False,
             indent=4
         )
+
+
+def load_members():
+
+    if not os.path.exists("members.json"):
+        return {}
+
+    with open("members.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 
@@ -1371,7 +1382,7 @@ def handle_message(event):
             TextSendMessage(text=reply)
         )
 
-
+print("LINE SDK Version:", getattr(linebot, "__version__", "Unknown"))
 
 if __name__ == "__main__":
 
