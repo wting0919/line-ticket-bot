@@ -398,7 +398,7 @@ def check_reminders():
                         text=(
                             "⏰ 明日搶票提醒\n\n"
                             f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
                             f"🌐 售票平台：{show['售票平台']}"
                         )
                     )
@@ -423,9 +423,9 @@ def check_reminders():
             # 前30分鐘
 
             if (
-                timedelta(minutes=28)
+                timedelta(minutes=29)
                 <= diff 
-                <= timedelta(minutes=32)
+                <= timedelta(minutes=30)
                 and not show["提醒"]["30分鐘"]
             ):
 
@@ -439,7 +439,7 @@ def check_reminders():
                         text=(
                             "⏰ 搶票倒數 30 分鐘\n\n"
                             f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
                             f"🌐 售票平台：{show['售票平台']}\n"
                             f"📝 備註：{show['備註'] if show['備註'] else '無'}"
                         )
@@ -454,9 +454,9 @@ def check_reminders():
             # 前10分鐘
 
             if (
-                timedelta(minutes=8)
+                timedelta(minutes=9)
                 <= diff 
-                <= timedelta(minutes=12)
+                <= timedelta(minutes=10)
                 and not show["提醒"]["10分鐘"]
             ):
 
@@ -469,7 +469,7 @@ def check_reminders():
                         text=(
                             "🔐 搶票倒數 10 分鐘\n\n"
                             f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{show['搶票時間']}\n"
+                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
                             f"🌐 售票平台：{show['售票平台']}\n"
                             f"💰 價格張數：{show['價格張數']}\n"
                             f"📝 備註：{show['備註'] if show['備註'] else '無'}"
