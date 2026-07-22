@@ -711,7 +711,7 @@ def handle_message(event):
     elif text == "演出列表":
 
 
-        shows = load_data()
+        shows = get_all_shows()
 
 
         if not shows:
