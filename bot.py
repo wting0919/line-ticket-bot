@@ -370,9 +370,8 @@ def check_reminders():
 
         try:
 
-            ticket_time = datetime.strptime(
-                show["搶票時間"],
-                "%Y/%m/%d %H:%M"
+            ticket_time = parse_datetime(
+                show["搶票時間"]
             )
 
 
@@ -492,9 +491,8 @@ def check_reminders():
         # 取票提醒
         if show.get("取票日期"):
 
-            pickup_time = datetime.strptime(
-                show["取票日期"] + " 12:00",
-                "%Y/%m/%d %H:%M"
+            pickup_time = parse_datetime(
+                show["取票日期"] + " 12:00"
             )
 
             if (
