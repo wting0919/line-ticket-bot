@@ -127,6 +127,67 @@ def save_users(users):
             indent=4
         )
 
+def parse_datetime(value):
+
+    if not value:
+        return datetime.max
+
+    try:
+        # Supabase timestamp
+        if "T" in value:
+            return datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            ).replace(tzinfo=None)
+
+        # yyyy/mm/dd hh:mm
+        return datetime.strptime(
+            value,
+            "%Y/%m/%d %H:%M"
+        )
+
+    except:
+        return datetime.max
+
+
+def parse_date(value):
+
+    if not value:
+        return datetime.max
+
+    try:
+        # Supabase date
+        if "T" in value:
+            return datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            ).replace(tzinfo=None)
+
+        return datetime.strptime(
+            value,
+            "%Y/%m/%d"
+        )
+
+    except:
+        return datetime.max
+
+def format_datetime(value):
+
+    dt = parse_datetime(value)
+
+    if dt == datetime.max:
+        return value
+
+    return dt.strftime("%Y/%m/%d %H:%M")
+
+
+def format_date(value):
+
+    dt = parse_date(value)
+
+    if dt == datetime.max:
+        return value
+
+    return dt.strftime("%Y/%m/%d")
+
 
 # =====================
 # 排序功能
@@ -137,9 +198,8 @@ def sort_shows(shows):
 
     return sorted(
         shows,
-        key=lambda x: datetime.strptime(
-            x.get("搶票時間", "9999/12/31 23:59"),
-            "%Y/%m/%d %H:%M"
+        key=lambda x: parse_datetime(
+            x.get("搶票時間")
         )
     )
 
@@ -150,9 +210,8 @@ def sort_by_show_date(shows):
 
     return sorted(
         shows,
-        key=lambda x: datetime.strptime(
-            x.get("演出日期", "9999/12/31"),
-            "%Y/%m/%d"
+        key=lambda x: parse_date(
+            x.get("演出日期")
         )
     )
 
@@ -163,49 +222,18 @@ def sort_by_pickup_date(shows):
 
     return sorted(
         shows,
-        key=lambda x: datetime.strptime(
-            x.get("取票日期", "9999/12/31"),
-            "%Y/%m/%d"
+        key=lambda x: parse_date(
+            x.get("取票日期")
         )
     )
-
-
-def format_datetime(value):
-
-    if not value:
-        return ""
-
-    try:
-
-        # Supabase timestamp
-        if "T" in value:
-
-            dt = datetime.fromisoformat(
-                value.replace("Z", "+00:00")
-            )
-
-            return dt.strftime(
-                "%Y/%m/%d %H:%M"
-            )
-
-
-        return value
-
-
-    except Exception as e:
-
-        print("時間格式錯誤：", e)
-
-        return value
-
-
+    
 # =====================
 # 共用列表功能
 # =====================
 
 def get_waiting_shows():
 
-    shows = load_data()
+    shows = sort_shows(load_data())
 
     waiting = []
 
@@ -220,9 +248,8 @@ def get_waiting_shows():
 
             try:
 
-                ticket_time = datetime.strptime(
-                    show["搶票時間"],
-                    "%Y/%m/%d %H:%M"
+                ticket_time = parse_datetime(
+                    show["搶票時間"]
                 )
 
 
@@ -246,7 +273,7 @@ def get_waiting_shows():
 
 def get_pickup_shows():
 
-    shows = load_data()
+    shows = sort_by_pickup_date(load_data())
 
     pickup = []
 
@@ -271,7 +298,7 @@ def get_pickup_shows():
 
 def get_all_shows():
 
-    shows = load_data()
+    shows = sort_by_show_date(load_data())
 
     print("演出列表讀取：", shows)
 
@@ -729,8 +756,8 @@ def handle_message(event):
 
 
 
-    elif text == "新增":
-
+    elif text in ["新增", "新增演出"]:
+        
         user_state[user_id] = "新增模式"
 
         reply = (
@@ -747,7 +774,10 @@ def handle_message(event):
         )
 
 
-    elif text.startswith("新增") or user_state.get(user_id) == "新增模式":
+    elif (
+        (text.startswith("新增\n"))
+        or user_state.get(user_id) == "新增模式"
+    ):
 
 
         if user_state.get(user_id) == "新增模式":
