@@ -133,19 +133,33 @@ def parse_datetime(value):
         return datetime.max
 
     try:
-        # Supabase timestamp
+
+        # Supabase ISO 格式
         if "T" in value:
             return datetime.fromisoformat(
                 value.replace("Z", "+00:00")
             ).replace(tzinfo=None)
 
-        # yyyy/mm/dd hh:mm
+
+        # 2026-08-17 12:00
+        if "-" in value:
+            return datetime.strptime(
+                value,
+                "%Y-%m-%d %H:%M"
+            )
+
+
+        # 2026/08/17 12:00
         return datetime.strptime(
             value,
             "%Y/%m/%d %H:%M"
         )
 
-    except:
+
+    except Exception as e:
+
+        print("時間解析錯誤：", value, e)
+
         return datetime.max
 
 
@@ -155,18 +169,33 @@ def parse_date(value):
         return datetime.max
 
     try:
-        # Supabase date
+
+        # Supabase ISO
         if "T" in value:
             return datetime.fromisoformat(
                 value.replace("Z", "+00:00")
             ).replace(tzinfo=None)
 
+
+        # 2026-08-17
+        if "-" in value:
+            return datetime.strptime(
+                value,
+                "%Y-%m-%d"
+            )
+
+
+        # 2026/08/17
         return datetime.strptime(
             value,
             "%Y/%m/%d"
         )
 
-    except:
+
+    except Exception as e:
+
+        print("日期解析錯誤：", value, e)
+
         return datetime.max
 
 def format_datetime(value):
