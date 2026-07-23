@@ -567,8 +567,7 @@ def clean_finished_shows():
             else:
 
                 print(
-                    "刪除已結束演出：",
-                    show.get("演出名稱")
+                    f"🗑️ 已自動清除：{show['演出名稱']}"
                 )
 
 
@@ -593,11 +592,19 @@ def clean_finished_shows():
 
         for show_id in old_ids:
 
-            supabase.table("shows") \
-                .delete() \
-                .eq("id", show_id) \
-                .execute()
+            try:
 
+                supabase.table("shows") \
+                    .delete() \
+                    .eq("id", show_id) \
+                    .execute()
+
+                print(f"已刪除：{show_id}")
+
+            except Exception as e:
+
+                print(f"刪除失敗：{show_id}", e)
+        
 
     print("清除完成")
 
