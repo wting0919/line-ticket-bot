@@ -1330,9 +1330,10 @@ def handle_message(event):
 
         except Exception as e:
 
-            print(e)
+            import traceback
+            traceback.print_exc()
 
-            reply = "請輸入格式：\n完成搶票 1"
+            reply = f"❌ 完成搶票錯誤\n{e}"
 
     # =====================
     # 序號提醒
