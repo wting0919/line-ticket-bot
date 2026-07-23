@@ -97,6 +97,19 @@ def save_data(data):
         print("Supabase儲存錯誤：", e)
 
 
+def update_show(show):
+
+    show_id = show["id"]
+
+    data = show.copy()
+    data.pop("id")
+
+    supabase.table("shows") \
+        .update(data) \
+        .eq("id", show_id) \
+        .execute()
+
+
 def load_members():
 
     if not os.path.exists("members.json"):
@@ -1158,9 +1171,7 @@ def handle_message(event):
 
 
 
-                save_data(
-                    shows
-                )
+                update_show(show)
 
 
                 note = (
@@ -1305,7 +1316,7 @@ def handle_message(event):
                             )
 
 
-                save_data(shows)
+                update_show(show)
 
 
                 reply = (
@@ -1452,7 +1463,7 @@ def handle_message(event):
 
                         show["取票狀態"] = "已取票"
 
-                        save_data(shows)
+                        update_show(show)
 
                         break
 
