@@ -1266,11 +1266,7 @@ def handle_message(event):
                     []
                 )
 
-                show.setdefault(
-                    "取票序號",
-                    ""
-                )
-
+              
                 for line in lines[1:]:
 
 
@@ -1303,19 +1299,7 @@ def handle_message(event):
                             for x in members.split("、")
                         ]
 
-
-                    elif line.startswith("取票序號："):
-
-                            show["取票序號"] = (
-                                line
-                                .replace(
-                                    "取票序號：",
-                                    ""
-                                )
-                                .strip()
-                            )
-
-
+                   
                 update_show(show)
 
 
