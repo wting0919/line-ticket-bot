@@ -536,6 +536,72 @@ def check_reminders():
                 show["提醒"]["取票"] = True
                 save_data(shows)
 
+def clean_finished_shows():
+
+    print("檢查過期演出")
+
+    now = datetime.now() + timedelta(hours=8)
+
+    shows = load_data()
+
+    keep_shows = []
+
+    for show in shows:
+
+        try:
+
+            show_date = parse_date(
+                show.get("演出日期")
+            )
+
+            # 演出日 + 3天
+            delete_date = (
+                show_date +
+                timedelta(days=3)
+            )
+
+            if now.date() <= delete_date.date():
+
+                keep_shows.append(show)
+
+            else:
+
+                print(
+                    "刪除已結束演出：",
+                    show.get("演出名稱")
+                )
+
+
+        except Exception as e:
+
+            print(
+                "清除錯誤：",
+                e
+            )
+
+            keep_shows.append(show)
+
+
+    if len(keep_shows) != len(shows):
+
+        # 刪除 Supabase 資料
+        old_ids = [
+            show["id"]
+            for show in shows
+            if show not in keep_shows
+        ]
+
+        for show_id in old_ids:
+
+            supabase.table("shows") \
+                .delete() \
+                .eq("id", show_id) \
+                .execute()
+
+
+    print("清除完成")
+
+
 def menu_reply(text):
 
     return TextSendMessage(
@@ -1307,7 +1373,7 @@ def handle_message(event):
                     "✅ 已完成搶票\n\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"🎟 搶票大師：{show['搶票大師']}\n"
-                    f"👥 參加者：{'、'.join(show['參加者'])}\n"
+                    f"👥 參加者：{'、'.join(show.get('參加者', [])) if show.get('參加者') else '無'}\n"
                     "📌 狀態：已搶票"
                 )
 
@@ -1631,9 +1697,10 @@ if __name__ == "__main__":
 
 
     scheduler.add_job(
-        check_reminders,
+        clean_finished_shows,
         "cron",
-        second=0
+        hour=3,
+        minute=0
     )
 
 
