@@ -147,7 +147,7 @@ def load_members():
         response = (
             supabase
             .table("members")
-            .select("name,user_id")
+            .select("*")
             .execute()
         )
 
@@ -801,7 +801,11 @@ def member_quick_reply(
 
     members = load_members()
 
-    print("Quick Reply 讀到的成員：", members)
+    print(
+        "Quick Reply 讀到的成員：",
+        members,
+        flush=True
+    )
 
     items = []
 
