@@ -3,3 +3,4 @@ line-bot-sdk
 apscheduler
 python-dotenv
 supabase
+requests
