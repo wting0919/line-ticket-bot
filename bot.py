@@ -791,6 +791,65 @@ def menu_reply(text):
         )
     )
 
+def member_quick_reply(
+    selected=None,
+    allow_finish=False,
+    allow_skip=True
+):
+
+    selected = selected or []
+
+    members = load_members()
+
+    items = []
+
+    for name in members.keys():
+
+        if name in selected:
+            continue
+
+        items.append(
+            QuickReplyButton(
+                action=MessageAction(
+                    label=f"👤 {name}",
+                    text=name
+                )
+            )
+        )
+
+    if allow_finish:
+
+        items.append(
+            QuickReplyButton(
+                action=MessageAction(
+                    label="✅ 完成",
+                    text="完成"
+                )
+            )
+        )
+
+    if allow_skip:
+
+        items.append(
+            QuickReplyButton(
+                action=MessageAction(
+                    label="➖ 略過",
+                    text="略過"
+                )
+            )
+        )
+
+    items.append(
+        QuickReplyButton(
+            action=MessageAction(
+                label="❌ 取消",
+                text="取消"
+            )
+        )
+    )
+
+    return QuickReply(items=items)
+
 # =====================
 # 完成搶票
 # =====================
@@ -807,33 +866,48 @@ def handle_complete_ticket(event, text, user_id):
 
         if index < 0 or index >= len(shows):
 
-            return "❌ 找不到這筆演出"
+            return TextSendMessage(
+                text="❌ 找不到這筆演出"
+            )
 
         show = shows[index]
 
         if show.get("搶票狀態") == "已搶票":
 
-            return "⚠️ 這筆演出已經完成搶票"
+            return TextSendMessage(
+                text="⚠️ 這筆演出已經完成搶票"
+            )
 
         user_state[user_id] = {
             "mode": "完成搶票",
             "step": "master",
             "show_id": show["id"],
-            "data": {}
+            "data": {
+                "搶票大師": "",
+                "取票人": []
+            }
         }
 
-        return (
-            f"🎤 {show['演出名稱']}\n\n"
-            "請輸入搶票大師\n\n"
-            "輸入「略過」可不填\n"
-            "輸入「取消」可取消"
+        return TextSendMessage(
+            text=(
+                f"🎤 {show['演出名稱']}\n\n"
+                "請選擇搶票大師"
+            ),
+            quick_reply=member_quick_reply(
+                allow_finish=False,
+                allow_skip=True
+            )
         )
 
-    except Exception:
+    except Exception as e:
 
-        return (
-            "請輸入：\n"
-            "完成搶票 1"
+        print("完成搶票指令錯誤：", e)
+
+        return TextSendMessage(
+            text=(
+                "請輸入：\n"
+                "完成搶票 1"
+            )
         )
 
 # =====================
@@ -1650,12 +1724,18 @@ def handle_message(event):
 
     elif text.startswith("完成搶票"):
 
-        reply = handle_complete_ticket(
+        message = handle_complete_ticket(
             event,
             text,
             user_id
         )
 
+        line_bot_api.reply_message(
+            event.reply_token,
+            message
+        )
+
+        return
     # =====================
     # 序號提醒
     # =====================
