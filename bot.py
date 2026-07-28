@@ -934,6 +934,8 @@ def handle_message(event):
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 取票日期：{show['取票日期']}\n"
+                    f"🎟 搶票大師：{show.get('搶票大師', '未設定')}\n"
+                    f"👥 取票人：{'、'.join(show.get('取票人', [])) if show.get('取票人') else '未設定'}\n"
                     f"📌 狀態：{show.get('取票狀態','未取票')}\n"
                 )
 
@@ -966,12 +968,24 @@ def handle_message(event):
                 start=1
             ):
 
+                ticket_status = (
+                    "✅ 已搶票"
+                    if show.get("搶票狀態") == "已搶票"
+                    else "⏳ 等待搶票"
+                )
+
+                pickup_status = (
+                    "✅ 已取票"
+                    if show.get("取票狀態") == "已取票"
+                    else "⏳ 未取票"
+                )
+
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 演出日期：{show['演出日期']}\n"
-                    f"🎟 搶票：{show.get('搶票狀態','等待搶票')}\n"
-                    f"🎫 取票：{show.get('取票狀態','未取票')}\n"
+                    f"🎟 {ticket_status}\n"
+                    f"🎫 {pickup_status}\n"
                 )
 
 
@@ -1272,6 +1286,12 @@ def handle_message(event):
 
                     "🎫 取票狀態\n"
                     f"{show.get('取票狀態','未取票')}\n\n"
+
+                    "🎟 搶票大師\n"
+                    f"{show.get('搶票大師', '未設定')}\n\n"
+
+                    "👥 取票人\n"
+                    f"{'、'.join(show.get('取票人', [])) if show.get('取票人') else '未設定'}\n\n"
 
                     "📝 備註\n"
                     f"{note}"
