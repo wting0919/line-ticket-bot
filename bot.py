@@ -547,7 +547,7 @@ def check_reminders():
 
 
                 show["提醒"]["前一天"] = True
-                save_data(shows)
+                update_show(show)
 
 
             diff = ticket_time - now
@@ -589,7 +589,7 @@ def check_reminders():
 
 
                 show["提醒"]["30分鐘"] = True
-                save_data(shows)
+                update_show(show)
 
 
             # 前10分鐘
@@ -619,7 +619,7 @@ def check_reminders():
                 )
 
                 show["提醒"]["10分鐘"] = True
-                save_data(shows)
+                update_show(show)
 
 
         except Exception as e:
@@ -1487,9 +1487,16 @@ def handle_message(event):
                         )
 
 
+                        members = (
+                            members
+                            .replace("，", "、")
+                            .replace(",", "、")
+                        )
+
                         show["取票人"] = [
                             x.strip()
                             for x in members.split("、")
+                            if x.strip()
                         ]
 
                    
