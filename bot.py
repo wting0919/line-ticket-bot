@@ -792,6 +792,202 @@ def menu_reply(text):
     )
 
 # =====================
+# 完成搶票
+# =====================
+
+def handle_complete_ticket(event, text, user_id):
+
+    shows = get_all_shows()
+
+    try:
+
+        index = int(
+            text.replace("完成搶票", "").strip()
+        ) - 1
+
+        if index < 0 or index >= len(shows):
+
+            return "❌ 找不到這筆演出"
+
+        show = shows[index]
+
+        if show.get("搶票狀態") == "已搶票":
+
+            return "⚠️ 這筆演出已經完成搶票"
+
+        user_state[user_id] = {
+            "mode": "完成搶票",
+            "step": "master",
+            "show_id": show["id"],
+            "data": {}
+        }
+
+        return (
+            f"🎤 {show['演出名稱']}\n\n"
+            "請輸入搶票大師\n\n"
+            "輸入「略過」可不填\n"
+            "輸入「取消」可取消"
+        )
+
+    except Exception:
+
+        return (
+            "請輸入：\n"
+            "完成搶票 1"
+        )
+
+# =====================
+# 完成搶票問答流程
+# =====================
+
+def handle_complete_ticket_flow(event, text, user_id):
+
+    state = user_state.get(user_id)
+
+    if not isinstance(state, dict):
+        return False
+
+    if state.get("mode") != "完成搶票":
+        return False
+
+    # 任何階段都可以取消
+    if text == "取消":
+
+        user_state.pop(user_id, None)
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="已取消完成搶票"
+            )
+        )
+
+        return True
+
+    # 第一步：接收搶票大師
+    if state.get("step") == "master":
+
+        master = (
+            ""
+            if text == "略過"
+            else text
+        )
+
+        state["data"]["搶票大師"] = master
+        state["step"] = "people"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "請輸入取票人\n\n"
+                    "多人請用「、」分隔\n"
+                    "例如：佩、小華\n\n"
+                    "輸入「略過」可不填\n"
+                    "輸入「取消」可取消"
+                )
+            )
+        )
+
+        return True
+
+    # 第二步：接收取票人並完成
+    if state.get("step") == "people":
+
+        people = (
+            ""
+            if text == "略過"
+            else text
+        )
+
+        people = (
+            people
+            .replace("，", "、")
+            .replace(",", "、")
+        )
+
+        shows = load_data()
+
+        show = next(
+            (
+                item
+                for item in shows
+                if item.get("id") == state.get("show_id")
+            ),
+            None
+        )
+
+        if not show:
+
+            user_state.pop(user_id, None)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="❌ 找不到這筆演出，請重新操作"
+                )
+            )
+
+            return True
+
+        show["搶票大師"] = (
+            state
+            .get("data", {})
+            .get("搶票大師", "")
+        )
+
+        show["取票人"] = people
+        show["搶票狀態"] = "已搶票"
+
+        try:
+
+            update_show(show)
+
+        except Exception as e:
+
+            print("完成搶票更新錯誤：", e)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=f"❌ 更新失敗\n{e}"
+                )
+            )
+
+            return True
+
+        user_state.pop(user_id, None)
+
+        reply = (
+            "✅ 已完成搶票\n\n"
+            f"🎤 {show['演出名稱']}\n"
+            f"🎟 搶票大師："
+            f"{show.get('搶票大師') or '未設定'}\n"
+            f"👥 取票人："
+            f"{show.get('取票人') or '無'}\n"
+            "📌 狀態：已搶票"
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=reply)
+        )
+
+        return True
+
+    # 狀態異常時清除，避免卡住
+    user_state.pop(user_id, None)
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text="❌ 操作狀態異常，請重新執行完成搶票"
+        )
+    )
+
+    return True
+
+# =====================
 # LINE Callback
 # =====================
 
@@ -820,12 +1016,9 @@ def callback():
 
 
 
-# =====================
-# 訊息處理
-# =====================
-
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+
     print(event.source)
 
     text = event.message.text.strip()
@@ -834,12 +1027,30 @@ def handle_message(event):
 
     show_menu = False
 
+    # =====================
+    # 問答式流程處理
+    # =====================
+
+    if handle_complete_ticket_flow(
+        event,
+        text,
+        user_id
+    ):
+        return
 
     # =====================
     # 選單
     # =====================
 
-    if text in ["選單", "menu", "Menu", "MENU", "help", "Help", "HELP"]:
+    if text in [
+        "選單",
+        "menu",
+        "Menu",
+        "MENU",
+        "help",
+        "Help",
+        "HELP"
+    ]:
 
         show_menu = True
 
@@ -1439,94 +1650,11 @@ def handle_message(event):
 
     elif text.startswith("完成搶票"):
 
-        # 完成搶票使用「演出列表」的編號
-        shows = get_all_shows()
-
-        try:
-
-            lines = text.split("\n")
-
-            index = int(
-                lines[0]
-                .replace("完成搶票", "")
-                .strip()
-            ) - 1
-
-            if index < 0 or index >= len(shows):
-
-                reply = "❌ 找不到這筆演出"
-
-            else:
-
-                show = shows[index]
-
-                if show.get("搶票狀態", "等待搶票") == "已搶票":
-
-                    reply = "⚠️ 這筆演出已經完成搶票"
-
-                else:
-
-                    show["搶票狀態"] = "已搶票"
-
-                    show.setdefault("搶票大師", "")
-                    show.setdefault("取票人", "")
-
-                    for line in lines[1:]:
-
-                        line = line.strip()
-
-                        if line.startswith("搶票大師："):
-
-                            show["搶票大師"] = (
-                                line
-                                .replace("搶票大師：", "", 1)
-                                .strip()
-                            )
-
-                        elif line.startswith("取票人："):
-
-                            members = (
-                                line
-                                .replace("取票人：", "", 1)
-                                .strip()
-                            )
-
-                            # 支援 、，,
-                            members = (
-                                members
-                                .replace("，", "、")
-                                .replace(",", "、")
-                            )
-
-                            show["取票人"] = members
-
-                    update_show(show)
-
-                    reply = (
-                        "✅ 已完成搶票\n\n"
-                        f"🎤 {show['演出名稱']}\n"
-                        f"🎟 搶票大師："
-                        f"{show.get('搶票大師') or '未設定'}\n"
-                        f"👥 取票人："
-                        f"{show.get('取票人') or '無'}\n"
-                        "📌 狀態：已搶票"
-                    )
-
-        except ValueError:
-
-            reply = (
-                "請輸入格式：\n\n"
-                "完成搶票 1\n"
-                "搶票大師：菀\n"
-                "取票人：美"
-            )
-
-        except Exception as e:
-
-            import traceback
-            traceback.print_exc()
-
-            reply = f"❌ 完成搶票錯誤\n{e}"
+        reply = handle_complete_ticket(
+            event,
+            text,
+            user_id
+        )
 
     # =====================
     # 序號提醒
