@@ -856,6 +856,728 @@ def member_quick_reply(
 
     return QuickReply(items=items)
 
+
+def simple_quick_reply(buttons):
+
+    items = []
+
+    for label, value in buttons:
+
+        items.append(
+            QuickReplyButton(
+                action=MessageAction(
+                    label=label,
+                    text=value
+                )
+            )
+        )
+
+    return QuickReply(items=items)
+
+
+def normalize_show_date(value):
+
+    value = value.strip().replace("-", "/")
+
+    if value.count("/") == 1:
+        value = f"{datetime.now().year}/{value}"
+
+    result = datetime.strptime(
+        value,
+        "%Y/%m/%d"
+    )
+
+    return result.strftime("%Y/%m/%d")
+
+
+def normalize_ticket_time(value):
+
+    value = value.strip().replace("-", "/")
+    date_part, time_part = value.split(" ", 1)
+
+    if date_part.count("/") == 1:
+        date_part = f"{datetime.now().year}/{date_part}"
+
+    result = datetime.strptime(
+        f"{date_part} {time_part}",
+        "%Y/%m/%d %H:%M"
+    )
+
+    return result.strftime("%Y/%m/%d %H:%M")
+
+
+def normalize_pickup_date(value, show_date):
+
+    value = value.strip().replace("-", "/")
+
+    if value == "略過":
+        return ""
+
+    if value.endswith("天前"):
+
+        days = int(
+            value.replace("天前", "").strip()
+        )
+
+        event_date = datetime.strptime(
+            show_date,
+            "%Y/%m/%d"
+        )
+
+        return (
+            event_date - timedelta(days=days)
+        ).strftime("%Y/%m/%d")
+
+    return normalize_show_date(value)
+
+
+def start_add_show(event, user_id):
+
+    user_state[user_id] = {
+        "mode": "新增演出",
+        "step": "name",
+        "data": {}
+    }
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text=(
+                "➕ 新增演出\n\n"
+                "請輸入演出名稱\n\n"
+                "例如：五月天演唱會"
+            ),
+            quick_reply=simple_quick_reply([
+                ("❌ 取消", "取消")
+            ])
+        )
+    )
+
+    return True
+
+
+def handle_add_show_flow(event, text, user_id):
+
+    state = user_state.get(user_id)
+
+    if not isinstance(state, dict):
+        return False
+
+    if state.get("mode") != "新增演出":
+        return False
+
+    if text == "取消":
+
+        user_state.pop(user_id, None)
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="已取消新增演出"
+            )
+        )
+
+        return True
+
+    data = state.setdefault("data", {})
+    step = state.get("step")
+
+    if step == "name":
+
+        data["演出名稱"] = text
+        state["step"] = "show_date"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "📅 請輸入演出日期\n\n"
+                    "例如：10/1\n"
+                    "或：2026/10/1"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "show_date":
+
+        try:
+            data["演出日期"] = normalize_show_date(text)
+
+        except Exception:
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 日期格式不正確\n\n"
+                        "請輸入：10/1\n"
+                        "或：2026/10/1"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        state["step"] = "ticket_time"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🎟 請輸入搶票時間\n\n"
+                    "例如：9/1 12:00\n"
+                    "或：2026/9/1 12:00"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "ticket_time":
+
+        try:
+            data["搶票時間"] = normalize_ticket_time(text)
+
+        except Exception:
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 搶票時間格式不正確\n\n"
+                        "請輸入：9/1 12:00"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        state["step"] = "price"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "💰 請輸入價格與張數\n\n"
+                    "例如：$3800*2"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "price":
+
+        data["價格張數"] = text
+        state["step"] = "platform"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="🌐 請選擇或直接輸入售票平台",
+                quick_reply=simple_quick_reply([
+                    ("拓元", "拓元"),
+                    ("KKTIX", "KKTIX"),
+                    ("ibon", "ibon"),
+                    ("寬宏", "寬宏"),
+                    ("年代", "年代"),
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "platform":
+
+        data["售票平台"] = text
+        state["step"] = "pickup_date"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🎫 請輸入取票日期\n\n"
+                    "例如：5天前\n"
+                    "或：9/25\n\n"
+                    "沒有取票提醒可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("3天前", "3天前"),
+                    ("5天前", "5天前"),
+                    ("7天前", "7天前"),
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "pickup_date":
+
+        try:
+            data["取票日期"] = normalize_pickup_date(
+                text,
+                data["演出日期"]
+            )
+
+        except Exception:
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 取票日期格式不正確\n\n"
+                        "請輸入：5天前\n"
+                        "或：2026/9/25"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("➖ 略過", "略過"),
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        state["step"] = "note"
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "📝 請輸入備註\n\n"
+                    "例如：會員預售\n\n"
+                    "沒有備註可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "note":
+
+        data["備註"] = "" if text == "略過" else text
+        state["step"] = "confirm"
+
+        reply = (
+            "📋 請確認新增資料\n\n"
+            f"🎤 {data['演出名稱']}\n"
+            f"📅 演出日期：{data['演出日期']}\n"
+            f"🎟 搶票時間：{data['搶票時間']}\n"
+            f"💰 價格張數：{data['價格張數']}\n"
+            f"🌐 售票平台：{data['售票平台']}\n"
+            f"🎫 取票日期：{data.get('取票日期') or '未設定'}\n"
+            f"📝 備註：{data.get('備註') or '無'}"
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=reply,
+                quick_reply=simple_quick_reply([
+                    ("✅ 確認新增", "確認新增"),
+                    ("🔄 重新填寫", "重新填寫"),
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "confirm":
+
+        if text == "重新填寫":
+
+            state["step"] = "name"
+            state["data"] = {}
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請重新輸入演出名稱",
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        if text != "確認新增":
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕確認",
+                    quick_reply=simple_quick_reply([
+                        ("✅ 確認新增", "確認新增"),
+                        ("🔄 重新填寫", "重新填寫"),
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        show = {
+            "演出名稱": data.get("演出名稱", ""),
+            "演出日期": data.get("演出日期", ""),
+            "搶票時間": data.get("搶票時間", ""),
+            "價格張數": data.get("價格張數", ""),
+            "售票平台": data.get("售票平台", ""),
+            "取票日期": data.get("取票日期", ""),
+            "備註": data.get("備註", ""),
+            "搶票狀態": "等待搶票",
+            "取票狀態": "未取票",
+            "搶票大師": "",
+            "取票人": "",
+            "提醒": {
+                "前一天": False,
+                "30分鐘": False,
+                "10分鐘": False,
+                "取票": False,
+                "演出日": False
+            }
+        }
+
+        try:
+
+            supabase.table("shows").insert(
+                show
+            ).execute()
+
+        except Exception as e:
+
+            print("新增演出失敗：", repr(e), flush=True)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=f"❌ 新增失敗\n{e}"
+                )
+            )
+
+            return True
+
+        user_state.pop(user_id, None)
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "✅ 新增成功\n\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    f"📅 {show['演出日期']}\n"
+                    f"🎟 {show['搶票時間']}"
+                )
+            )
+        )
+
+        return True
+
+    user_state.pop(user_id, None)
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text="❌ 新增狀態異常，請重新操作"
+        )
+    )
+
+    return True
+
+
+def edit_field_quick_reply():
+
+    return simple_quick_reply([
+        ("🎤 演出名稱", "演出名稱"),
+        ("📅 演出日期", "演出日期"),
+        ("🎟 搶票時間", "搶票時間"),
+        ("💰 價格張數", "價格張數"),
+        ("🌐 售票平台", "售票平台"),
+        ("🎫 取票日期", "取票日期"),
+        ("📝 備註", "備註"),
+        ("❌ 取消", "取消")
+    ])
+
+
+def start_edit_show(event, text, user_id):
+
+    previous_state = user_state.get(user_id)
+
+    if previous_state == "搶票列表":
+        shows = get_waiting_shows()
+    elif previous_state == "取票列表":
+        shows = get_pickup_shows()
+    else:
+        shows = get_all_shows()
+
+    try:
+
+        index = int(
+            text.replace("修改", "").strip()
+        ) - 1
+
+    except Exception:
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="請輸入格式：\n修改 1"
+            )
+        )
+
+        return True
+
+    if index < 0 or index >= len(shows):
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="❌ 找不到這筆演出"
+            )
+        )
+
+        return True
+
+    show = shows[index]
+
+    user_state[user_id] = {
+        "mode": "修改演出",
+        "step": "field",
+        "show_id": show["id"],
+        "data": {
+            "show_name": show.get("演出名稱", "")
+        }
+    }
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text=(
+                f"✏️ 修改演出\n\n"
+                f"🎤 {show.get('演出名稱', '')}\n\n"
+                "請選擇要修改的欄位"
+            ),
+            quick_reply=edit_field_quick_reply()
+        )
+    )
+
+    return True
+
+
+def handle_edit_show_flow(event, text, user_id):
+
+    state = user_state.get(user_id)
+
+    if not isinstance(state, dict):
+        return False
+
+    if state.get("mode") != "修改演出":
+        return False
+
+    if text == "取消":
+
+        user_state.pop(user_id, None)
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="已取消修改演出"
+            )
+        )
+
+        return True
+
+    if state.get("step") == "field":
+
+        allowed_fields = {
+            "演出名稱",
+            "演出日期",
+            "搶票時間",
+            "價格張數",
+            "售票平台",
+            "取票日期",
+            "備註"
+        }
+
+        if text not in allowed_fields:
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕選擇欄位",
+                    quick_reply=edit_field_quick_reply()
+                )
+            )
+
+            return True
+
+        state["field"] = text
+        state["step"] = "value"
+
+        hints = {
+            "演出名稱": "請輸入新的演出名稱",
+            "演出日期": "請輸入新的演出日期\n例如：10/1",
+            "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
+            "價格張數": "請輸入新的價格張數\n例如：$3800*2",
+            "售票平台": "請輸入新的售票平台",
+            "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
+            "備註": "請輸入新的備註\n也可按「清除」"
+        }
+
+        buttons = [("❌ 取消", "取消")]
+
+        if text in {"取票日期", "備註"}:
+            buttons.insert(0, ("🗑 清除", "清除"))
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=hints[text],
+                quick_reply=simple_quick_reply(buttons)
+            )
+        )
+
+        return True
+
+    if state.get("step") == "value":
+
+        field = state.get("field")
+
+        shows = load_data()
+
+        show = next(
+            (
+                item
+                for item in shows
+                if item.get("id") == state.get("show_id")
+            ),
+            None
+        )
+
+        if not show:
+
+            user_state.pop(user_id, None)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="❌ 找不到這筆演出，請重新操作"
+                )
+            )
+
+            return True
+
+        try:
+
+            if field == "演出日期":
+                new_value = normalize_show_date(text)
+
+            elif field == "搶票時間":
+                new_value = normalize_ticket_time(text)
+
+            elif field == "取票日期":
+
+                if text == "清除":
+                    new_value = ""
+                else:
+                    new_value = normalize_pickup_date(
+                        text,
+                        show.get("演出日期", "")
+                    )
+
+            elif field == "備註" and text == "清除":
+                new_value = ""
+
+            else:
+                new_value = text
+
+        except Exception:
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 格式不正確，請重新輸入\n\n"
+                        "輸入「取消」可取消修改"
+                    )
+                )
+            )
+
+            return True
+
+        old_value = show.get(field, "")
+        show[field] = new_value
+
+        try:
+            update_show(show)
+
+        except Exception as e:
+
+            print("修改演出失敗：", repr(e), flush=True)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=f"❌ 修改失敗\n{e}"
+                )
+            )
+
+            return True
+
+        user_state.pop(user_id, None)
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "✅ 修改成功\n\n"
+                    f"🎤 {show.get('演出名稱', '')}\n"
+                    f"✏️ 欄位：{field}\n"
+                    f"原本：{old_value or '無'}\n"
+                    f"修改後：{new_value or '無'}"
+                )
+            )
+        )
+
+        return True
+
+    user_state.pop(user_id, None)
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text="❌ 修改狀態異常，請重新操作"
+        )
+    )
+
+    return True
+
+
 # =====================
 # 完成搶票
 # =====================
@@ -1254,6 +1976,20 @@ def handle_message(event):
     ):
         return
 
+    if handle_add_show_flow(
+        event,
+        text,
+        user_id
+    ):
+        return
+
+    if handle_edit_show_flow(
+        event,
+        text,
+        user_id
+    ):
+        return
+
     # =====================
     # 選單
     # =====================
@@ -1430,219 +2166,15 @@ def handle_message(event):
     # =====================
     # 新增功能
     # =====================
-   
-
-    elif text == "取消新增":
-        user_state.pop(user_id, None)
-        reply = "已取消新增"
-
-
 
     elif text in ["新增", "新增演出"]:
-        
-        user_state[user_id] = "新增模式"
 
-        reply = (
-            "➕ 新增演出模式\n\n"
-            "請複製以下格式填寫：\n\n"
-            "演出名稱：XXX演唱會\n"
-            "演出日期：10/1\n"
-            "搶票時間：9/1 12:00\n"
-            "價格張數：$3800*2\n"
-            "售票平台：拓元\n"
-            "取票日期：5天前\n"
-            "備註：會員預售/XX卡友優先購\n\n"
-            "輸入「取消新增」可取消"
+        start_add_show(
+            event,
+            user_id
         )
 
-
-    elif (
-        (text.startswith("新增\n"))
-        or user_state.get(user_id) == "新增模式"
-    ):
-
-
-        if user_state.get(user_id) == "新增模式":
-
-            text = "新增\n" + text
-
-
-
-        try:
-
-            lines = text.split("\n")
-
-            data = {}
-
-
-            for line in lines:
-
-                if "：" in line:
-
-                    key, value = line.split("：", 1)
-
-                    data[key.strip()] = value.strip()
-
-
-
-            event_date_text = data["演出日期"]
-
-
-            # 支援 8/23 自動補年份
-            if "/" in event_date_text and event_date_text.count("/") == 1:
-
-                year = datetime.now().year
-
-                event_date_text = (
-                    f"{year}/{event_date_text}"
-                )
-
-
-            event_date = datetime.strptime(
-                event_date_text,
-                "%Y/%m/%d"
-            )
-
-
-            data["演出日期"] = event_date.strftime(
-                "%Y/%m/%d"
-            )
-
-
-            ticket_text = data.get(
-                "取票日期",
-                ""
-            )
-
-
-            if "天前" in ticket_text:
-
-                days = int(
-                    ticket_text.replace(
-                        "天前",
-                        ""
-                    )
-                )
-
-                ticket_date = (
-                    event_date -
-                    timedelta(days=days)
-                ).strftime("%Y/%m/%d")
-
-
-            else:
-
-                ticket_date = ticket_text
-
-            ticket_time_text = data.get(
-                "搶票時間",
-                ""
-            )
-
-
-            # 支援 5/1 12:00 自動補年份
-            if "/" in ticket_time_text:
-
-                date_part, time_part = ticket_time_text.split(
-                    " ",
-                    1
-                )
-
-                if date_part.count("/") == 1:
-
-                    year = datetime.now().year
-
-                    ticket_time_text = (
-                        f"{year}/{date_part} {time_part}"
-                    )
-
-
-            ticket_datetime = datetime.strptime(
-                ticket_time_text,
-                "%Y/%m/%d %H:%M"
-            )
-
-            data["搶票時間"] = ticket_datetime.strftime(
-                "%Y/%m/%d %H:%M"
-            )
-
-
-
-
-
-            show = {
-
-                "演出名稱":
-                    data.get("演出名稱", ""),
-
-                "演出日期":
-                    data.get("演出日期", ""),
-
-                "搶票時間":
-                    data.get("搶票時間", ""),
-
-                "價格張數":
-                    data.get("價格張數", ""),
-
-                "售票平台":
-                    data.get("售票平台", ""),
-
-                "取票日期":
-                    ticket_date,
-
-                "備註":
-                    data.get("備註", ""),
-
-                "搶票狀態": "等待搶票",
-                "取票狀態": "未取票",
-
-
-                "提醒": {
-                    "前一天": False,
-                    "30分鐘": False,
-                    "10分鐘": False,
-                    "取票": False,
-                    "演出日": False
-                }
-            }
-
-
-
-            print("準備寫入 Supabase：", show)
-
-            supabase.table("shows").insert(show).execute()
-
-            user_state.pop(user_id, None)
-
-            print("寫入完成")
-
-
-            reply = (
-
-                "✅ 新增成功\n\n"
-
-                f"🎤 {show['演出名稱']}\n"
-
-                f"📅 演出日期：{show['演出日期']}\n"
-
-                f"🎟 搶票時間：{show['搶票時間']}\n"
-
-                f"💰 {show['價格張數']}\n"
-
-                f"🌐 {show['售票平台']}\n"
-
-                f"🎫 取票提醒：{show['取票日期']}\n"
-
-                f"📝 {show['備註']}"
-            )
-
-
-        except Exception as e:
-
-            print("新增錯誤詳細：", repr(e))
-
-            reply = f"❌ 新增錯誤\n{e}"
-
+        return
 
 
     # =====================
@@ -1738,127 +2270,18 @@ def handle_message(event):
 
 
     # =====================
-    # 修改功能 v0.7.0
+    # 修改功能
     # =====================
 
     elif text.startswith("修改"):
 
+        start_edit_show(
+            event,
+            text,
+            user_id
+        )
 
-        if user_state.get(user_id) == "搶票列表":
-
-            shows = get_waiting_shows()
-
-
-        elif user_state.get(user_id) == "取票列表":
-
-            shows = get_pickup_shows()
-
-
-        else:
-
-            shows = get_all_shows()
-
-
-        try:
-
-            lines = text.split("\n")
-
-
-            index = int(
-                lines[0]
-                .replace("修改", "")
-                .strip()
-            ) - 1
-
-
-
-            if index < 0 or index >= len(shows):
-
-                reply = "❌ 找不到這筆演出"
-
-
-            elif len(lines) == 1:
-
-                reply = (
-                    "✏️ 修改演出\n\n"
-                    "請輸入要修改的內容\n\n"
-                    "例如：\n"
-                    "修改 1\n"
-                    "備註：會員預售"
-                )
-
-
-            else:
-
-                show = shows[index]
-
-
-                update_data = {}
-
-
-                for line in lines[1:]:
-
-                    if "：" in line:
-
-                        key, value = line.split(
-                            "：",
-                            1
-                        )
-
-                        update_data[
-                            key.strip()
-                        ] = value.strip()
-
-
-
-                for key, value in update_data.items():
-
-                    if key in show:
-
-                        show[key] = value
-
-
-
-                update_show(show)
-
-
-                note = (
-                    show["備註"]
-                    if show["備註"]
-                    else "無"
-                )
-
-
-                reply = (
-
-                    "✅ 修改成功\n\n"
-
-                    f"🎤 {show['演出名稱']}\n\n"
-
-                    "📅 演出日期\n"
-                    f"{show['演出日期']}\n\n"
-
-                    "🎟 搶票時間\n"
-                    f"{show['搶票時間']}\n\n"
-
-                    "💰 價格 / 張數\n"
-                    f"{show['價格張數']}\n\n"
-
-                    "🌐 售票平台\n"
-                    f"{show['售票平台']}\n\n"
-
-                    "📝 備註\n"
-                    f"{note}"
-                )
-
-
-        except Exception as e:
-
-            print(e)
-
-            reply = "請輸入格式：\n修改 1"
-
-
+        return
 
     # =====================
     # 完成搶票
