@@ -645,7 +645,11 @@ def check_reminders():
                 and not show["提醒"]["取票"]
             ):
 
-                participants = show.get("取票人", [])
+                participants = [
+                    x.strip()
+                    for x in show.get("取票人", "").split("、")
+                    if x.strip()
+                ]
 
                 push_mention_message(
                     GROUP_ID,
@@ -935,7 +939,7 @@ def handle_message(event):
                     f"🎤 {show['演出名稱']}\n"
                     f"📅 取票日期：{show['取票日期']}\n"
                     f"🎟 搶票大師：{show.get('搶票大師', '未設定')}\n"
-                    f"👥 取票人：{'、'.join(show.get('取票人', [])) if show.get('取票人') else '未設定'}\n"
+                    f"👥 取票人：{show.get('取票人') or '未設定'}\n"
                     f"📌 狀態：{show.get('取票狀態','未取票')}\n"
                 )
 
@@ -1291,7 +1295,7 @@ def handle_message(event):
                     f"{show.get('搶票大師', '未設定')}\n\n"
 
                     "👥 取票人\n"
-                    f"{'、'.join(show.get('取票人', [])) if show.get('取票人') else '未設定'}\n\n"
+                    f"{show.get('取票人') or '未設定'}\n\n"
 
                     "📝 備註\n"
                     f"{note}"
@@ -1465,7 +1469,7 @@ def handle_message(event):
                     show["搶票狀態"] = "已搶票"
 
                     show.setdefault("搶票大師", "")
-                    show.setdefault("取票人", [])
+                    show.setdefault("取票人", "")
 
                     for line in lines[1:]:
 
@@ -1494,11 +1498,7 @@ def handle_message(event):
                                 .replace(",", "、")
                             )
 
-                            show["取票人"] = [
-                                name.strip()
-                                for name in members.split("、")
-                                if name.strip()
-                            ]
+                            show["取票人"] = members
 
                     update_show(show)
 
@@ -1508,7 +1508,7 @@ def handle_message(event):
                         f"🎟 搶票大師："
                         f"{show.get('搶票大師') or '未設定'}\n"
                         f"👥 取票人："
-                        f"{'、'.join(show.get('取票人', [])) if show.get('取票人') else '無'}\n"
+                        f"{show.get('取票人') or '無'}\n"
                         "📌 狀態：已搶票"
                     )
 
@@ -1587,7 +1587,7 @@ def handle_message(event):
                     f"👤 搶票大師：\n"
                     f"{show.get('搶票大師','未設定')}\n\n"
                     f"👥 取票人：\n"
-                    f"{'、'.join(show.get('取票人',[]))}\n\n"
+                    f"{show.get('取票人') or '未設定'}\n\n"
                     "請確認取票資訊～"
                 )
 
@@ -1597,7 +1597,13 @@ def handle_message(event):
                 if show.get("搶票大師"):
                     mention_names.append(show["搶票大師"])
 
-                mention_names.extend(show.get("取票人", []))
+                mention_names.extend(
+                    [
+                        x.strip()
+                        for x in show.get("取票人", "").split("、")
+                        if x.strip()
+                    ]
+                )
 
                 push_mention_message(
                     GROUP_ID,
