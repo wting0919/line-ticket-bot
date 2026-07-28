@@ -1576,7 +1576,7 @@ def handle_message(event):
                         )
 
 
-                save_data(shows)
+                update_show(show)
 
 
                 reply = (
@@ -1662,10 +1662,7 @@ def handle_message(event):
 
                 for show in shows:
 
-                    if (
-                        show.get("演出名稱") == target.get("演出名稱")
-                        and show.get("演出日期") == target.get("演出日期")
-                    ):
+                    if show["id"] == target["id"]:
 
                         show["取票狀態"] = "已取票"
 
