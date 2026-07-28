@@ -380,8 +380,10 @@ def sort_by_show_date(shows):
 
     return sorted(
         shows,
-        key=lambda x: parse_date(
-            x.get("演出日期")
+        key=lambda x: (
+            parse_date(x.get("演出日期")),
+            parse_datetime(x.get("搶票時間")),
+            str(x.get("id", ""))
         )
     )
 
@@ -392,8 +394,10 @@ def sort_by_pickup_date(shows):
 
     return sorted(
         shows,
-        key=lambda x: parse_date(
-            x.get("取票日期")
+        key=lambda x: (
+            parse_datetime(x.get("搶票時間")),
+            parse_date(x.get("演出日期")),
+            str(x.get("id", ""))
         )
     )
     
@@ -1411,106 +1415,91 @@ def handle_message(event):
 
     elif text.startswith("完成搶票"):
 
-        shows = sort_shows(load_data())
-
-        waiting = []
-
-        for show in shows:
-
-            show.setdefault("搶票狀態", "等待搶票")
-
-            if show["搶票狀態"] == "等待搶票":
-
-                waiting.append(show)
+        # 完成搶票使用「演出列表」的編號
+        shows = get_all_shows()
 
         try:
 
             lines = text.split("\n")
 
-
             index = int(
                 lines[0]
-                .replace(
-                    "完成搶票",
-                    ""
-                )
+                .replace("完成搶票", "")
                 .strip()
             ) - 1
 
-            if index < 0 or index >= len(waiting):
+            if index < 0 or index >= len(shows):
 
-                reply = "❌ 找不到這筆搶票資料"
+                reply = "❌ 找不到這筆演出"
 
             else:
 
-                show = waiting[index]
+                show = shows[index]
 
+                if show.get("搶票狀態", "等待搶票") == "已搶票":
 
-                show["搶票狀態"] = "已搶票"
+                    reply = "⚠️ 這筆演出已經完成搶票"
 
+                else:
 
-                show.setdefault(
-                    "搶票大師",
-                    ""
-                )
+                    show["搶票狀態"] = "已搶票"
 
-                show.setdefault(
-                    "取票人",
-                    []
-                )
+                    show.setdefault("搶票大師", "")
+                    show.setdefault("取票人", [])
 
-              
-                for line in lines[1:]:
+                    for line in lines[1:]:
 
+                        line = line.strip()
 
-                    if line.startswith("搶票大師："):
+                        if line.startswith("搶票大師："):
 
-                        show["搶票大師"] = (
-                            line
-                            .replace(
-                                "搶票大師：",
-                                ""
+                            show["搶票大師"] = (
+                                line
+                                .replace("搶票大師：", "", 1)
+                                .strip()
                             )
-                            .strip()
-                        )
-            
 
-                    elif line.startswith("取票人："):
+                        elif line.startswith("取票人："):
 
-                        members = (
-                            line
-                            .replace(
-                                "取票人：",
-                                ""
+                            members = (
+                                line
+                                .replace("取票人：", "", 1)
+                                .strip()
                             )
-                            .strip()
-                        )
 
+                            # 支援 、，,
+                            members = (
+                                members
+                                .replace("，", "、")
+                                .replace(",", "、")
+                            )
 
-                        members = (
-                            members
-                            .replace("，", "、")
-                            .replace(",", "、")
-                        )
+                            show["取票人"] = [
+                                name.strip()
+                                for name in members.split("、")
+                                if name.strip()
+                            ]
 
-                        show["取票人"] = [
-                            x.strip()
-                            for x in members.split("、")
-                            if x.strip()
-                        ]
+                    update_show(show)
 
-                   
-                update_show(show)
+                    reply = (
+                        "✅ 已完成搶票\n\n"
+                        f"🎤 {show['演出名稱']}\n"
+                        f"🎟 搶票大師："
+                        f"{show.get('搶票大師') or '未設定'}\n"
+                        f"👥 取票人："
+                        f"{'、'.join(show.get('取票人', [])) if show.get('取票人') else '無'}\n"
+                        "📌 狀態：已搶票"
+                    )
 
+        except ValueError:
 
-                reply = (
-                    "✅ 已完成搶票\n\n"
-                    f"🎤 {show['演出名稱']}\n"
-                    f"🎟 搶票大師：{show['搶票大師']}\n"
-                    f"👥 取票人：{'、'.join(show.get('取票人', [])) if show.get('取票人') else '無'}\n"
-                    "📌 狀態：已搶票"
-                )
-
+            reply = (
+                "請輸入格式：\n\n"
+                "完成搶票 1\n"
+                "搶票大師：菀\n"
+                "取票人：美"
+            )
 
         except Exception as e:
 
