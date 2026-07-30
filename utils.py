@@ -1,5 +1,6 @@
 import re
 
+print("價格原始值：", repr(value))
 def format_price(value):
 
     if not value:

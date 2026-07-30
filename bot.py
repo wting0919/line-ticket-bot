@@ -2314,7 +2314,7 @@ def handle_message(event):
                     f"{format_datetime(show['搶票時間'])}\n\n"
 
                     "💰 價格張數\n"
-                    f"{format_price(show['價格張數'])}\n\n"
+                    f"{show['價格張數']}\n\n"
 
                     "🌐 售票平台\n"
                     f"{show['售票平台']}\n\n"
