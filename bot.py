@@ -365,22 +365,17 @@ def format_show_dates(value):
     if not value:
         return ""
 
-    dates = []
+    result = []
 
-    for d in str(value).split("、"):
+    for d in split_show_dates(value):
 
-        d = d.strip()
+        dt = parse_date(d)
 
-        try:
-            dt = parse_date(d)
-            dates.append(
-                f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
-            )
-        except:
-            dates.append(d)
+        result.append(
+            f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
+        )
 
-    return "\n".join(dates)
-
+    return "\n".join(result)
 
 # =====================
 # 排序功能
@@ -1366,7 +1361,7 @@ def handle_add_show_flow(event, text, user_id):
                 text=(
                     "✅ 新增成功\n\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅 {show['演出日期']}\n"
+                    f"📅\n{format_show_dates(show['演出日期'])}\n"
                     f"🎟 {show['搶票時間']}"
                 )
             )
@@ -1635,7 +1630,7 @@ def handle_edit_show_flow(event, text, user_id):
                     f"🎤 {show.get('演出名稱', '')}\n"
                     f"✏️ 欄位：{field}\n"
                     f"原本：{old_value or '無'}\n"
-                    f"修改後：{new_value or '無'}"
+                    f"修改後：{format_show_dates(new_value) if field == '演出日期' else (new_value or '無')}"
                 )
             )
         )
