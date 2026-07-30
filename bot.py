@@ -4,6 +4,7 @@ import complete_ticket
 import mention
 import reminder
 import view_show
+import pickup
 
 from utils import (
     parse_date,
@@ -13,7 +14,6 @@ from utils import (
 
 from data import (
     supabase,
-    load_data,
     update_show,
 )
 
@@ -56,7 +56,6 @@ app = Flask(__name__)
 
 CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
-USER_ID = os.getenv("USER_ID")
 GROUP_ID = os.getenv("GROUP_ID")
 
 
@@ -98,6 +97,10 @@ from complete_ticket import (
 
 from view_show import (
     handle_view_show,
+)
+
+from pickup import (
+    handle_complete_pickup,
 )
 
 # =====================
@@ -149,6 +152,8 @@ reminder.push_mention_message = push_mention_message
 
 view_show.line_bot_api = line_bot_api
 view_show.user_state = user_state
+
+pickup.line_bot_api = line_bot_api
 
 # =====================
 # LINE Callback
@@ -554,65 +559,12 @@ def handle_message(event):
 
     elif text.startswith("完成取票"):
 
+        handle_complete_pickup(
+            event,
+            text,
+        )
 
-        pickup_list = get_pickup_shows()
-
-
-        try:
-
-            index = int(
-                text.replace(
-                    "完成取票",
-                    ""
-                ).strip()
-            ) - 1
-
-
-
-            if index < 0 or index >= len(pickup_list):
-
-                reply = "❌ 找不到這筆取票資料"
-
-
-            else:
-
-                target = pickup_list[index]
-
-
-                shows = load_data()
-
-
-                for show in shows:
-
-                    if show["id"] == target["id"]:
-
-                        show["取票狀態"] = "已取票"
-
-                        update_show(show)
-
-                        break
-
-
-
-                reply = (
-
-                    "✅ 已完成取票\n\n"
-
-                    f"🎤 {target['演出名稱']}\n"
-
-                    f"📅 演出日期：{target['演出日期']}\n"
-
-                    "🎫 狀態：已取票"
-                )
-
-
-
-        except Exception as e:
-
-            print(e)
-
-            reply = "請輸入格式：\n完成取票 1"
-    
+        return
 
 
     # =====================
