@@ -29,6 +29,13 @@ from data import (
     get_member_user_id,
 )
 
+from ui import (
+    menu_reply,
+    member_quick_reply,
+    simple_quick_reply,
+    edit_field_quick_reply,
+)
+
 import linebot
 
 from flask import Flask, request
@@ -37,9 +44,6 @@ from linebot.models import (
     MessageEvent,
     TextMessage,
     TextSendMessage,
-    QuickReply,
-    QuickReplyButton,
-    MessageAction
 )
 
 from datetime import datetime, timedelta
@@ -47,9 +51,6 @@ import json
 import os
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from dotenv import load_dotenv
-from supabase import create_client
-
 
 app = Flask(__name__)
 
@@ -74,14 +75,8 @@ scheduler = BackgroundScheduler(
 )
 
 
-DATA_FILE = "./shows.json"
-USER_FILE = "./users.json"
-
-
 # 使用者操作狀態
 user_state = {}
-
-
 
 # =====================
 # 資料處理
@@ -529,136 +524,7 @@ def clean_finished_shows():
     print("清除完成")
 
 
-def menu_reply(text):
 
-    return TextSendMessage(
-        text=text,
-        quick_reply=QuickReply(
-            items=[
-
-                
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="➕ 新增演出",
-                        text="新增演出"
-                    )
-                ),
-
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="🎟 搶票列表",
-                        text="搶票列表"
-                    )
-                ),
-
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="🎫 取票列表",
-                        text="取票列表"
-                    )
-                ),
-
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="📅 演出列表",
-                        text="演出列表"
-                    )
-                ),
-
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="❓ 幫助",
-                        text="幫助"
-                    )
-                ),
-
-
-            ]
-        )
-    )
-
-def member_quick_reply(
-    selected=None,
-    allow_finish=False,
-    allow_skip=True
-):
-
-    selected = selected or []
-
-    members = load_members()
-
-    print(
-        "Quick Reply 讀到的成員：",
-        members,
-        flush=True
-    )
-
-    items = []
-
-    for name in members.keys():
-
-        if name in selected:
-            continue
-
-        items.append(
-            QuickReplyButton(
-                action=MessageAction(
-                    label=f"👤 {name}",
-                    text=name
-                )
-            )
-        )
-
-    if allow_finish:
-
-        items.append(
-            QuickReplyButton(
-                action=MessageAction(
-                    label="✅ 完成",
-                    text="完成"
-                )
-            )
-        )
-
-    if allow_skip:
-
-        items.append(
-            QuickReplyButton(
-                action=MessageAction(
-                    label="➖ 略過",
-                    text="略過"
-                )
-            )
-        )
-
-    items.append(
-        QuickReplyButton(
-            action=MessageAction(
-                label="❌ 取消",
-                text="取消"
-            )
-        )
-    )
-
-    return QuickReply(items=items)
-
-
-def simple_quick_reply(buttons):
-
-    items = []
-
-    for label, value in buttons:
-
-        items.append(
-            QuickReplyButton(
-                action=MessageAction(
-                    label=label,
-                    text=value
-                )
-            )
-        )
-
-    return QuickReply(items=items)
 
 
 def start_add_show(event, user_id):
@@ -1040,18 +906,6 @@ def handle_add_show_flow(event, text, user_id):
     return True
 
 
-def edit_field_quick_reply():
-
-    return simple_quick_reply([
-        ("🎤 演出名稱", "演出名稱"),
-        ("📅 演出日期", "演出日期"),
-        ("🎟 搶票時間", "搶票時間"),
-        ("💰 價格張數", "價格張數"),
-        ("🌐 售票平台", "售票平台"),
-        ("🎫 取票日期", "取票日期"),
-        ("📝 備註", "備註"),
-        ("❌ 取消", "取消")
-    ])
 
 
 def start_edit_show(event, text, user_id):
