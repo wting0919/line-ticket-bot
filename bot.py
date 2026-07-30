@@ -1,13 +1,18 @@
 from utils import (
     format_price,
+
     parse_date,
     split_show_dates,
     format_show_dates,
-    parse_datetime,
-    format_datetime,
     get_first_show_date,
     get_last_show_date,
     normalize_show_date,
+
+    parse_datetime,
+    format_datetime,
+    normalize_ticket_time,
+
+    normalize_pickup_date,
 )
 
 import linebot
@@ -797,46 +802,6 @@ def simple_quick_reply(buttons):
         )
 
     return QuickReply(items=items)
-
-
-def normalize_ticket_time(value):
-
-    value = value.strip().replace("-", "/")
-    date_part, time_part = value.split(" ", 1)
-
-    if date_part.count("/") == 1:
-        date_part = f"{datetime.now().year}/{date_part}"
-
-    result = datetime.strptime(
-        f"{date_part} {time_part}",
-        "%Y/%m/%d %H:%M"
-    )
-
-    return result.strftime("%Y/%m/%d %H:%M")
-
-
-def normalize_pickup_date(value, show_date):
-
-    value = value.strip().replace("-", "/")
-
-    if value == "略過":
-        return ""
-
-    if value.endswith("天前"):
-
-        days = int(
-            value.replace("天前", "").strip()
-        )
-
-        event_date = parse_date(
-            split_show_dates(show_date)[0]
-        )
-
-        return (
-            event_date - timedelta(days=days)
-        ).strftime("%Y/%m/%d")
-
-    return normalize_show_date(value)
 
 
 def start_add_show(event, user_id):
