@@ -411,7 +411,9 @@ def sort_by_pickup_date(shows):
         shows,
         key=lambda x: (
             parse_datetime(x.get("搶票時間")),
-            parse_date(x.get("演出日期")),
+            parse_date(
+                get_first_show_date(x)
+            ),
             str(x.get("id", ""))
         )
     )
@@ -693,13 +695,12 @@ def clean_finished_shows():
 
         try:
 
-            show_date = parse_date(
-                show.get("演出日期")
+            last_show_date = parse_date(
+                get_last_show_date(show)
             )
 
-            # 演出日 + 3天
             delete_date = (
-                show_date +
+                last_show_date +
                 timedelta(days=3)
             )
 
@@ -990,9 +991,8 @@ def normalize_pickup_date(value, show_date):
             value.replace("天前", "").strip()
         )
 
-        event_date = datetime.strptime(
-            show_date,
-            "%Y/%m/%d"
+        event_date = parse_date(
+            split_show_dates(show_date)[0]
         )
 
         return (
