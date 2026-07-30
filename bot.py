@@ -225,9 +225,8 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             menu_reply(
-                "📋 演唱會小助手
-
-請點選下方快捷按鈕 👇"
+                "📋 演唱會小助手\n\n"
+                "請點選下方快捷按鈕 👇"
             )
         )
         return
