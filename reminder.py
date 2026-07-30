@@ -210,6 +210,137 @@ def check_reminders():
                 show["提醒"]["取票"] = True
                 save_data(shows)
 
+# =====================
+# 今日重點
+# =====================
+
+def send_today_summary():
+
+    now = datetime.now() + timedelta(hours=8)
+
+    today = now.date()
+
+    shows = load_data()
+
+    ticket_today = []
+    pickup_today = []
+    show_today = []
+
+    for show in shows:
+
+        # 今天搶票
+        try:
+
+            ticket_time = parse_datetime(show["搶票時間"])
+
+            if (
+                ticket_time.date() == today
+                and show.get("搶票狀態", "等待搶票") == "等待搶票"
+            ):
+
+                ticket_today.append(show)
+
+        except:
+            pass
+
+        # 今天可取票
+        try:
+
+            if (
+                show.get("取票日期")
+                and parse_date(show["取票日期"]) == today
+                and show.get("取票狀態", "未取票") == "未取票"
+            ):
+
+                pickup_today.append(show)
+
+        except:
+            pass
+
+        # 今天演出
+        try:
+
+            if parse_date(show["演出日期"]) == today:
+
+                show_today.append(show)
+
+        except:
+            pass
+
+    msg = (
+        "📅 今日重點\n"
+        f"({today.strftime('%m/%d')})\n"
+    )
+
+    if ticket_today:
+
+        msg += "\n━━━━━━━━━━━━\n\n"
+        msg += f"🎟 今天要搶票（{len(ticket_today)}）\n\n"
+
+        for s in ticket_today:
+
+            msg += (
+                f"🎤 {s['演出名稱']}\n"
+                f"🕛 {parse_datetime(s['搶票時間']).strftime('%H:%M')}\n"
+                f"💰 {format_price(s['價格張數'])}\n"
+                f"🌐 {s['售票平台']}\n\n"
+            )
+
+    if pickup_today:
+
+        msg += "\n━━━━━━━━━━━━\n\n"
+        msg += f"🎫 今天可取票（{len(pickup_today)}）\n\n"
+
+        for s in pickup_today:
+
+            msg += f"🎤 {s['演出名稱']}\n"
+
+        msg += "\n"
+
+    if show_today:
+
+        msg += "\n━━━━━━━━━━━━\n\n"
+        msg += f"🎤 今天演出（{len(show_today)}）\n\n"
+
+        for s in show_today:
+
+            msg += f"🎤 {s['演出名稱']}\n"
+
+    if not ticket_today and not pickup_today and not show_today:
+
+        msg += "\n\n🎉 今天沒有待辦事項"
+
+    line_bot_api.push_message(
+        GROUP_ID,
+        TextSendMessage(text=msg)
+    )
+
+# =====================
+# 今日重點
+# =====================
+
+def send_today_summary():
+
+    now = datetime.now() + timedelta(hours=8)
+    today = now.date()
+
+    shows = load_data()
+
+    ticket_today = []
+    pickup_today = []
+    show_today = []
+    upcoming = []
+
+    # 先不用寫內容，確認可以 import 即可
+
+    line_bot_api.push_message(
+        GROUP_ID,
+        TextSendMessage(
+            text="📅 今日重點測試"
+        )
+    )
+
+
 def clean_finished_shows():
 
     print("檢查過期演出")

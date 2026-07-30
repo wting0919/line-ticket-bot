@@ -32,6 +32,7 @@ import view_show
 from reminder import (
     check_reminders,
     clean_finished_shows,
+    send_today_summary,
 )
 
 from show_list import (
@@ -597,6 +598,16 @@ if __name__ == "__main__":
         hour=3,
         minute=0,
         id="clean_finished_shows",
+        replace_existing=True
+    )
+
+
+    scheduler.add_job(
+        send_today_summary,
+        "cron",
+        hour=9,
+        minute=0,
+        id="send_today_summary",
         replace_existing=True
     )
 
