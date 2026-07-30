@@ -1,8 +1,13 @@
 from utils import (
     format_price,
-    format_show_dates,
     parse_date,
     split_show_dates,
+    format_show_dates,
+    parse_datetime,
+    format_datetime,
+    get_first_show_date,
+    get_last_show_date,
+    normalize_show_date,
 )
 
 import linebot
@@ -274,52 +279,6 @@ def save_users(users):
             ensure_ascii=False,
             indent=4
         )
-
-def parse_datetime(value):
-
-    if not value:
-        return datetime.max
-
-    try:
-
-        # Supabase ISO 格式
-        if "T" in value:
-            return datetime.fromisoformat(
-                value.replace("Z", "+00:00")
-            ).replace(tzinfo=None)
-
-
-        # 2026-08-17 12:00
-        if "-" in value:
-            return datetime.strptime(
-                value,
-                "%Y-%m-%d %H:%M"
-            )
-
-
-        # 2026/08/17 12:00
-        return datetime.strptime(
-            value,
-            "%Y/%m/%d %H:%M"
-        )
-
-
-    except Exception as e:
-
-        print("時間解析錯誤：", value, e)
-
-        return datetime.max
-
-
-
-def format_datetime(value):
-
-    dt = parse_datetime(value)
-
-    if dt == datetime.max:
-        return value
-
-    return dt.strftime("%Y/%m/%d %H:%M")
 
 
 def format_date(value):
@@ -838,28 +797,6 @@ def simple_quick_reply(buttons):
         )
 
     return QuickReply(items=items)
-
-
-
-def get_first_show_date(show):
-
-    dates = split_show_dates(show["演出日期"])
-
-    return dates[0]
-
-
-def get_last_show_date(show):
-
-    dates = split_show_dates(show["演出日期"])
-
-    return dates[-1]
-
-
-def normalize_show_date(value):
-
-    return "、".join(
-        split_show_dates(value)
-    )
 
 
 def normalize_ticket_time(value):

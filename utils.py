@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
-import re   # 如果 split_show_dates 有用到 regex
+import re
 
+# =====================
+# 價格
+# =====================
 
 def format_price(value):
 
@@ -8,7 +11,6 @@ def format_price(value):
         return "未設定"
 
     text = str(value).strip()
-
     text = text.replace("＊", "*").replace("x", "*").replace("X", "*")
 
     def repl(match):
@@ -18,33 +20,51 @@ def format_price(value):
 
         return f"{prefix}${int(price):,} ×{count}"
 
-    text = re.sub(
+    return re.sub(
         r"(.*?\$?)?(\d[\d,]*)\*(\d+)",
         repl,
         text
     )
 
-    return text
 
+# =====================
+# 日期
+# =====================
 
 WEEKDAY = ["一", "二", "三", "四", "五", "六", "日"]
 
-def format_show_dates(value):
+
+def parse_date(value):
 
     if not value:
-        return ""
+        return datetime.max
 
-    result = []
+    try:
 
-    for d in split_show_dates(value):
+        # Supabase ISO
+        if "T" in value:
+            return datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            ).replace(tzinfo=None)
 
-        dt = parse_date(d)
+        # 2026-08-17
+        if "-" in value:
+            return datetime.strptime(
+                value,
+                "%Y-%m-%d"
+            )
 
-        result.append(
-            f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
+        # 2026/08/17
+        return datetime.strptime(
+            value,
+            "%Y/%m/%d"
         )
 
-    return "\n".join(result)
+    except Exception as e:
+
+        print("日期解析錯誤：", value, e)
+        return datetime.max
+
 
 def split_show_dates(value):
 
@@ -82,9 +102,7 @@ def split_show_dates(value):
 
         item = item.strip()
 
-        # 只有日期，例如 11
         if "/" not in item:
-
             item = f"{last_month}/{item}"
 
         if item.count("/") == 1:
@@ -102,7 +120,51 @@ def split_show_dates(value):
 
     return result
 
-def parse_date(value):
+
+def normalize_show_date(value):
+
+    return "、".join(
+        split_show_dates(value)
+    )
+
+
+def get_first_show_date(show):
+
+    return split_show_dates(
+        show["演出日期"]
+    )[0]
+
+
+def get_last_show_date(show):
+
+    return split_show_dates(
+        show["演出日期"]
+    )[-1]
+
+
+def format_show_dates(value):
+
+    if not value:
+        return ""
+
+    result = []
+
+    for d in split_show_dates(value):
+
+        dt = parse_date(d)
+
+        result.append(
+            f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
+        )
+
+    return "\n".join(result)
+
+
+# =====================
+# 時間
+# =====================
+
+def parse_datetime(value):
 
     if not value:
         return datetime.max
@@ -115,24 +177,30 @@ def parse_date(value):
                 value.replace("Z", "+00:00")
             ).replace(tzinfo=None)
 
-
-        # 2026-08-17
+        # 2026-08-17 12:00
         if "-" in value:
             return datetime.strptime(
                 value,
-                "%Y-%m-%d"
+                "%Y-%m-%d %H:%M"
             )
 
-
-        # 2026/08/17
+        # 2026/08/17 12:00
         return datetime.strptime(
             value,
-            "%Y/%m/%d"
+            "%Y/%m/%d %H:%M"
         )
-
 
     except Exception as e:
 
-        print("日期解析錯誤：", value, e)
-
+        print("時間解析錯誤：", value, e)
         return datetime.max
+
+
+def format_datetime(value):
+
+    dt = parse_datetime(value)
+
+    if dt == datetime.max:
+        return value
+
+    return dt.strftime("%Y/%m/%d %H:%M")
