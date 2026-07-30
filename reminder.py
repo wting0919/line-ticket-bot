@@ -217,7 +217,6 @@ def check_reminders():
 def send_today_summary():
 
     now = datetime.now() + timedelta(hours=8)
-
     today = now.date()
 
     shows = load_data()
@@ -225,19 +224,28 @@ def send_today_summary():
     ticket_today = []
     pickup_today = []
     show_today = []
+    upcoming = []
 
     for show in shows:
 
+        # 之後這裡會開始判斷
+        pass
+
+    line_bot_api.push_message(
+        GROUP_ID,
+        TextSendMessage(
+            text="📅 今日重點測試"
+        )
+    )
+
         # 今天搶票
         try:
-
             ticket_time = parse_datetime(show["搶票時間"])
 
             if (
                 ticket_time.date() == today
                 and show.get("搶票狀態", "等待搶票") == "等待搶票"
             ):
-
                 ticket_today.append(show)
 
         except:
@@ -312,7 +320,9 @@ def send_today_summary():
 
     line_bot_api.push_message(
         GROUP_ID,
-        TextSendMessage(text=msg)
+        TextSendMessage(
+            text=f"📅 今日要搶票：{len(ticket_today)} 場"
+        )
     )
 
 # =====================
