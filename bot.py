@@ -358,6 +358,29 @@ def format_date(value):
 
     return dt.strftime("%Y/%m/%d")
 
+WEEKDAY = ["一", "二", "三", "四", "五", "六", "日"]
+
+def format_show_dates(value):
+
+    if not value:
+        return ""
+
+    dates = []
+
+    for d in str(value).split("、"):
+
+        d = d.strip()
+
+        try:
+            dt = parse_date(d)
+            dates.append(
+                f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
+            )
+        except:
+            dates.append(d)
+
+    return "\n".join(dates)
+
 
 # =====================
 # 排序功能
@@ -378,13 +401,17 @@ def sort_shows(shows):
 def sort_by_show_date(shows):
     # 演出日期排序
 
+    def first_day(show):
+
+        date_text = show.get("演出日期", "")
+
+        first = date_text.split("、")[0]
+
+        return parse_date(first)
+
     return sorted(
         shows,
-        key=lambda x: (
-            parse_date(x.get("演出日期")),
-            parse_datetime(x.get("搶票時間")),
-            str(x.get("id", ""))
-        )
+        key=first_day
     )
 
 
@@ -780,12 +807,6 @@ def menu_reply(text):
                     )
                 ),
 
-                QuickReplyButton(
-                    action=MessageAction(
-                        label="🆔 我的ID",
-                        text="ID"
-                    )
-                ),
 
             ]
         )
@@ -877,17 +898,25 @@ def simple_quick_reply(buttons):
 
 def normalize_show_date(value):
 
-    value = value.strip().replace("-", "/")
+    result = []
 
-    if value.count("/") == 1:
-        value = f"{datetime.now().year}/{value}"
+    for d in value.replace("，", "、").split("、"):
 
-    result = datetime.strptime(
-        value,
-        "%Y/%m/%d"
-    )
+        d = d.strip().replace("-", "/")
 
-    return result.strftime("%Y/%m/%d")
+        if d.count("/") == 1:
+            d = f"{datetime.now().year}/{d}"
+
+        dt = datetime.strptime(
+            d,
+            "%Y/%m/%d"
+        )
+
+        result.append(
+            dt.strftime("%Y/%m/%d")
+        )
+
+    return "、".join(result)
 
 
 def normalize_ticket_time(value):
@@ -2150,7 +2179,7 @@ def handle_message(event):
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅 演出日期：{show['演出日期']}\n"
+                    f"📅 演出日期：\n{format_show_dates(show['演出日期'])}\n"
                     f"🎟 {ticket_status}\n"
                     f"🎫 {pickup_status}\n"
                 )
@@ -2233,7 +2262,7 @@ def handle_message(event):
                     f"🎤 {show['演出名稱']}\n\n"
 
                     "📅 演出日期\n"
-                    f"{show['演出日期']}\n\n"
+                    f"{format_show_dates(show['演出日期'])}\n\n"
 
                     "🎟 搶票時間\n"
                     f"{format_datetime(show['搶票時間'])}\n\n"
@@ -2579,24 +2608,6 @@ def handle_message(event):
                 f"暱稱：{nickname}\n"
                 f"ID：{user_id}"
             )
-
-
-    # =====================
-    # ID
-    # =====================
-
-    elif text == "ID":
-
-
-        if event.source.type == "group":
-
-            reply = event.source.group_id
-
-        else:
-
-            reply = event.source.user_id
-
-
 
     else:
 
