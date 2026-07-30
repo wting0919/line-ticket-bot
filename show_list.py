@@ -64,9 +64,15 @@ def get_pickup_shows():
             "未取票"
         )
 
+        show.setdefault(
+            "搶票狀態",
+            "等待搶票"
+        )
+
         if (
             show.get("取票日期")
             and show["取票狀態"] == "未取票"
+            and show.get("搶票狀態") == "已搶票"
         ):
 
             pickup.append(show)
