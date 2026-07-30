@@ -248,3 +248,43 @@ def normalize_pickup_date(value, show_date):
         ).strftime("%Y/%m/%d")
 
     return normalize_show_date(value)
+
+
+# =====================
+# 排序
+# =====================
+
+def sort_shows(shows):
+    # 搶票時間排序
+
+    return sorted(
+        shows,
+        key=lambda x: parse_datetime(
+            x.get("搶票時間")
+        )
+    )
+
+
+
+def sort_by_show_date(shows):
+    # 演出日期排序
+
+    return sorted(
+        shows,
+        key=lambda show: parse_date(
+            get_first_show_date(show)
+        )
+    )
+
+
+def sort_by_pickup_date(shows):
+    # 取票日期排序
+
+    return sorted(
+        shows,
+        key=lambda x: (
+            parse_date(x.get("取票日期")),
+            parse_datetime(x.get("搶票時間")),
+            str(x.get("id", ""))
+        )
+    )
