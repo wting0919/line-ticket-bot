@@ -3,43 +3,22 @@ import edit_show
 import complete_ticket
 import mention
 import reminder
+import view_show
 
 from utils import (
-    format_price,
-
     parse_date,
-    split_show_dates,
     format_show_dates,
-    get_first_show_date,
-    get_last_show_date,
-    normalize_show_date,
-
-    parse_datetime,
     format_datetime,
-    normalize_ticket_time,
-    normalize_pickup_date,
-
-    sort_shows,
-    sort_by_show_date,
-    sort_by_pickup_date,
 )
 
 from data import (
     supabase,
     load_data,
-    save_data,
     update_show,
-    get_user_id,
-    get_member,
-    load_members,
-    get_member_user_id,
 )
 
 from ui import (
     menu_reply,
-    member_quick_reply,
-    simple_quick_reply,
-    edit_field_quick_reply,
 )
 
 from mention import (
@@ -49,6 +28,12 @@ from mention import (
 from reminder import (
     check_reminders,
     clean_finished_shows,
+)
+
+from show_list import (
+    get_waiting_shows,
+    get_pickup_shows,
+    get_all_shows,
 )
 
 import linebot
@@ -70,7 +55,6 @@ app = Flask(__name__)
 
 
 CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
-mention.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 USER_ID = os.getenv("USER_ID")
 GROUP_ID = os.getenv("GROUP_ID")
@@ -112,12 +96,13 @@ from complete_ticket import (
     handle_complete_ticket_flow,
 )
 
+from view_show import (
+    handle_view_show,
+)
+
 # =====================
 # 資料處理
 # =====================
-
-
-
 
 def load_users():
 
@@ -149,97 +134,21 @@ def format_date(value):
 
     return dt.strftime("%Y/%m/%d")
   
-# =====================
-# 共用列表功能
-# =====================
-
-def get_waiting_shows():
-
-    shows = sort_shows(load_data())
-
-    waiting = []
-
-    for show in shows:
-
-        show.setdefault(
-            "搶票狀態",
-            "等待搶票"
-        )
-
-        if show["搶票狀態"] == "等待搶票":
-
-            try:
-
-                ticket_time = parse_datetime(
-                    show["搶票時間"]
-                )
-
-
-                now = datetime.now() + timedelta(hours=8)
-
-                if ticket_time > now:
-                    waiting.append(show)
-
-
-            except Exception as e:
-
-                print(
-                    "搶票時間錯誤：",
-                    e
-                )
-
-
-    return waiting
-
-
-
-def get_pickup_shows():
-
-    shows = sort_by_pickup_date(load_data())
-
-    pickup = []
-
-    for show in shows:
-
-        show.setdefault(
-            "取票狀態",
-            "未取票"
-        )
-
-        if (
-            show.get("取票日期")
-            and show["取票狀態"] == "未取票"
-        ):
-
-            pickup.append(show)
-
-
-    return pickup
-
-
-
-def get_all_shows():
-
-    shows = sort_by_show_date(load_data())
-
-    print("演出列表讀取：", shows)
-
-    return shows
 
 edit_show.line_bot_api = line_bot_api
 edit_show.user_state = user_state
-edit_show.get_waiting_shows = get_waiting_shows
-edit_show.get_pickup_shows = get_pickup_shows
-edit_show.get_all_shows = get_all_shows
 
 complete_ticket.line_bot_api = line_bot_api
 complete_ticket.user_state = user_state
-complete_ticket.get_all_shows = get_all_shows
+
+mention.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
 
 reminder.line_bot_api = line_bot_api
 reminder.GROUP_ID = GROUP_ID
 reminder.push_mention_message = push_mention_message
 
+view_show.line_bot_api = line_bot_api
+view_show.user_state = user_state
 
 # =====================
 # LINE Callback
@@ -499,93 +408,13 @@ def handle_message(event):
 
     elif text.startswith("查看"):
 
+        handle_view_show(
+            event,
+            text,
+            user_id,
+        )
 
-        if user_state.get(user_id) == "搶票列表":
-
-            shows = get_waiting_shows()
-
-
-        elif user_state.get(user_id) == "取票列表":
-
-            shows = get_pickup_shows()
-
-
-        else:
-
-            shows = get_all_shows()
-
-
-        try:
-
-            index = int(
-                text.replace(
-                    "查看",
-                    ""
-                ).strip()
-            ) - 1
-
-
-            if index < 0 or index >= len(shows):
-
-                reply = "❌ 找不到這筆演出"
-
-
-            else:
-
-                show = shows[index]
-
-
-                note = (
-                    show["備註"]
-                    if show["備註"]
-                    else "無"
-                )
-
-
-                reply = (
-
-                    "🎫 演出資訊\n\n"
-
-                    f"🎤 {show['演出名稱']}\n\n"
-
-                    "📅 演出日期\n"
-                    f"{format_show_dates(show['演出日期'])}\n\n"
-
-                    "🎟 搶票時間\n"
-                    f"{format_datetime(show['搶票時間'])}\n\n"
-
-                    "💰 價格張數\n"
-                    f"{format_price(show['價格張數'])}\n\n"
-
-                    "🌐 售票平台\n"
-                    f"{show['售票平台']}\n\n"
-
-                    "📌 搶票狀態\n"
-                    f"{show.get('搶票狀態','等待搶票')}\n\n"
-
-                    "🎫 取票狀態\n"
-                    f"{show.get('取票狀態','未取票')}\n\n"
-
-                    "🎟 搶票大師\n"
-                    f"{show.get('搶票大師', '未設定')}\n\n"
-
-                    "👥 取票人\n"
-                    f"{show.get('取票人') or '未設定'}\n\n"
-
-                    "📝 備註\n"
-                    f"{note}"
-                )
-
-
-        except ValueError:
-
-            reply = "請輸入格式：\n查看 1"
-
-        except Exception as e:
-
-            print("查看錯誤：", e)
-
-            reply = f"❌ 發生錯誤\n{e}"
+        return
 
 
 
