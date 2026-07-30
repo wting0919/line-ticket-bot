@@ -519,13 +519,16 @@ def handle_message(event):
             text,
             user_id,
         )
-
         return
 
     else:
 
-        return
+        reply = "找不到此功能"
 
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply)
+    )
 
 print("LINE SDK Version:", getattr(linebot, "__version__", "Unknown"))
 
