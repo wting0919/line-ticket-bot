@@ -2,6 +2,7 @@ import add_show
 import edit_show
 import complete_ticket
 import mention
+import reminder
 
 from utils import (
     format_price,
@@ -45,6 +46,11 @@ from mention import (
     push_mention_message,
 )
 
+from reminder import (
+    check_reminders,
+    clean_finished_shows,
+)
+
 import linebot
 
 from flask import Flask, request
@@ -58,7 +64,6 @@ from linebot.models import (
 from datetime import datetime, timedelta
 import json
 import os
-import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
@@ -231,263 +236,9 @@ complete_ticket.line_bot_api = line_bot_api
 complete_ticket.user_state = user_state
 complete_ticket.get_all_shows = get_all_shows
 
-# =====================
-# 提醒功能
-# =====================
-
-def check_reminders():
-
-    print("提醒檢查執行", datetime.now())
-
-    now = datetime.now() + timedelta(hours=8)
-
-    shows = load_data()
-
-    print("目前演出資料：", shows)
-
-    for show in shows:
-
-        show.setdefault("提醒", {
-            "前一天": False,
-            "30分鐘": False,
-            "10分鐘": False,
-            "取票": False,
-            "演出日": False
-        })
-
-        print(
-            "提醒狀態：",
-            show["演出名稱"],
-            show["提醒"]
-        )
-
-
-        show.setdefault("搶票狀態", "等待搶票")
-        show.setdefault("取票狀態", "未取票")
-
-
-        try:
-
-            ticket_time = parse_datetime(
-                show["搶票時間"]
-            )
-
-
-            # 前一天 21:00
-
-            remind_time = (
-                ticket_time - timedelta(days=1)
-            ).replace(
-                hour=21,
-                minute=0,
-                second=0,
-                microsecond=0
-            )
-
-
-            if (
-                remind_time <= now <= remind_time + timedelta(minutes=1)
-                and not show["提醒"]["前一天"]
-            ):
-
-                line_bot_api.push_message(
-                    GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "⏰ 明日搶票提醒\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}"
-                        )
-                    )
-                )
-
-
-                show["提醒"]["前一天"] = True
-                update_show(show)
-
-
-            diff = ticket_time - now
-
-            print("=" * 50)
-            print("現在時間：", now)
-            print("演出：", show["演出名稱"])
-            print("搶票時間：", ticket_time)
-            print("剩餘：", diff)
-            print("30分鐘：", show["提醒"]["30分鐘"])
-            print("10分鐘：", show["提醒"]["10分鐘"])
-
-
-            # 前30分鐘
-
-            if (
-                timedelta(minutes=29)
-                <= diff 
-                <= timedelta(minutes=30)
-                and not show["提醒"]["30分鐘"]
-            ):
-
-
-                print(">>> 發送30分鐘提醒")
-
-
-                line_bot_api.push_message(
-                    GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "⏰ 搶票倒數 30 分鐘\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}\n"
-                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
-                        )
-                    )
-                )
-
-
-                show["提醒"]["30分鐘"] = True
-                update_show(show)
-
-
-            # 前10分鐘
-
-            if (
-                timedelta(minutes=9)
-                <= diff 
-                <= timedelta(minutes=10)
-                and not show["提醒"]["10分鐘"]
-            ):
-
-                print(">>> 發送10分鐘提醒")
-
-
-                line_bot_api.push_message(
-                    GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "🔐 搶票倒數 10 分鐘\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}\n"
-                            f"💰 價格張數：{format_price(show['價格張數'])}\n"
-                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
-                        )
-                    )
-                )
-
-                show["提醒"]["10分鐘"] = True
-                update_show(show)
-
-
-        except Exception as e:
-
-            print(
-                f"提醒錯誤：{e}"
-            )
-
-
-        # 取票提醒
-        if show.get("取票日期"):
-
-            pickup_time = parse_datetime(
-                show["取票日期"] + " 12:00"
-            )
-
-            if (
-                pickup_time <= now < pickup_time + timedelta(minutes=1)
-                and not show["提醒"]["取票"]
-            ):
-
-                participants = [
-                    x.strip()
-                    for x in show.get("取票人", "").split("、")
-                    if x.strip()
-                ]
-
-                push_mention_message(
-                    GROUP_ID,
-                    (
-                        "🎫 取票提醒\n\n"
-                        f"🎤 {show['演出名稱']}\n"
-                        "🎫 可以取票囉～"
-                    ),
-                    participants
-                )
-
-                show["提醒"]["取票"] = True
-                save_data(shows)
-
-def clean_finished_shows():
-
-    print("檢查過期演出")
-
-    now = datetime.now() + timedelta(hours=8)
-
-    shows = load_data()
-
-    keep_shows = []
-
-    for show in shows:
-
-        try:
-
-            last_show_date = parse_date(
-                get_last_show_date(show)
-            )
-
-            delete_date = (
-                last_show_date +
-                timedelta(days=3)
-            )
-
-            if now.date() <= delete_date.date():
-
-                keep_shows.append(show)
-
-            else:
-
-                print(
-                    f"🗑️ 已自動清除：{show['演出名稱']}"
-                )
-
-
-        except Exception as e:
-
-            print(
-                "清除錯誤：",
-                e
-            )
-
-            keep_shows.append(show)
-
-
-    if len(keep_shows) != len(shows):
-
-        # 刪除 Supabase 資料
-        old_ids = [
-            show["id"]
-            for show in shows
-            if show not in keep_shows
-        ]
-
-        for show_id in old_ids:
-
-            try:
-
-                supabase.table("shows") \
-                    .delete() \
-                    .eq("id", show_id) \
-                    .execute()
-
-                print(f"已刪除：{show_id}")
-
-            except Exception as e:
-
-                print(f"刪除失敗：{show_id}", e)
-        
-
-    print("清除完成")
-
+reminder.line_bot_api = line_bot_api
+reminder.GROUP_ID = GROUP_ID
+reminder.push_mention_message = push_mention_message
 
 
 # =====================
