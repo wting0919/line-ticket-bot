@@ -401,19 +401,12 @@ def sort_shows(shows):
 def sort_by_show_date(shows):
     # 演出日期排序
 
-    def first_day(show):
-
-        date_text = show.get("演出日期", "")
-
-        first = date_text.split("、")[0]
-
-        return parse_date(first)
-
     return sorted(
         shows,
-        key=first_day
+        key=lambda show: parse_date(
+            get_first_show_date(show)
+        )
     )
-
 
 
 def sort_by_pickup_date(shows):
@@ -895,28 +888,82 @@ def simple_quick_reply(buttons):
 
     return QuickReply(items=items)
 
+def split_show_dates(value):
 
-def normalize_show_date(value):
+    value = value.strip().replace("，", "、").replace("-", "/")
+
+    # 10/10~10/12
+    if "~" in value:
+
+        start, end = value.split("~")
+
+        start = normalize_show_date(start)
+        end = normalize_show_date(end)
+
+        start_date = parse_date(start)
+        end_date = parse_date(end)
+
+        result = []
+
+        while start_date <= end_date:
+
+            result.append(
+                start_date.strftime("%Y/%m/%d")
+            )
+
+            start_date += timedelta(days=1)
+
+        return result
 
     result = []
 
-    for d in value.replace("，", "、").split("、"):
+    year = datetime.now().year
+    last_month = None
 
-        d = d.strip().replace("-", "/")
+    for item in value.split("、"):
 
-        if d.count("/") == 1:
-            d = f"{datetime.now().year}/{d}"
+        item = item.strip()
 
-        dt = datetime.strptime(
-            d,
-            "%Y/%m/%d"
-        )
+        # 只有日期，例如 11
+        if "/" not in item:
+
+            item = f"{last_month}/{item}"
+
+        if item.count("/") == 1:
+
+            month = item.split("/")[0]
+            last_month = month
+            item = f"{year}/{item}"
 
         result.append(
-            dt.strftime("%Y/%m/%d")
+            datetime.strptime(
+                item,
+                "%Y/%m/%d"
+            ).strftime("%Y/%m/%d")
         )
 
-    return "、".join(result)
+    return result
+
+
+def get_first_show_date(show):
+
+    dates = split_show_dates(show["演出日期"])
+
+    return dates[0]
+
+
+def get_last_show_date(show):
+
+    dates = split_show_dates(show["演出日期"])
+
+    return dates[-1]
+
+
+def normalize_show_date(value):
+
+    return "、".join(
+        split_show_dates(value)
+    )
 
 
 def normalize_ticket_time(value):
