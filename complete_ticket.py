@@ -327,3 +327,52 @@ def finish_complete_ticket(
     )
 
     return True
+
+def handle_ticket_failed(event, text, user_id):
+
+    shows = get_all_shows()
+
+    try:
+        index = int(
+            text.replace("未搶到", "").strip()
+        ) - 1
+
+    except Exception:
+
+        return TextSendMessage(
+            text="請輸入：\n未搶到 1"
+        )
+
+    if index < 0 or index >= len(shows):
+
+        return TextSendMessage(
+            text="❌ 找不到這筆演出"
+        )
+
+    show = shows[index]
+
+    if show.get("搶票狀態") == "已搶票":
+
+        return TextSendMessage(
+            text="⚠️ 這筆演出已經完成搶票"
+        )
+
+    show["搶票狀態"] = "未搶到"
+
+    try:
+
+        update_show(show)
+
+    except Exception as e:
+
+        return TextSendMessage(
+            text=f"❌ 更新失敗\n{e}"
+        )
+
+    return TextSendMessage(
+        text=(
+            "❌ 已標記為未搶到\n\n"
+            f"🎤 {show['演出名稱']}\n"
+            "📌 狀態：未搶到"
+        )
+    )

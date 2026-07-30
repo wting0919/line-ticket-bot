@@ -58,6 +58,7 @@ from add_show import (
 from complete_ticket import (
     handle_complete_ticket,
     handle_complete_ticket_flow,
+    handle_ticket_failed,
 )
 
 from delete_show import (
@@ -445,6 +446,26 @@ def handle_message(event):
         )
 
         return
+
+    # =====================
+    # 未搶到
+    # =====================
+
+    elif text.startswith("未搶到"):
+
+        message = handle_ticket_failed(
+            event,
+            text,
+            user_id
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            message
+        )
+
+        return
+
 
     # =====================
     # 序號提醒
