@@ -18,6 +18,7 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from supabase import create_client
+from utils import format_price
 
 
 app = Flask(__name__)
@@ -358,6 +359,9 @@ def format_date(value):
 
     return dt.strftime("%Y/%m/%d")
 
+import re
+
+
 WEEKDAY = ["一", "二", "三", "四", "五", "六", "日"]
 
 def format_show_dates(value):
@@ -633,7 +637,7 @@ def check_reminders():
                             f"🎤 {show['演出名稱']}\n"
                             f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
                             f"🌐 售票平台：{show['售票平台']}\n"
-                            f"💰 價格張數：{show['價格張數']}\n"
+                            f"💰 價格張數：{format_price(show['價格張數'])}\n"
                             f"📝 備註：{show['備註'] if show['備註'] else '無'}"
                         )
                     )
@@ -2310,7 +2314,7 @@ def handle_message(event):
                     f"{format_datetime(show['搶票時間'])}\n\n"
 
                     "💰 價格張數\n"
-                    f"{show['價格張數']}\n\n"
+                    f"{format_price(show['價格張數'])}\n\n"
 
                     "🌐 售票平台\n"
                     f"{show['售票平台']}\n\n"
