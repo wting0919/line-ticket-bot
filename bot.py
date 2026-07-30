@@ -514,6 +514,7 @@ def handle_message(event):
         handle_complete_pickup(
             event,
             text,
+            user_id,
         )
 
         return

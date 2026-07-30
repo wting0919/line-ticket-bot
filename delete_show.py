@@ -5,8 +5,6 @@ from data import (
 )
 
 from show_list import (
-    get_waiting_shows,
-    get_pickup_shows,
     get_all_shows,
 )
 
@@ -33,13 +31,11 @@ def handle_delete_show(
             ).strip()
         ) - 1
 
-        if user_state.get(user_id) == "搶票列表":
+        state = user_state.get(user_id)
 
-            target_list = get_waiting_shows()
+        if isinstance(state, dict) and "shows" in state:
 
-        elif user_state.get(user_id) == "取票列表":
-
-            target_list = get_pickup_shows()
+            target_list = state["shows"]
 
         else:
 

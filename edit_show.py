@@ -18,8 +18,6 @@ from ui import (
 )
 
 from show_list import (
-    get_waiting_shows,
-    get_pickup_shows,
     get_all_shows,
 )
 
@@ -51,13 +49,12 @@ def start_edit_show(event, text, user_id):
 
     state = user_state.get(user_id)
 
-    if state == "搶票列表":
-        shows = get_waiting_shows()
+    if isinstance(state, dict) and "shows" in state:
 
-    elif state == "取票列表":
-        shows = get_pickup_shows()
+        shows = state["shows"]
 
     else:
+
         shows = get_all_shows()
 
     try:

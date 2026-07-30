@@ -1,3 +1,5 @@
+user_state = {}
+
 from linebot.models import TextSendMessage
 
 from data import (
@@ -19,9 +21,18 @@ line_bot_api = None
 def handle_complete_pickup(
     event,
     text,
+    user_id,
 ):
 
-    pickup_list = get_pickup_shows()
+    state = user_state.get(user_id)
+
+    if isinstance(state, dict) and "shows" in state:
+
+        pickup_list = state["shows"]
+
+    else:
+
+        pickup_list = get_pickup_shows()
 
     try:
 

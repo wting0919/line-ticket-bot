@@ -7,8 +7,6 @@ from utils import (
 )
 
 from show_list import (
-    get_waiting_shows,
-    get_pickup_shows,
     get_all_shows,
 )
 
@@ -26,13 +24,11 @@ def handle_view_show(
     user_id,
 ):
 
-    if user_state.get(user_id) == "搶票列表":
+    state = user_state.get(user_id)
 
-        shows = get_waiting_shows()
+    if isinstance(state, dict) and "shows" in state:
 
-    elif user_state.get(user_id) == "取票列表":
-
-        shows = get_pickup_shows()
+        shows = state["shows"]
 
     else:
 
@@ -54,6 +50,22 @@ def handle_view_show(
 
             note = show.get("備註") or "無"
 
+            status = show.get("搶票狀態", "等待搶票")
+
+            if status == "已搶票":
+                ticket_status = "✅ 已搶票"
+
+            elif status == "未搶到":
+                ticket_status = "❌ 未搶到"
+
+            else:
+                ticket_status = "⏳ 等待搶票"
+
+            if show.get("取票狀態") == "已取票":
+                pickup_status = "✅ 已取票"
+            else:
+                pickup_status = "🎫 未取票"
+
             reply = (
                 "🎫 演出資訊\n\n"
                 f"🎤 {show['演出名稱']}\n\n"
@@ -65,17 +77,72 @@ def handle_view_show(
                 f"{format_price(show['價格張數'])}\n\n"
                 "🌐 售票平台\n"
                 f"{show['售票平台']}\n\n"
-                "📌 搶票狀態\n"
-                f"{show.get('搶票狀態', '等待搶票')}\n\n"
-                "🎫 取票狀態\n"
-                f"{show.get('取票狀態', '未取票')}\n\n"
-                "🎟 搶票大師\n"
-                f"{show.get('搶票大師') or '未設定'}\n\n"
-                "👥 取票人\n"
-                f"{show.get('取票人') or '未設定'}\n\n"
+            )
+
+            reply += (
+                "\n\n"
+                "📌 搶票\n"
+                f"{ticket_status}"
+            )
+
+            if status == "已搶票":
+
+                reply += (
+                    "\n\n"
+                    "📌 取票\n"
+                    f"{pickup_status}\n\n"
+                    "👤 搶票大師\n"
+                    f"{show.get('搶票大師') or '未設定'}\n\n"
+                    "👥 取票人\n"
+                    f"{show.get('取票人') or '未設定'}"
+                )
+
+            reply += (
+                "\n\n"
                 "📝 備註\n"
                 f"{note}"
             )
+
+            # ===== 可執行操作 =====
+
+            reply += "\n\n────────────\n"
+
+            if status == "等待搶票":
+
+                reply += (
+                    "可執行：\n"
+                    f"✅ 完成搶票 {index + 1}\n"
+                    f"❌ 未搶到 {index + 1}\n"
+                    f"✏️ 修改 {index + 1}\n"
+                    f"🗑️ 刪除 {index + 1}"
+                )
+
+            elif status == "已搶票":
+
+                if show.get("取票狀態") == "已取票":
+
+                    reply += (
+                        "可執行：\n"
+                        f"✏️ 修改 {index + 1}\n"
+                        f"🗑️ 刪除 {index + 1}"
+                    )
+
+                else:
+
+                    reply += (
+                        "可執行：\n"
+                        f"🎫 完成取票 {index + 1}\n"
+                        f"✏️ 修改 {index + 1}\n"
+                        f"🗑️ 刪除 {index + 1}"
+                    )
+
+            elif status == "未搶到":
+
+                reply += (
+                    "可執行：\n"
+                    f"✏️ 修改 {index + 1}\n"
+                    f"🗑️ 刪除 {index + 1}"
+                )
 
     except ValueError:
 
