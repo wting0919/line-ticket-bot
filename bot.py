@@ -2336,11 +2336,15 @@ def handle_message(event):
                 )
 
 
-        except Exception as e:
-
-            print(e)
+        except ValueError:
 
             reply = "請輸入格式：\n查看 1"
+
+        except Exception as e:
+
+            print("查看錯誤：", e)
+
+            reply = f"❌ 發生錯誤\n{e}"
 
 
 
