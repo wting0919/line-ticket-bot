@@ -1,44 +1,11 @@
-import add_show
-import edit_show
-import complete_ticket
-import mention
-import reminder
-import view_show
-import pickup
-
-from utils import (
-    parse_date,
-    format_show_dates,
-    format_datetime,
-)
-
-from data import (
-    supabase,
-    update_show,
-)
-
-from ui import (
-    menu_reply,
-)
-
-from mention import (
-    push_mention_message,
-)
-
-from reminder import (
-    check_reminders,
-    clean_finished_shows,
-)
-
-from show_list import (
-    get_waiting_shows,
-    get_pickup_shows,
-    get_all_shows,
-)
-
+# Python
+import os
 import linebot
 
+# Flask
 from flask import Flask, request
+
+# LINE
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import (
     MessageEvent,
@@ -46,10 +13,79 @@ from linebot.models import (
     TextSendMessage,
 )
 
-from datetime import datetime, timedelta
-import json
-import os
+# Scheduler
 from apscheduler.schedulers.background import BackgroundScheduler
+
+# Modules
+import add_show
+import complete_ticket
+import delete_show
+import edit_show
+import member
+import mention
+import pickup
+import reminder
+import serial
+import view_show
+
+# Data
+from reminder import (
+    check_reminders,
+    clean_finished_shows,
+)
+
+from show_list import (
+    get_all_shows,
+    get_pickup_shows,
+    get_waiting_shows,
+)
+
+from ui import (
+    menu_reply,
+)
+
+from utils import (
+    format_datetime,
+    format_show_dates,
+)
+
+# Handlers
+from add_show import (
+    start_add_show,
+    handle_add_show_flow,
+)
+
+from complete_ticket import (
+    handle_complete_ticket,
+    handle_complete_ticket_flow,
+)
+
+from delete_show import (
+    handle_delete_show,
+)
+
+from edit_show import (
+    start_edit_show,
+    handle_edit_show_flow,
+)
+
+from member import (
+    handle_register_member,
+)
+
+from pickup import (
+    handle_complete_pickup,
+)
+
+from serial import (
+    handle_serial_number,
+)
+
+from view_show import (
+    handle_view_show,
+)
+
+
 
 app = Flask(__name__)
 
@@ -76,67 +112,12 @@ scheduler = BackgroundScheduler(
 # 使用者操作狀態
 user_state = {}
 
-# add_show 不依賴任何函式
+# =====================
+# 初始化模組
+# =====================
+
 add_show.line_bot_api = line_bot_api
 add_show.user_state = user_state
-
-from add_show import (
-    start_add_show,
-    handle_add_show_flow,
-)
-
-from edit_show import (
-    start_edit_show,
-    handle_edit_show_flow,
-)
-
-from complete_ticket import (
-    handle_complete_ticket,
-    handle_complete_ticket_flow,
-)
-
-from view_show import (
-    handle_view_show,
-)
-
-from pickup import (
-    handle_complete_pickup,
-)
-
-# =====================
-# 資料處理
-# =====================
-
-def load_users():
-
-    if not os.path.exists(USER_FILE):
-        return {}
-
-    with open(USER_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-
-def save_users(users):
-
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(
-            users,
-            f,
-            ensure_ascii=False,
-            indent=4
-        )
-
-
-def format_date(value):
-
-    dt = parse_date(value)
-
-    if dt == datetime.max:
-        return value
-
-    return dt.strftime("%Y/%m/%d")
-  
 
 edit_show.line_bot_api = line_bot_api
 edit_show.user_state = user_state
@@ -144,16 +125,24 @@ edit_show.user_state = user_state
 complete_ticket.line_bot_api = line_bot_api
 complete_ticket.user_state = user_state
 
-mention.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
-
-reminder.line_bot_api = line_bot_api
-reminder.GROUP_ID = GROUP_ID
-reminder.push_mention_message = push_mention_message
-
 view_show.line_bot_api = line_bot_api
 view_show.user_state = user_state
 
 pickup.line_bot_api = line_bot_api
+
+delete_show.line_bot_api = line_bot_api
+delete_show.user_state = user_state
+
+member.line_bot_api = line_bot_api
+
+serial.line_bot_api = line_bot_api
+serial.GROUP_ID = GROUP_ID
+
+mention.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
+
+reminder.line_bot_api = line_bot_api
+reminder.GROUP_ID = GROUP_ID
+reminder.push_mention_message = mention.push_mention_message
 
 # =====================
 # LINE Callback
@@ -193,7 +182,6 @@ def handle_message(event):
 
     user_id = event.source.user_id
 
-    show_menu = False
 
     # =====================
     # 問答式流程處理
@@ -234,12 +222,15 @@ def handle_message(event):
         "HELP"
     ]:
 
-        show_menu = True
+        line_bot_api.reply_message(
+            event.reply_token,
+            menu_reply(
+                "📋 演唱會小助手
 
-        reply = (
-            "📋 演唱會小助手\n\n"
-            "請點選下方快捷按鈕 👇"
+請點選下方快捷按鈕 👇"
+            )
         )
+        return
 
 
     # =====================
@@ -455,103 +446,19 @@ def handle_message(event):
         )
 
         return
+
     # =====================
     # 序號提醒
     # =====================
 
     elif text.startswith("序號"):
 
-        shows = get_all_shows()
+        handle_serial_number(
+            event,
+            text,
+        )
 
-
-        try:
-
-            lines = text.split("\n")
-
-
-            index = int(
-                lines[0]
-                .replace(
-                    "序號",
-                    ""
-                )
-                .strip()
-            ) - 1
-
-
-            if index < 0 or index >= len(shows):
-
-                reply = "❌ 找不到這筆演出"
-
-
-            else:
-
-                show = shows[index]
-
-
-                for line in lines[1:]:
-
-                    if line.startswith("取票序號："):
-
-                        show["取票序號"] = (
-                            line
-                            .replace(
-                                "取票序號：",
-                                ""
-                            )
-                            .strip()
-                        )
-
-
-                update_show(show)
-
-
-                reply = (
-                    "🎫 序號已出來！\n\n"
-                    f"🎤 {show['演出名稱']}\n\n"
-                    f"🎟 序號：\n"
-                    f"{show.get('取票序號','')}\n\n"
-                    f"👤 搶票大師：\n"
-                    f"{show.get('搶票大師','未設定')}\n\n"
-                    f"👥 取票人：\n"
-                    f"{show.get('取票人') or '未設定'}\n\n"
-                    "請確認取票資訊～"
-                )
-
-
-                mention_names = []
-
-                if show.get("搶票大師"):
-                    mention_names.append(show["搶票大師"])
-
-                mention_names.extend(
-                    [
-                        x.strip()
-                        for x in show.get("取票人", "").split("、")
-                        if x.strip()
-                    ]
-                )
-
-                push_mention_message(
-                    GROUP_ID,
-                    reply,
-                    mention_names
-                )
-
-
-                reply = "✅ 已發送序號提醒"
-
-
-        except Exception as e:
-
-            print(e)
-
-            reply = (
-                "請輸入格式：\n"
-                "序號 1\n"
-                "取票序號：A123456"
-            )
-
+        return
 
     # =====================
     # 完成取票
@@ -573,58 +480,13 @@ def handle_message(event):
 
     elif text.startswith("刪除"):
 
+        handle_delete_show(
+            event,
+            text,
+            user_id,
+        )
 
-        try:
-
-            index = int(
-                text.replace(
-                    "刪除",
-                    ""
-                ).strip()
-            ) - 1
-
-
-            if user_state.get(user_id) == "搶票列表":
-
-                target_list = get_waiting_shows()
-
-            elif user_state.get(user_id) == "取票列表":
-
-                target_list = get_pickup_shows()
-
-            else:
-
-                target_list = get_all_shows()
-
-
-
-            target = target_list[index]
-
-
-            deleted = target
-
-
-            supabase.table("shows") \
-                .delete() \
-                .eq(
-                    "id",
-                    target["id"]
-                ) \
-                .execute()
-
-
-            reply = (
-                "✅ 刪除成功\n\n"
-                f"🎤 {deleted['演出名稱']}\n"
-                f"📅 演出日期：{deleted['演出日期']}"
-            )
-
-
-        except Exception as e:
-
-            print(e)
-
-            reply = "請輸入格式：\n刪除 1"
+        return
 
 
     # =====================
@@ -651,55 +513,20 @@ def handle_message(event):
     # 登記暱稱
     # =====================
 
-    elif text.startswith("登記 "):
+    elif text.startswith("登記"):
 
-        nickname = text.replace(
-            "登記 ",
-            ""
-        ).strip()
+        handle_register_member(
+            event,
+            text,
+            user_id,
+        )
 
-
-        if not nickname:
-
-            reply = "請輸入：登記 暱稱"
-
-
-        else:
-
-            supabase.table("members").upsert(
-                {
-                    "name": nickname,
-                    "user_id": user_id
-                },
-                on_conflict="user_id"
-            ).execute()
-
-
-            reply = (
-                "✅ 登記成功\n\n"
-                f"暱稱：{nickname}\n"
-                f"ID：{user_id}"
-            )
+        return
 
     else:
 
         return
 
-
-
-    if show_menu:
-
-        line_bot_api.reply_message(
-            event.reply_token,
-            menu_reply(reply)
-        )
-
-    else:
-
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply)
-        )
 
 print("LINE SDK Version:", getattr(linebot, "__version__", "Unknown"))
 
