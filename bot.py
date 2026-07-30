@@ -1,3 +1,10 @@
+from utils import (
+    format_price,
+    format_show_dates,
+    parse_date,
+    split_show_dates,
+)
+
 import linebot
 
 from flask import Flask, request
@@ -18,7 +25,6 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from supabase import create_client
-from utils import format_price
 
 
 app = Flask(__name__)
@@ -305,40 +311,6 @@ def parse_datetime(value):
         return datetime.max
 
 
-def parse_date(value):
-
-    if not value:
-        return datetime.max
-
-    try:
-
-        # Supabase ISO
-        if "T" in value:
-            return datetime.fromisoformat(
-                value.replace("Z", "+00:00")
-            ).replace(tzinfo=None)
-
-
-        # 2026-08-17
-        if "-" in value:
-            return datetime.strptime(
-                value,
-                "%Y-%m-%d"
-            )
-
-
-        # 2026/08/17
-        return datetime.strptime(
-            value,
-            "%Y/%m/%d"
-        )
-
-
-    except Exception as e:
-
-        print("日期解析錯誤：", value, e)
-
-        return datetime.max
 
 def format_datetime(value):
 
@@ -359,27 +331,6 @@ def format_date(value):
 
     return dt.strftime("%Y/%m/%d")
 
-import re
-
-
-WEEKDAY = ["一", "二", "三", "四", "五", "六", "日"]
-
-def format_show_dates(value):
-
-    if not value:
-        return ""
-
-    result = []
-
-    for d in split_show_dates(value):
-
-        dt = parse_date(d)
-
-        result.append(
-            f"{dt.strftime('%Y/%m/%d')}（{WEEKDAY[dt.weekday()]}）"
-        )
-
-    return "\n".join(result)
 
 # =====================
 # 排序功能
@@ -888,61 +839,6 @@ def simple_quick_reply(buttons):
 
     return QuickReply(items=items)
 
-def split_show_dates(value):
-
-    value = value.strip().replace("，", "、").replace("-", "/")
-
-    # 10/10~10/12
-    if "~" in value:
-
-        start, end = value.split("~")
-
-        start = normalize_show_date(start)
-        end = normalize_show_date(end)
-
-        start_date = parse_date(start)
-        end_date = parse_date(end)
-
-        result = []
-
-        while start_date <= end_date:
-
-            result.append(
-                start_date.strftime("%Y/%m/%d")
-            )
-
-            start_date += timedelta(days=1)
-
-        return result
-
-    result = []
-
-    year = datetime.now().year
-    last_month = None
-
-    for item in value.split("、"):
-
-        item = item.strip()
-
-        # 只有日期，例如 11
-        if "/" not in item:
-
-            item = f"{last_month}/{item}"
-
-        if item.count("/") == 1:
-
-            month = item.split("/")[0]
-            last_month = month
-            item = f"{year}/{item}"
-
-        result.append(
-            datetime.strptime(
-                item,
-                "%Y/%m/%d"
-            ).strftime("%Y/%m/%d")
-        )
-
-    return result
 
 
 def get_first_show_date(show):
