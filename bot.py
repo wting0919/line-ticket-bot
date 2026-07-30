@@ -291,7 +291,10 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
-            user_state[user_id] = "搶票列表"
+            user_state[user_id] = {
+                "mode": "搶票列表",
+                "shows": waiting
+            }
 
 
     # =====================
@@ -328,7 +331,10 @@ def handle_message(event):
                 )
 
 
-            user_state[user_id] = "取票列表"
+            user_state[user_id] = {
+                "mode": "取票列表",
+                "shows": pickup_list
+            }
 
 
     # =====================
@@ -356,25 +362,41 @@ def handle_message(event):
                 start=1
             ):
 
-                ticket_status = (
-                    "✅ 已搶票"
-                    if show.get("搶票狀態") == "已搶票"
-                    else "⏳ 等待搶票"
-                )
+                status = show.get("搶票狀態", "等待搶票")
 
-                pickup_status = (
-                    "✅ 已取票"
-                    if show.get("取票狀態") == "已取票"
-                    else "⏳ 未取票"
-                )
+                if status == "已搶票":
+                    ticket_status = "✅ 已搶票"
+
+                elif status == "未搶到":
+                    ticket_status = "❌ 未搶到"
+
+                else:
+                    ticket_status = "⏳ 等待搶票"
+
+                if show.get("搶票狀態") != "已搶票":
+
+                    pickup_status = ""
+
+                elif show.get("取票狀態") == "已取票":
+
+                    pickup_status = "✅ 已取票"
+
+                else:
+
+                    pickup_status = "🎫 未取票"
 
                 reply += (
                     f"\n{i}.\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅 演出日期：\n{format_show_dates(show['演出日期'])}\n"
-                    f"🎟 {ticket_status}\n"
-                    f"🎫 {pickup_status}\n"
+                    f"📅 {format_show_dates(show['演出日期'])}\n"
+                    f"{ticket_status}"
                 )
+
+                if pickup_status:
+
+                    reply += f"\n{pickup_status}"
+
+                reply += "\n"
 
 
             reply += (
@@ -382,7 +404,10 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
-            user_state[user_id] = "演出列表"
+            user_state[user_id] = {
+                "mode": "演出列表",
+                "shows": shows
+            }
 
     # =====================
     # 新增功能
