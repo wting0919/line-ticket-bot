@@ -29,7 +29,15 @@ DEFAULT_COMPLETE_DATA = {
 
 def handle_complete_ticket(event, text, user_id):
 
-    shows = get_all_shows()
+    state = user_state.get(user_id)
+
+    if isinstance(state, dict) and "shows" in state:
+
+        shows = state["shows"]
+
+    else:
+
+        shows = get_all_shows()
 
     try:
 
@@ -330,7 +338,15 @@ def finish_complete_ticket(
 
 def handle_ticket_failed(event, text, user_id):
 
-    shows = get_all_shows()
+    state = user_state.get(user_id)
+
+    if isinstance(state, dict) and "shows" in state:
+
+        shows = state["shows"]
+
+    else:
+
+        shows = get_all_shows()
 
     try:
         index = int(
