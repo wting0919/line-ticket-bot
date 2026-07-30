@@ -1,10 +1,3 @@
-get_waiting_shows = None
-get_pickup_shows = None
-get_all_shows = None
-
-user_state = {}
-line_bot_api = None
-
 from linebot.models import TextSendMessage
 
 from data import (
@@ -24,20 +17,50 @@ from ui import (
     edit_field_quick_reply,
 )
 
+from show_list import (
+    get_waiting_shows,
+    get_pickup_shows,
+    get_all_shows,
+)
+
+line_bot_api = None
+user_state = {}
+
+ALLOWED_FIELDS = {
+    "演出名稱",
+    "演出日期",
+    "搶票時間",
+    "價格張數",
+    "售票平台",
+    "取票日期",
+    "備註",
+}
+
+FIELD_HINTS = {
+    "演出名稱": "請輸入新的演出名稱",
+    "演出日期": "請輸入新的演出日期\n例如：10/1",
+    "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
+    "價格張數": "請輸入新的價格張數\n例如：$3800*2",
+    "售票平台": "請輸入新的售票平台",
+    "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
+    "備註": "請輸入新的備註\n也可按「清除」",
+}
+
 
 def start_edit_show(event, text, user_id):
 
-    previous_state = user_state.get(user_id)
+    state = user_state.get(user_id)
 
-    if previous_state == "搶票列表":
+    if state == "搶票列表":
         shows = get_waiting_shows()
-    elif previous_state == "取票列表":
+
+    elif state == "取票列表":
         shows = get_pickup_shows()
+
     else:
         shows = get_all_shows()
 
     try:
-
         index = int(
             text.replace("修改", "").strip()
         ) - 1
@@ -70,16 +93,13 @@ def start_edit_show(event, text, user_id):
         "mode": "修改演出",
         "step": "field",
         "show_id": show["id"],
-        "data": {
-            "show_name": show.get("演出名稱", "")
-        }
     }
 
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(
-                f"✏️ 修改演出\n\n"
+                "✏️ 修改演出\n\n"
                 f"🎤 {show.get('演出名稱', '')}\n\n"
                 "請選擇要修改的欄位"
             ),
@@ -115,17 +135,7 @@ def handle_edit_show_flow(event, text, user_id):
 
     if state.get("step") == "field":
 
-        allowed_fields = {
-            "演出名稱",
-            "演出日期",
-            "搶票時間",
-            "價格張數",
-            "售票平台",
-            "取票日期",
-            "備註"
-        }
-
-        if text not in allowed_fields:
+        if text not in ALLOWED_FIELDS:
 
             line_bot_api.reply_message(
                 event.reply_token,
@@ -140,16 +150,6 @@ def handle_edit_show_flow(event, text, user_id):
         state["field"] = text
         state["step"] = "value"
 
-        hints = {
-            "演出名稱": "請輸入新的演出名稱",
-            "演出日期": "請輸入新的演出日期\n例如：10/1",
-            "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
-            "價格張數": "請輸入新的價格張數\n例如：$3800*2",
-            "售票平台": "請輸入新的售票平台",
-            "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
-            "備註": "請輸入新的備註\n也可按「清除」"
-        }
-
         buttons = [("❌ 取消", "取消")]
 
         if text in {"取票日期", "備註"}:
@@ -158,7 +158,7 @@ def handle_edit_show_flow(event, text, user_id):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text=hints[text],
+                text=FIELD_HINTS[text],
                 quick_reply=simple_quick_reply(buttons)
             )
         )
@@ -167,20 +167,16 @@ def handle_edit_show_flow(event, text, user_id):
 
     if state.get("step") == "value":
 
-        field = state.get("field")
+        field = state["field"]
 
         shows = load_data()
 
         show = next(
-            (
-                item
-                for item in shows
-                if item.get("id") == state.get("show_id")
-            ),
+            (item for item in shows if item["id"] == state["show_id"]),
             None
         )
 
-        if not show:
+        if show is None:
 
             user_state.pop(user_id, None)
 
@@ -196,9 +192,11 @@ def handle_edit_show_flow(event, text, user_id):
         try:
 
             if field == "演出日期":
+
                 new_value = normalize_show_date(text)
 
             elif field == "搶票時間":
+
                 new_value = normalize_ticket_time(text)
 
             elif field == "取票日期":
@@ -211,10 +209,15 @@ def handle_edit_show_flow(event, text, user_id):
                         show.get("演出日期", "")
                     )
 
-            elif field == "備註" and text == "清除":
-                new_value = ""
+            elif field == "備註":
+
+                if text == "清除":
+                    new_value = ""
+                else:
+                    new_value = text
 
             else:
+
                 new_value = text
 
         except Exception:
@@ -232,9 +235,11 @@ def handle_edit_show_flow(event, text, user_id):
             return True
 
         old_value = show.get(field, "")
+
         show[field] = new_value
 
         try:
+
             update_show(show)
 
         except Exception as e:
@@ -252,6 +257,11 @@ def handle_edit_show_flow(event, text, user_id):
 
         user_state.pop(user_id, None)
 
+        if field == "演出日期":
+            display_value = format_show_dates(new_value)
+        else:
+            display_value = new_value or "無"
+
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
@@ -260,7 +270,7 @@ def handle_edit_show_flow(event, text, user_id):
                     f"🎤 {show.get('演出名稱', '')}\n"
                     f"✏️ 欄位：{field}\n"
                     f"原本：{old_value or '無'}\n"
-                    f"修改後：{format_show_dates(new_value) if field == '演出日期' else (new_value or '無')}"
+                    f"修改後：{display_value}"
                 )
             )
         )
