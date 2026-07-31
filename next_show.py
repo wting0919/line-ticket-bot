@@ -2,14 +2,18 @@ from linebot.models import TextSendMessage
 
 from view_show import handle_view_show
 
+from helpers import (
+    has_show_list,
+    get_current_index,
+    get_current_shows,
+)
+
 import config
 
 
 def handle_next_show(event, user_id):
 
-    state = config.user_state.get(user_id)
-
-    if not state or "shows" not in state:
+    if not has_show_list(user_id):
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -19,7 +23,7 @@ def handle_next_show(event, user_id):
         )
         return True
 
-    index = state.get("current_index")
+    index = get_current_index(user_id)
 
     if index is None:
 
@@ -31,7 +35,9 @@ def handle_next_show(event, user_id):
         )
         return True
 
-    if index + 1 >= len(state["shows"]):
+    shows = get_current_shows(user_id)
+
+    if index + 1 >= len(shows):
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -46,3 +52,5 @@ def handle_next_show(event, user_id):
         f"查看 {index + 2}",
         user_id,
     )
+
+    return True

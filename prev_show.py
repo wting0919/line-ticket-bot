@@ -1,15 +1,18 @@
 from linebot.models import TextSendMessage
 
-from view_show import handle_view_show
-
 import config
+
+from helpers import (
+    has_show_list,
+    get_current_index,
+)
+
+from view_show import handle_view_show
 
 
 def handle_prev_show(event, user_id):
 
-    state = config.user_state.get(user_id)
-
-    if not state or "shows" not in state:
+    if not has_show_list(user_id):
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -17,9 +20,9 @@ def handle_prev_show(event, user_id):
                 text="請先查看列表或搜尋。"
             )
         )
-        return
+        return True
 
-    index = state.get("current_index")
+    index = get_current_index(user_id)
 
     if index is None:
 
@@ -29,7 +32,7 @@ def handle_prev_show(event, user_id):
                 text="請先使用「查看 1」。"
             )
         )
-        return
+        return True
 
     if index == 0:
 
@@ -39,10 +42,12 @@ def handle_prev_show(event, user_id):
                 text="已經是第一筆。"
             )
         )
-        return
+        return True
 
     handle_view_show(
         event,
         f"查看 {index}",
         user_id,
     )
+
+    return True

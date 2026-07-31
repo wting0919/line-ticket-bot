@@ -15,6 +15,12 @@ from show_list import (
     get_all_shows,
 )
 
+from helpers import (
+    get_current_shows,
+    get_state,
+    set_current_index,
+)
+
 import config
 
 
@@ -85,11 +91,11 @@ def view_quick_reply(index, status, pickup_status):
 
 def handle_view_show(event, text, user_id):
 
-    state = config.user_state.get(user_id)
+    state = get_state(user_id)
 
-    if isinstance(state, dict) and "shows" in state:
-        shows = state["shows"]
-    else:
+    shows = get_current_shows(user_id)
+
+    if shows is None:
         shows = get_all_shows()
 
     try:
@@ -104,7 +110,7 @@ def handle_view_show(event, text, user_id):
             show = shows[index]
 
             if isinstance(state, dict):
-                state["current_index"] = index
+                set_current_index(user_id, index)
 
             note = show.get("備註") or "無"
             status = show.get("搶票狀態", "等待搶票")

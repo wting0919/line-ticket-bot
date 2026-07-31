@@ -19,7 +19,7 @@ import config
 
 def handle_copy_show(event, text, user_id):
 
-    state = config.user_state.get(user_id)
+    state = get_state(user_id)
 
     if isinstance(state, dict) and "shows" in state:
         shows = state["shows"]

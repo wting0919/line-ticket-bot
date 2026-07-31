@@ -28,7 +28,7 @@ DEFAULT_COMPLETE_DATA = {
 
 def handle_complete_ticket(event, text, user_id):
 
-    state = config.user_state.get(user_id)
+    state = get_state(user_id)
 
     if isinstance(state, dict) and "shows" in state:
 
