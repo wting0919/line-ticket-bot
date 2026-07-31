@@ -152,6 +152,12 @@ complete_ticket.user_state = user_state
 view_show.line_bot_api = line_bot_api
 view_show.user_state = user_state
 
+next_show.line_bot_api = line_bot_api
+next_show.user_state = user_state
+
+prev_show.line_bot_api = line_bot_api
+prev_show.user_state = user_state
+
 pickup.line_bot_api = line_bot_api
 
 delete_show.line_bot_api = line_bot_api
