@@ -29,6 +29,8 @@ import serial
 import view_show
 import copy_show
 import search_show
+import next_show
+import prev_show
 
 # Data
 from reminder import (
