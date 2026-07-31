@@ -14,7 +14,14 @@ from show_list import (
     get_all_shows,
 )
 
+from helpers import (
+    get_state,
+    clear_state,
+    set_show_list,
+)
+
 import config
+
 
 DEFAULT_COMPLETE_DATA = {
     "搶票大師": "",
@@ -64,7 +71,7 @@ def handle_complete_ticket(event, text, user_id):
             text="⚠️ 這筆演出已經完成搶票"
         )
 
-    user_state[user_id] = {
+    config.user_state[user_id] = {
         "mode": "完成搶票",
         "step": "master",
         "show_id": show["id"],
@@ -134,7 +141,7 @@ def send_member_picker(
 
 def handle_complete_ticket_flow(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = get_state(user_id)
 
     if not isinstance(state, dict):
         return False
@@ -144,7 +151,7 @@ def handle_complete_ticket_flow(event, text, user_id):
 
     if text == "取消":
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -173,7 +180,7 @@ def handle_complete_ticket_flow(event, text, user_id):
 
             if text not in members:
 
-                line_bot_api.reply_message(
+                config.line_bot_api.reply_message(
                     event.reply_token,
                     TextSendMessage(
                         text="請使用下方按鈕選擇搶票大師",
@@ -253,7 +260,7 @@ def handle_complete_ticket_flow(event, text, user_id):
 
         return True
 
-    user_state.pop(user_id, None)
+    clear_state(user_id)
 
     config.line_bot_api.reply_message(
         event.reply_token,
@@ -280,7 +287,7 @@ def finish_complete_ticket(
 
     if show is None:
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -318,7 +325,7 @@ def finish_complete_ticket(
 
         return True
 
-    user_state.pop(user_id, None)
+    clear_state(user_id)
 
     config.line_bot_api.reply_message(
         event.reply_token,
@@ -337,7 +344,7 @@ def finish_complete_ticket(
 
 def handle_ticket_failed(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = get_state(user_id)
 
     if isinstance(state, dict) and "shows" in state:
 
