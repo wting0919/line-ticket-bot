@@ -275,26 +275,24 @@ def handle_message(event):
 
         else:
 
-            reply = "🎟️ 搶票列表\n"
+            reply = f"🎟️ 搶票列表（{len(waiting)}）\n"
 
 
-            for i, show in enumerate(
-                waiting,
-                start=1
-            ):
+            for i, show in enumerate(waiting, start=1):
 
                 reply += (
-                    f"\n{i}.\n"
-                    f"🎤 {show['演出名稱']}\n"
-                    f"🎟 {format_datetime(show.get('搶票時間'))}\n"
-                    f"🌐 售票平台：{show['售票平台']}\n"
-                    f"📝 備註：{show['備註'] if show['備註'] else '無'}\n"
-                    f"📌 狀態：{show.get('搶票狀態','等待搶票')}\n"
+                    "\n━━━━━━━━━━━━━━\n\n"
+                    f"{i}. 🎤 {show['演出名稱']}\n\n"
+                    f"🕒 {format_datetime(show.get('搶票時間'))}\n"
+                    f"🏢 {show['售票平台']}\n"
+                    f"📝 {show.get('備註') or '無'}\n"
+                    "🎟 🟡 等待搶票\n"
                 )
 
 
             reply += (
-                "\n👉 查看詳細資料：\n"
+                "\n━━━━━━━━━━━━━━\n\n"
+                "💡 查看詳細資料\n"
                 "輸入：查看 1"
             )
 
@@ -321,21 +319,30 @@ def handle_message(event):
 
         else:
 
-            reply = "🎫 取票列表\n"
+            reply = f"📦 取票列表（{len(pickup_list)}）\n"
 
 
-            for i, show in enumerate(
-                pickup_list,
-                start=1
-            ):
+            for i, show in enumerate(pickup_list, start=1):
+
+                pickup_status = (
+                    "✅ 已取票"
+                    if show.get("取票狀態") == "已取票"
+                    else "📦 未取票"
+                )
 
                 reply += (
-                    f"\n{i}.\n"
-                    f"🎤 {show['演出名稱']}\n"
-                    f"📅 取票日期：{show['取票日期']}\n"
-                    f"🎟 搶票大師：{show.get('搶票大師', '未設定')}\n"
-                    f"👥 取票人：{show.get('取票人') or '未設定'}\n"
-                    f"📌 狀態：{show.get('取票狀態','未取票')}\n"
+                    "\n━━━━━━━━━━━━━━\n\n"
+                    f"{i}. 🎤 {show['演出名稱']}\n\n"
+                    f"📅 {show['取票日期']}\n"
+                    f"👤 {show.get('搶票大師') or '未設定'}\n"
+                    f"👥 {show.get('取票人') or '未設定'}\n"
+                    f"{pickup_status}\n"
+                )
+
+                reply += (
+                    "\n━━━━━━━━━━━━━━\n\n"
+                    "💡 查看詳細資料\n"
+                    "輸入：查看 1"
                 )
 
 
@@ -363,35 +370,31 @@ def handle_message(event):
 
         else:
 
-            reply = "🎫 演出列表\n"
+            reply = f"📋 演出列表（{len(shows)}）\n"
 
 
-            for i, show in enumerate(
-                shows,
-                start=1
-            ):
+            for i, show in enumerate(shows, start=1):
 
-                status = show.get("搶票狀態", "等待搶票")
-
-                ticket_status = format_ticket_status(status)
+                ticket_status = format_ticket_status(
+                    show.get("搶票狀態", "等待搶票")
+                )
 
                 pickup_status = format_pickup_status(show)
 
                 reply += (
-                    f"\n{i}.\n"
-                    f"🎤 {show['演出名稱']}\n"
+                    "\n━━━━━━━━━━━━━━\n\n"
+                    f"{i}. 🎤 {show['演出名稱']}\n\n"
                     f"📅 {format_show_dates(show['演出日期'])}\n"
-                    f"{ticket_status}"
+                    f"🎟 {ticket_status}\n"
                 )
 
                 if pickup_status:
-                    reply += f"\n{pickup_status}"
-
-                reply += "\n"
+                    reply += f"📦 {pickup_status}\n"
 
 
             reply += (
-                "\n👉 查看詳細資料：\n"
+                "\n━━━━━━━━━━━━━━\n\n"
+                "💡 查看詳細資料\n"
                 "輸入：查看 1"
             )
 
@@ -577,8 +580,8 @@ def handle_message(event):
         reply = (
             "📖 功能選單\n\n"
             "🎟 搶票列表\n"
-            "🎫 取票列表\n"
-            "📅 演出列表\n"
+            "📦 取票列表\n"
+            "📋 演出列表\n"
             "🔍 搜尋 SEVENTEEN\n\n"
             "🔍 查看 1\n"
             "✏️ 修改 1\n"
