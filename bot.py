@@ -50,11 +50,6 @@ from ui import (
     menu_reply,
 )
 
-from utils import (
-    format_datetime,
-    format_show_dates,
-    LIST_FOOTER,
-)
 
 # Handlers
 from add_show import (
@@ -116,6 +111,7 @@ from utils import (
     format_show_dates,
     format_ticket_status,
     format_pickup_status,
+    LIST_FOOTER,
 )
 
 
@@ -284,7 +280,7 @@ def handle_message(event):
                     show.get("搶票狀態", "等待搶票")
                 )
 
-                platform = show["售票平台"]
+                platform = show.get("售票平台") or "未設定"
                 note = show.get("備註")
 
                 platform_line = f"🏢 {platform}"
@@ -293,11 +289,11 @@ def handle_message(event):
                     platform_line += f"｜{note}"
 
                 reply += (
-                    "\n\n──────────\n"
+                    "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"🕒 {format_datetime(show['搶票時間'])}\n"
                     f"{platform_line}\n"
-                    f"{ticket_status}\n"
+                    f"{ticket_status}"
                 )
 
             reply += LIST_FOOTER
@@ -337,12 +333,12 @@ def handle_message(event):
                 )
 
                 reply += (
-                    "\n\n──────────\n"
+                    "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 {show['取票日期']}\n"
-                    f"👤 {show.get('搶票大師') or '未設定'}\n"
-                    f"👥 {show.get('取票人') or '未設定'}\n"
-                    f"📦 {pickup_status}\n"
+                    f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
+                    f"🎫 取票人：{show.get('取票人') or '未設定'}\n"
+                    f"{pickup_status}"
                 )
 
             reply += LIST_FOOTER
@@ -384,14 +380,14 @@ def handle_message(event):
                 pickup_status = format_pickup_status(show)
 
                 reply += (
-                    "\n\n──────────\n"
+                    "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 {format_show_dates(show['演出日期'])}\n"
-                    f"{ticket_status}\n"
+                    f"{ticket_status}"
                 )
 
                 if pickup_status:
-                    reply += f"📦 {pickup_status}\n"
+                    reply += f"{pickup_status}\n"
 
 
             reply += LIST_FOOTER
