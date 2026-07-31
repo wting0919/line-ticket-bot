@@ -9,6 +9,7 @@ from utils import (
     format_price,
     format_datetime,
     format_show_dates,
+    format_ticket_status,
 )
 
 from show_list import (
@@ -36,6 +37,12 @@ def view_quick_reply(index, status, pickup_status):
         ),
         QuickReplyButton(
             action=MessageAction(label="➡️ 下一筆", text="下一筆")
+        ),
+        QuickReplyButton(
+            action=MessageAction(label="✏️ 修改", text=f"修改 {index}")
+        ),
+        QuickReplyButton(
+            action=MessageAction(label="📄 複製", text=f"複製 {index}")
         ),
     ]
 
@@ -70,18 +77,14 @@ def view_quick_reply(index, status, pickup_status):
             )
         )
 
-    items.extend([
+    items.append(
         QuickReplyButton(
-            action=MessageAction(label="✏️ 修改", text=f"修改 {index}")
-        ),
-        QuickReplyButton(
-            action=MessageAction(label="📄 複製", text=f"複製 {index}")
-        ),
-        QuickReplyButton(
-            action=MessageAction(label="🗑️ 刪除", text=f"刪除 {index}")
-        ),
-    ])
-
+            action=MessageAction(
+                label="🗑️ 刪除",
+                text=f"刪除 {index}"
+            )
+        )
+    )
     return QuickReply(items=items)
 
 
@@ -115,43 +118,46 @@ def handle_view_show(event, text, user_id):
             note = show.get("備註") or "無"
             status = show.get("搶票狀態", "等待搶票")
 
-            ticket_status = {
-                "已搶票": "✅ 已搶票",
-                "未搶到": "❌ 未搶到",
-            }.get(status, "⏳ 等待搶票")
+            ticket_status = format_ticket_status(status)
 
             pickup_status = (
                 "✅ 已取票"
                 if show.get("取票狀態") == "已取票"
-                else "🎫 未取票"
+                else "未取票"
             )
 
             reply = (
-                "🎫 演出資訊\n\n"
-                f"🎤 {show['演出名稱']}\n\n"
-                "📅 演出日期\n"
-                f"{format_show_dates(show['演出日期'])}\n\n"
-                "🎟 搶票時間\n"
-                f"{format_datetime(show['搶票時間'])}\n\n"
-                "💰 價格張數\n"
-                f"{format_price(show['價格張數'])}\n\n"
-                "🌐 售票平台\n"
-                f"{show['售票平台']}"
+                f"🎤 {show['演出名稱']}\n"
+                "──────────\n"
+                f"📅 {format_show_dates(show['演出日期'])}\n"
+                "──────────\n"
+                f"🕒 {format_datetime(show['搶票時間'])}\n"
+                f"🏢 {show.get('售票平台') or '未設定'}\n"
+                f"💰 {format_price(show.get('價格張數'))}"
             )
 
-            reply += "\n\n📌 搶票\n" + ticket_status
+            reply += (
+                "\n──────────\n"
+                f"{ticket_status}"
+            )
 
             if status == "已搶票":
+
                 reply += (
-                    "\n\n📌 取票\n"
-                    f"{pickup_status}\n\n"
+                    f"\n📦 {pickup_status}"
+                    "\n──────────\n"
                     "👤 搶票大師\n"
-                    f"{show.get('搶票大師') or '未設定'}\n\n"
+                    f"{show.get('搶票大師') or '未設定'}\n"
                     "👥 取票人\n"
                     f"{show.get('取票人') or '未設定'}"
                 )
 
-            reply += "\n\n📝 備註\n" + note
+            if note != "無":
+                reply += (
+                    "\n──────────\n"
+                    "📝 備註\n"
+                    f"{note}"
+                )
 
     except ValueError:
         reply = "請輸入格式：\n查看 1"
@@ -160,7 +166,7 @@ def handle_view_show(event, text, user_id):
         print("查看錯誤：", e)
         reply = f"❌ 發生錯誤\n{e}"
 
-    if not reply.startswith("🎫 演出資訊"):
+    if reply.startswith("❌") or reply.startswith("請輸入"):
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=reply)
