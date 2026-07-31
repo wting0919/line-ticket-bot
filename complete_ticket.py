@@ -17,7 +17,7 @@ from show_list import (
 from helpers import (
     get_state,
     clear_state,
-    set_show_list,
+    set_state,
 )
 
 import config
@@ -60,7 +60,7 @@ def handle_complete_ticket(event, text, user_id):
     if index < 0 or index >= len(shows):
 
         return TextSendMessage(
-            text="❌ 找不到這筆演出"
+            text="❌ 操作已失效，請重新執行「完成搶票」"
         )
 
     show = shows[index]
@@ -71,12 +71,15 @@ def handle_complete_ticket(event, text, user_id):
             text="⚠️ 這筆演出已經完成搶票"
         )
 
-    config.user_state[user_id] = {
-        "mode": "完成搶票",
-        "step": "master",
-        "show_id": show["id"],
-        "data": DEFAULT_COMPLETE_DATA.copy(),
-    }
+    set_state(
+        user_id,
+        {
+            "mode": "完成搶票",
+            "step": "master",
+            "show_id": show["id"],
+            "data": DEFAULT_COMPLETE_DATA.copy(),
+        }
+    )
 
     return TextSendMessage(
         text=(
@@ -106,21 +109,18 @@ def send_member_picker(
 
     if selected:
 
-        selected_text = "\n".join(
-            f"👤 {name}"
-            for name in selected
-        )
+        selected_text = "、".join(selected)
 
         message = (
             f"{title}\n\n"
-            f"目前已選：\n{selected_text}"
+            f"已選擇：{selected_text}"
         )
 
     else:
 
         message = (
             f"{title}\n\n"
-            "目前已選：無"
+            "已選擇：無"
         )
 
     config.line_bot_api.reply_message(
@@ -265,7 +265,7 @@ def handle_complete_ticket_flow(event, text, user_id):
     config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
-            text="❌ 操作狀態異常，請重新執行完成搶票"
+            text="❌ 操作已失效，請重新執行「完成搶票」"
         )
     )
 
@@ -292,7 +292,7 @@ def finish_complete_ticket(
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text="❌ 找不到這筆演出，請重新操作"
+                text="❌ 操作已失效，請重新執行「完成搶票」"
             )
         )
 
@@ -331,11 +331,13 @@ def finish_complete_ticket(
         event.reply_token,
         TextSendMessage(
             text=(
-                "✅ 已完成搶票\n\n"
+                "✅ 已完成搶票\n"
+                "──────────\n"
                 f"🎤 {show['演出名稱']}\n"
-                f"🎟 搶票大師：{show['搶票大師'] or '未設定'}\n"
-                f"👥 取票人：{show['取票人'] or '無'}\n"
-                "📌 狀態：已搶票"
+                f"🎯 搶票大師：{show['搶票大師'] or '未設定'}\n"
+                f"🎫 取票人：{show['取票人'] or '未設定'}\n"
+                "──────────\n"
+                "✅ 已搶票"
             )
         )
     )
@@ -368,7 +370,7 @@ def handle_ticket_failed(event, text, user_id):
     if index < 0 or index >= len(shows):
 
         return TextSendMessage(
-            text="❌ 找不到這筆演出"
+            text="❌ 操作已失效，請重新執行「完成搶票」"
         )
 
     show = shows[index]
@@ -393,8 +395,9 @@ def handle_ticket_failed(event, text, user_id):
 
     return TextSendMessage(
         text=(
-            "❌ 已標記為未搶到\n\n"
+            "❌ 已標記為未搶到\n"
+            "──────────\n"
             f"🎤 {show['演出名稱']}\n"
-            "📌 狀態：未搶到"
+            "❌ 未搶到"
         )
     )
