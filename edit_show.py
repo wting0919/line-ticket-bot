@@ -21,6 +21,11 @@ from show_list import (
     get_all_shows,
 )
 
+from helpers import (
+    get_state,
+    clear_state,
+)
+
 import config
 
 ALLOWED_FIELDS = {
@@ -85,7 +90,7 @@ def start_edit_show(event, text, user_id):
 
     show = shows[index]
 
-    user_state[user_id] = {
+    config.user_state[user_id] = {
         "mode": "修改演出",
         "step": "field",
         "show_id": show["id"],
@@ -108,7 +113,7 @@ def start_edit_show(event, text, user_id):
 
 def handle_edit_show_flow(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = get_state(user_id)
 
     if (
         not isinstance(state, dict)
@@ -118,9 +123,9 @@ def handle_edit_show_flow(event, text, user_id):
 
     if text == "取消":
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="已取消修改演出"
@@ -178,7 +183,7 @@ def handle_edit_show_flow(event, text, user_id):
 
         if show is None:
 
-            user_state.pop(user_id, None)
+            clear_state(user_id)
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -222,7 +227,7 @@ def handle_edit_show_flow(event, text, user_id):
 
         except ValueError:
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=(
@@ -255,7 +260,7 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
         if field == "演出日期":
 
@@ -282,7 +287,7 @@ def handle_edit_show_flow(event, text, user_id):
 
         return True
 
-    user_state.pop(user_id, None)
+    clear_state(user_id)
 
     config.line_bot_api.reply_message(
         event.reply_token,
