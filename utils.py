@@ -290,14 +290,15 @@ def sort_by_pickup_date(shows):
     )
 
 def format_ticket_status(status):
+
     return {
+        "等待搶票": "🟡 等待搶票",
         "已搶票": "✅ 已搶票",
         "未搶到": "❌ 未搶到",
     }.get(
         status,
-        "⏳ 等待搶票"
+        "🟡 等待搶票"
     )
-
 
 def format_pickup_status(show):
 
