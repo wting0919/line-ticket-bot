@@ -21,8 +21,7 @@ from show_list import (
     get_all_shows,
 )
 
-line_bot_api = None
-user_state = {}
+import config
 
 ALLOWED_FIELDS = {
     "演出名稱",
@@ -47,7 +46,7 @@ FIELD_HINTS = {
 
 def start_edit_show(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = config.user_state.get(user_id)
 
     if isinstance(state, dict) and "shows" in state:
 
@@ -64,7 +63,7 @@ def start_edit_show(event, text, user_id):
 
     except ValueError:
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="請輸入格式：\n修改 1"
@@ -75,7 +74,7 @@ def start_edit_show(event, text, user_id):
 
     if index < 0 or index >= len(shows):
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="❌ 找不到這筆演出"
@@ -92,7 +91,7 @@ def start_edit_show(event, text, user_id):
         "show_id": show["id"],
     }
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(
@@ -134,7 +133,7 @@ def handle_edit_show_flow(event, text, user_id):
 
         if text not in ALLOWED_FIELDS:
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text="請使用下方按鈕選擇欄位",
@@ -154,7 +153,7 @@ def handle_edit_show_flow(event, text, user_id):
 
         buttons.append(("❌ 取消", "取消"))
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=FIELD_HINTS[text],
@@ -181,7 +180,7 @@ def handle_edit_show_flow(event, text, user_id):
 
             user_state.pop(user_id, None)
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text="❌ 找不到這筆演出，請重新操作"
@@ -247,7 +246,7 @@ def handle_edit_show_flow(event, text, user_id):
 
             print("修改演出失敗：", repr(e), flush=True)
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=f"❌ 修改失敗\n{e}"
@@ -268,7 +267,7 @@ def handle_edit_show_flow(event, text, user_id):
             old_value = old_value or "無"
             display_value = new_value or "無"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -285,7 +284,7 @@ def handle_edit_show_flow(event, text, user_id):
 
     user_state.pop(user_id, None)
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text="❌ 修改狀態異常，請重新操作"

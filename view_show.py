@@ -15,8 +15,7 @@ from show_list import (
     get_all_shows,
 )
 
-line_bot_api = None
-user_state = {}
+import config
 
 
 # =====================
@@ -86,7 +85,7 @@ def view_quick_reply(index, status, pickup_status):
 
 def handle_view_show(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = config.user_state.get(user_id)
 
     if isinstance(state, dict) and "shows" in state:
         shows = state["shows"]
@@ -156,13 +155,13 @@ def handle_view_show(event, text, user_id):
         reply = f"❌ 發生錯誤\n{e}"
 
     if not reply.startswith("🎫 演出資訊"):
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=reply)
         )
         return True
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=reply,

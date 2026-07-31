@@ -14,8 +14,7 @@ from show_list import (
     get_all_shows,
 )
 
-line_bot_api = None
-user_state = {}
+import config
 
 DEFAULT_COMPLETE_DATA = {
     "搶票大師": "",
@@ -29,7 +28,7 @@ DEFAULT_COMPLETE_DATA = {
 
 def handle_complete_ticket(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = config.user_state.get(user_id)
 
     if isinstance(state, dict) and "shows" in state:
 
@@ -117,7 +116,7 @@ def send_member_picker(
             "目前已選：無"
         )
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=message,
@@ -147,7 +146,7 @@ def handle_complete_ticket_flow(event, text, user_id):
 
         user_state.pop(user_id, None)
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="已取消完成搶票"
@@ -256,7 +255,7 @@ def handle_complete_ticket_flow(event, text, user_id):
 
     user_state.pop(user_id, None)
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text="❌ 操作狀態異常，請重新執行完成搶票"
@@ -283,7 +282,7 @@ def finish_complete_ticket(
 
         user_state.pop(user_id, None)
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="❌ 找不到這筆演出，請重新操作"
@@ -310,7 +309,7 @@ def finish_complete_ticket(
             flush=True,
         )
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=f"❌ 更新失敗\n{e}"
@@ -321,7 +320,7 @@ def finish_complete_ticket(
 
     user_state.pop(user_id, None)
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(

@@ -7,9 +7,7 @@ from show_list import get_all_shows
 from utils import format_show_dates
 
 
-line_bot_api = None
-user_state = {}
-
+import config
 
 # 關鍵字別名
 
@@ -48,7 +46,7 @@ def handle_search_show(event, text, user_id):
 
     if not keyword:
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -162,7 +160,7 @@ def handle_search_show(event, text, user_id):
 
     if not results:
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=f"找不到「{keyword}」相關演出"
@@ -214,7 +212,7 @@ def handle_search_show(event, text, user_id):
         "current_index": None,
     }
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=reply)
     )

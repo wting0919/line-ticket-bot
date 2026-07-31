@@ -8,8 +8,7 @@ from show_list import (
     get_all_shows,
 )
 
-user_state = {}
-line_bot_api = None
+import config
 
 
 # =====================
@@ -31,7 +30,7 @@ def handle_delete_show(
             ).strip()
         ) - 1
 
-        state = user_state.get(user_id)
+        state = config.user_state.get(user_id)
 
         if isinstance(state, dict) and "shows" in state:
 
@@ -72,7 +71,7 @@ def handle_delete_show(
             "刪除 1"
         )
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=reply

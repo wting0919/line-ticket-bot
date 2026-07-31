@@ -1,5 +1,4 @@
-user_state = {}
-line_bot_api = None
+import config
 
 from linebot.models import TextSendMessage
 
@@ -46,7 +45,7 @@ def start_add_show(event, user_id):
 
 def handle_add_show_flow(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = config.user_state.get(user_id)
 
     if not isinstance(state, dict):
         return False
@@ -58,7 +57,7 @@ def handle_add_show_flow(event, text, user_id):
 
         user_state.pop(user_id, None)
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="已取消新增演出"
@@ -75,7 +74,7 @@ def handle_add_show_flow(event, text, user_id):
         data["演出名稱"] = text
         state["step"] = "show_date"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -98,7 +97,7 @@ def handle_add_show_flow(event, text, user_id):
 
         except Exception:
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=(
@@ -116,7 +115,7 @@ def handle_add_show_flow(event, text, user_id):
 
         state["step"] = "ticket_time"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -139,7 +138,7 @@ def handle_add_show_flow(event, text, user_id):
 
         except Exception:
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=(
@@ -156,7 +155,7 @@ def handle_add_show_flow(event, text, user_id):
 
         state["step"] = "price"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -176,7 +175,7 @@ def handle_add_show_flow(event, text, user_id):
         data["價格張數"] = text
         state["step"] = "platform"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="🌐 請選擇或直接輸入售票平台",
@@ -198,7 +197,7 @@ def handle_add_show_flow(event, text, user_id):
         data["售票平台"] = text
         state["step"] = "pickup_date"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -229,7 +228,7 @@ def handle_add_show_flow(event, text, user_id):
 
         except Exception:
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=(
@@ -248,7 +247,7 @@ def handle_add_show_flow(event, text, user_id):
 
         state["step"] = "note"
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -281,7 +280,7 @@ def handle_add_show_flow(event, text, user_id):
             f"📝 備註：{data.get('備註') or '無'}"
         )
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=reply,
@@ -302,7 +301,7 @@ def handle_add_show_flow(event, text, user_id):
             state["step"] = "name"
             state["data"] = {}
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text="請重新輸入演出名稱",
@@ -316,7 +315,7 @@ def handle_add_show_flow(event, text, user_id):
 
         if text != "確認新增":
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text="請使用下方按鈕確認",
@@ -361,7 +360,7 @@ def handle_add_show_flow(event, text, user_id):
 
             print("新增演出失敗：", repr(e), flush=True)
 
-            line_bot_api.reply_message(
+            config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=f"❌ 新增失敗\n{e}"
@@ -372,7 +371,7 @@ def handle_add_show_flow(event, text, user_id):
 
         user_state.pop(user_id, None)
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
@@ -388,7 +387,7 @@ def handle_add_show_flow(event, text, user_id):
 
     user_state.pop(user_id, None)
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text="❌ 新增狀態異常，請重新操作"

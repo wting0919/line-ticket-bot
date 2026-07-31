@@ -14,13 +14,12 @@ from ui import (
     edit_field_quick_reply,
 )
 
-line_bot_api = None
-user_state = {}
+import config
 
 
 def handle_copy_show(event, text, user_id):
 
-    state = user_state.get(user_id)
+    state = config.user_state.get(user_id)
 
     if isinstance(state, dict) and "shows" in state:
         shows = state["shows"]
@@ -34,7 +33,7 @@ def handle_copy_show(event, text, user_id):
 
     except Exception:
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="請輸入格式：\n複製 1"
@@ -44,7 +43,7 @@ def handle_copy_show(event, text, user_id):
 
     if index < 0 or index >= len(shows):
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text="❌ 找不到這筆演出"
@@ -77,7 +76,7 @@ def handle_copy_show(event, text, user_id):
 
     except Exception as e:
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=f"❌ 複製失敗\n{e}"
@@ -91,7 +90,7 @@ def handle_copy_show(event, text, user_id):
         "show_id": new_show["id"],
     }
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(
