@@ -123,15 +123,15 @@ def handle_view_show(event, text, user_id):
             pickup_status = (
                 "✅ 已取票"
                 if show.get("取票狀態") == "已取票"
-                else "未取票"
+                else "📦 未取票"
             )
 
             reply = (
-                f"🎤 {show['演出名稱']}\n"
+                f"🎤 {show.get('演出名稱', '未命名演出')}\n"
                 "──────────\n"
-                f"📅 {format_show_dates(show['演出日期'])}\n"
+                f"📅 {format_show_dates(show.get('演出日期', ''))}\n"
                 "──────────\n"
-                f"🕒 {format_datetime(show['搶票時間'])}\n"
+                f"🕒 {format_datetime(show.get('搶票時間', ''))}\n"
                 f"🏢 {show.get('售票平台') or '未設定'}\n"
                 f"💰 {format_price(show.get('價格張數'))}"
             )
@@ -144,12 +144,10 @@ def handle_view_show(event, text, user_id):
             if status == "已搶票":
 
                 reply += (
-                    f"\n📦 {pickup_status}"
+                    f"\n{pickup_status}"
                     "\n──────────\n"
-                    "👤 搶票大師\n"
-                    f"{show.get('搶票大師') or '未設定'}\n"
-                    "👥 取票人\n"
-                    f"{show.get('取票人') or '未設定'}"
+                    f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
+                    f"🎫 取票人：{show.get('取票人') or '未設定'}"
                 )
 
             if note != "無":
