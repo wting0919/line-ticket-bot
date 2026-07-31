@@ -3,7 +3,6 @@ from copy import deepcopy
 from linebot.models import TextSendMessage
 
 from data import (
-    load_data,
     insert_show,
 )
 
@@ -56,6 +55,8 @@ def handle_copy_show(event, text, user_id):
     new_show = deepcopy(shows[index])
 
     new_show.pop("id", None)
+    new_show.pop("created_at", None)
+    new_show.pop("updated_at", None)
 
     new_show["提醒"] = {
         "前一天": False,
@@ -68,7 +69,21 @@ def handle_copy_show(event, text, user_id):
     new_show["搶票狀態"] = "等待搶票"
     new_show["取票狀態"] = "未取票"
 
-    new_show = insert_show(new_show)
+    new_show["搶票大師"] = ""
+    new_show["取票人"] = ""
+
+    try:
+        new_show = insert_show(new_show)
+
+    except Exception as e:
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=f"❌ 複製失敗\n{e}"
+            )
+        )
+        return
 
     user_state[user_id] = {
         "mode": "修改演出",
@@ -80,9 +95,10 @@ def handle_copy_show(event, text, user_id):
         event.reply_token,
         TextSendMessage(
             text=(
-                "✅ 已複製演出\n\n"
-                f"🎤 {new_show['演出名稱']}\n\n"
-                "請選擇要修改的欄位"
+                "✅ 已建立複製演出\n\n"
+                    f"🎤 {new_show['演出名稱']}\n\n"
+                    "原演出已保留，新演出已建立。\n"
+                    "請選擇要修改的欄位："
             ),
             quick_reply=edit_field_quick_reply()
         )

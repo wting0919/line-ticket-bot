@@ -27,6 +27,7 @@ import pickup
 import reminder
 import serial
 import view_show
+import copy_show
 
 # Data
 from reminder import (
