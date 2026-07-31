@@ -53,6 +53,7 @@ from ui import (
 from utils import (
     format_datetime,
     format_show_dates,
+    LIST_FOOTER,
 )
 
 # Handlers
@@ -292,17 +293,14 @@ def handle_message(event):
                     platform_line += f"｜{note}"
 
                 reply += (
-                    "\n\n────────────\n"
+                    "\n\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"🕒 {format_datetime(show['搶票時間'])}\n"
                     f"{platform_line}\n"
                     f"{ticket_status}\n"
                 )
 
-            reply += (
-                "\n\n────────────\n"
-                "💡 查看詳細資料：查看 1"
-            )
+            reply += LIST_FOOTER
 
             set_show_list(
                 user_id,
@@ -339,7 +337,7 @@ def handle_message(event):
                 )
 
                 reply += (
-                    "\n\n────────────\n"
+                    "\n\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 {show['取票日期']}\n"
                     f"👤 {show.get('搶票大師') or '未設定'}\n"
@@ -347,10 +345,7 @@ def handle_message(event):
                     f"📦 {pickup_status}\n"
                 )
 
-            reply += (
-                "\n\n────────────\n"
-                "💡 查看詳細資料：查看 1"
-            )
+            reply += LIST_FOOTER
 
 
             set_show_list(
@@ -389,7 +384,7 @@ def handle_message(event):
                 pickup_status = format_pickup_status(show)
 
                 reply += (
-                    "\n\n────────────\n"
+                    "\n\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 {format_show_dates(show['演出日期'])}\n"
                     f"{ticket_status}\n"
@@ -399,10 +394,7 @@ def handle_message(event):
                     reply += f"📦 {pickup_status}\n"
 
 
-            reply += (
-                "\n\n────────────\n"
-                "💡 查看詳細資料：查看 1"
-            )
+            reply += LIST_FOOTER
 
             set_show_list(
                 user_id,

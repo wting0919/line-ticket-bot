@@ -4,8 +4,15 @@ from linebot.models import TextSendMessage
 
 from show_list import get_all_shows
 
-from utils import format_show_dates
+from utils import (
+    format_show_dates,
+    format_ticket_status,
+    LIST_FOOTER,
+)
 
+from helpers import (
+    set_show_list,
+)
 
 import config
 
@@ -26,6 +33,7 @@ KEYWORD_ALIAS = {
 
     # 狀態
     "待搶": "等待",
+    "等待搶票": "等待",
     "已搶": "已搶票",
     "未搶": "未搶到",
     "未取": "未取票",
@@ -42,7 +50,7 @@ def handle_search_show(event, text, user_id):
         keyword
     )
 
-    keyword_lower = keyword.lower()
+    keyword_lower = str(keyword).lower()
 
     if not keyword:
 
@@ -168,49 +176,28 @@ def handle_search_show(event, text, user_id):
         )
         return True
 
-    reply = (
-        f"🔍 搜尋結果（共 {len(results)} 筆）\n"
-    )
+    reply = f"🔍 搜尋結果（{len(results)}）"
 
     for i, show in enumerate(results, start=1):
 
-        status = show.get("搶票狀態", "等待搶票")
-
-        ticket_status = {
-            "已搶票": "✅ 已搶票",
-            "未搶到": "❌ 未搶到",
-        }.get(
-            status,
-            "⏳ 待搶票"
+        ticket_status = format_ticket_status(
+            show.get("搶票狀態", "等待搶票")
         )
-
-        pickup_status = ""
-
-        if status == "已搶票":
-
-            pickup_status = (
-                "｜✅ 已取票"
-                if show.get("取票狀態") == "已取票"
-                else "｜🎫 未取票"
-            )
 
         reply += (
-            f"\n{i}.\n"
-            f"🎤 {show['演出名稱']}\n"
-            f"📅 {format_show_dates(show['演出日期'])}\n"
-            f"{ticket_status}{pickup_status}\n"
+            "\n──────────\n"
+            f"{i}. 🎤 {show.get('演出名稱', '未命名演出')}\n"
+            f"📅 {format_show_dates(show.get('演出日期', ''))}\n"
+            f"{ticket_status}"
         )
 
-    reply += (
-        "\n────────────\n"
-        "輸入：查看 1"
-    )
+    reply += LIST_FOOTER
 
-    user_state[user_id] = {
-        "mode": "搜尋",
-        "shows": results,
-        "current_index": None,
-    }
+    set_show_list(
+        user_id,
+        "搜尋",
+        results,
+    )
 
     config.line_bot_api.reply_message(
         event.reply_token,
