@@ -45,3 +45,7 @@ def set_show_list(user_id, mode, shows):
 
 def clear_state(user_id):
     config.user_state.pop(user_id, None)
+
+
+def set_state(user_id, state):
+    config.user_state[user_id] = state
