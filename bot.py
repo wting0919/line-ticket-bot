@@ -571,7 +571,7 @@ def handle_message(event):
 
     else:
 
-        reply = "找不到此功能"
+        return
 
     line_bot_api.reply_message(
         event.reply_token,
