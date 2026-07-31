@@ -71,6 +71,8 @@ from edit_show import (
     handle_edit_show_flow,
 )
 
+from copy_show import handle_copy_show
+
 from member import (
     handle_register_member,
 )
@@ -123,6 +125,9 @@ add_show.user_state = user_state
 
 edit_show.line_bot_api = line_bot_api
 edit_show.user_state = user_state
+
+copy_show.line_bot_api = line_bot_api
+copy_show.user_state = user_state
 
 complete_ticket.line_bot_api = line_bot_api
 complete_ticket.user_state = user_state
@@ -439,7 +444,6 @@ def handle_message(event):
         return
 
 
-
     # =====================
     # 修改功能
     # =====================
@@ -451,6 +455,16 @@ def handle_message(event):
             text,
             user_id
         )
+
+        return
+
+    # =====================
+    # 複製功能
+    # =====================
+
+    elif text.startswith("複製"):
+
+        handle_copy_show(event, text, user_id)
 
         return
 

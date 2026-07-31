@@ -64,6 +64,17 @@ def update_show(show):
         .eq("id", show_id) \
         .execute()
 
+def insert_show(show):
+
+    response = (
+        supabase
+        .table("shows")
+        .insert(show)
+        .execute()
+    )
+
+    return response.data[0]
+
 def get_user_id(name):
     result = (
         supabase
@@ -126,6 +137,7 @@ __all__ = [
     "load_data",
     "save_data",
     "update_show",
+    "insert_show",
     "get_user_id",
     "get_member",
     "load_members",
