@@ -1,7 +1,5 @@
 import config
 
-from helpers import get_state
-
 
 def get_state(user_id):
     return config.user_state.get(user_id)
