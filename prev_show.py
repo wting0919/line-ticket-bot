@@ -6,7 +6,7 @@ line_bot_api = None
 user_state = {}
 
 
-def handle_next_show(event, user_id):
+def handle_prev_show(event, user_id):
 
     state = user_state.get(user_id)
 
