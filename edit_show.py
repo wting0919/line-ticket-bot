@@ -62,7 +62,7 @@ def start_edit_show(event, text, user_id):
             text.replace("修改", "").strip()
         ) - 1
 
-    except Exception:
+    except ValueError:
 
         line_bot_api.reply_message(
             event.reply_token,
@@ -111,10 +111,10 @@ def handle_edit_show_flow(event, text, user_id):
 
     state = user_state.get(user_id)
 
-    if not isinstance(state, dict):
-        return False
-
-    if state.get("mode") != "修改演出":
+    if (
+        not isinstance(state, dict)
+        or state.get("mode") != "修改演出"
+    ):
         return False
 
     if text == "取消":
@@ -147,10 +147,12 @@ def handle_edit_show_flow(event, text, user_id):
         state["field"] = text
         state["step"] = "value"
 
-        buttons = [("❌ 取消", "取消")]
+        buttons = []
 
         if text in {"取票日期", "備註"}:
-            buttons.insert(0, ("🗑 清除", "清除"))
+            buttons.append(("🗑 清除", "清除"))
+
+        buttons.append(("❌ 取消", "取消"))
 
         line_bot_api.reply_message(
             event.reply_token,
@@ -166,10 +168,12 @@ def handle_edit_show_flow(event, text, user_id):
 
         field = state["field"]
 
-        shows = load_data()
-
         show = next(
-            (item for item in shows if item["id"] == state["show_id"]),
+            (
+                item
+                for item in load_data()
+                if item["id"] == state["show_id"]
+            ),
             None
         )
 
@@ -217,7 +221,7 @@ def handle_edit_show_flow(event, text, user_id):
 
                 new_value = text
 
-        except Exception:
+        except ValueError:
 
             line_bot_api.reply_message(
                 event.reply_token,
@@ -231,7 +235,7 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        old_value = show.get(field, "")
+        old_value = show.get(field) or ""
 
         show[field] = new_value
 
@@ -255,8 +259,13 @@ def handle_edit_show_flow(event, text, user_id):
         user_state.pop(user_id, None)
 
         if field == "演出日期":
+
+            old_value = format_show_dates(old_value)
             display_value = format_show_dates(new_value)
+
         else:
+
+            old_value = old_value or "無"
             display_value = new_value or "無"
 
         line_bot_api.reply_message(
@@ -266,7 +275,7 @@ def handle_edit_show_flow(event, text, user_id):
                     "✅ 修改成功\n\n"
                     f"🎤 {show.get('演出名稱', '')}\n"
                     f"✏️ 欄位：{field}\n"
-                    f"原本：{old_value or '無'}\n"
+                    f"原本：{old_value}\n"
                     f"修改後：{display_value}"
                 )
             )

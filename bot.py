@@ -28,6 +28,7 @@ import reminder
 import serial
 import view_show
 import copy_show
+import search_show
 
 # Data
 from reminder import (
@@ -73,6 +74,18 @@ from edit_show import (
 )
 
 from copy_show import handle_copy_show
+
+from search_show import (
+    handle_search_show,
+)
+
+from next_show import (
+    handle_next_show,
+)
+
+from prev_show import (
+    handle_prev_show,
+)
 
 from member import (
     handle_register_member,
@@ -129,6 +142,9 @@ edit_show.user_state = user_state
 
 copy_show.line_bot_api = line_bot_api
 copy_show.user_state = user_state
+
+search_show.line_bot_api = line_bot_api
+search_show.user_state = user_state
 
 complete_ticket.line_bot_api = line_bot_api
 complete_ticket.user_state = user_state
@@ -220,7 +236,7 @@ def handle_message(event):
     # 選單
     # =====================
 
-    if text in [
+    if text in (
         "選單",
         "menu",
         "Menu",
@@ -228,7 +244,7 @@ def handle_message(event):
         "help",
         "Help",
         "HELP"
-    ]:
+    ):
 
         line_bot_api.reply_message(
             event.reply_token,
@@ -300,7 +316,8 @@ def handle_message(event):
 
             user_state[user_id] = {
                 "mode": "搶票列表",
-                "shows": waiting
+                "shows": waiting,
+                "current_index": None,
             }
 
 
@@ -340,7 +357,8 @@ def handle_message(event):
 
             user_state[user_id] = {
                 "mode": "取票列表",
-                "shows": pickup_list
+                "shows": pickup_list,
+                "current_index": None,
             }
 
 
@@ -371,26 +389,23 @@ def handle_message(event):
 
                 status = show.get("搶票狀態", "等待搶票")
 
+                ticket_status = {
+                    "已搶票": "✅ 已搶票",
+                    "未搶到": "❌ 未搶到",
+                }.get(
+                    status,
+                    "⏳ 等待搶票"
+                )
+
+                pickup_status = ""
+
                 if status == "已搶票":
-                    ticket_status = "✅ 已搶票"
 
-                elif status == "未搶到":
-                    ticket_status = "❌ 未搶到"
-
-                else:
-                    ticket_status = "⏳ 等待搶票"
-
-                if show.get("搶票狀態") != "已搶票":
-
-                    pickup_status = ""
-
-                elif show.get("取票狀態") == "已取票":
-
-                    pickup_status = "✅ 已取票"
-
-                else:
-
-                    pickup_status = "🎫 未取票"
+                    pickup_status = (
+                        "✅ 已取票"
+                        if show.get("取票狀態") == "已取票"
+                        else "🎫 未取票"
+                    )
 
                 reply += (
                     f"\n{i}.\n"
@@ -400,7 +415,6 @@ def handle_message(event):
                 )
 
                 if pickup_status:
-
                     reply += f"\n{pickup_status}"
 
                 reply += "\n"
@@ -413,14 +427,33 @@ def handle_message(event):
 
             user_state[user_id] = {
                 "mode": "演出列表",
-                "shows": shows
+                "shows": shows,
+                "current_index": None,
             }
+
+
+    elif text == "上一筆":
+
+        handle_prev_show(
+            event,
+            user_id,
+        )
+        return
+
+    elif text == "下一筆":
+
+        handle_next_show(
+            event,
+            user_id,
+        )
+        return
+
 
     # =====================
     # 新增功能
     # =====================
 
-    elif text in ["新增", "新增演出"]:
+    elif text in ("新增", "新增演出"):
 
         start_add_show(
             event,
@@ -440,6 +473,20 @@ def handle_message(event):
             event,
             text,
             user_id,
+        )
+
+        return
+
+    # =====================
+    # 搜尋功能
+    # =====================
+
+    elif text.startswith("搜尋"):
+
+        handle_search_show(
+            event,
+            text,
+            user_id
         )
 
         return
@@ -561,12 +608,14 @@ def handle_message(event):
             "📖 功能選單\n\n"
             "🎟 搶票列表\n"
             "🎫 取票列表\n"
-            "📅 演出列表\n\n"
+            "📅 演出列表\n"
+            "🔍 搜尋 SEVENTEEN\n\n"
             "🔍 查看 1\n"
             "✏️ 修改 1\n"
+            "📄 複製 1\n"
+            "🗑 刪除 1\n"
             "✅ 完成搶票 1\n"
-            "🎫 完成取票 1\n"
-            "🗑 刪除 1\n\n"
+            "🎫 完成取票 1\n\n"
             "💡 輸入「選單」可再次開啟快捷按鈕。"
         )
 
