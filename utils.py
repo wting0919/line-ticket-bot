@@ -288,3 +288,24 @@ def sort_by_pickup_date(shows):
             str(x.get("id", ""))
         )
     )
+
+def format_ticket_status(status):
+    return {
+        "已搶票": "✅ 已搶票",
+        "未搶到": "❌ 未搶到",
+    }.get(
+        status,
+        "⏳ 等待搶票"
+    )
+
+
+def format_pickup_status(show):
+
+    if show.get("搶票狀態") != "已搶票":
+        return ""
+
+    return (
+        "✅ 已取票"
+        if show.get("取票狀態") == "已取票"
+        else "🎫 未取票"
+    )

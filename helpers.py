@@ -28,15 +28,19 @@ def get_current_index(user_id):
     return state.get("current_index")
 
 
-def has_current_index(user_id):
-    return get_current_index(user_id) is not None
-
-
 def set_current_index(user_id, index):
     state = get_state(user_id)
 
     if state:
         state["current_index"] = index
+
+
+def set_show_list(user_id, mode, shows):
+    config.user_state[user_id] = {
+        "mode": mode,
+        "shows": shows,
+        "current_index": None,
+    }
 
 
 def clear_state(user_id):

@@ -31,6 +31,7 @@ import copy_show
 import search_show
 import next_show
 import prev_show
+import config
 
 # Data
 from reminder import (
@@ -105,6 +106,16 @@ from view_show import (
     handle_view_show,
 )
 
+from helpers import (
+    set_show_list,
+)
+
+from utils import (
+    format_datetime,
+    format_show_dates,
+    format_ticket_status,
+    format_pickup_status,
+)
 
 
 app = Flask(__name__)
@@ -136,45 +147,10 @@ user_state = {}
 # 初始化模組
 # =====================
 
-add_show.line_bot_api = line_bot_api
-add_show.user_state = user_state
-
-edit_show.line_bot_api = line_bot_api
-edit_show.user_state = user_state
-
-copy_show.line_bot_api = line_bot_api
-copy_show.user_state = user_state
-
-search_show.line_bot_api = line_bot_api
-search_show.user_state = user_state
-
-complete_ticket.line_bot_api = line_bot_api
-complete_ticket.user_state = user_state
-
-view_show.line_bot_api = line_bot_api
-view_show.user_state = user_state
-
-next_show.line_bot_api = line_bot_api
-next_show.user_state = user_state
-
-prev_show.line_bot_api = line_bot_api
-prev_show.user_state = user_state
-
-pickup.line_bot_api = line_bot_api
-
-delete_show.line_bot_api = line_bot_api
-delete_show.user_state = user_state
-
-member.line_bot_api = line_bot_api
-
-serial.line_bot_api = line_bot_api
-serial.GROUP_ID = GROUP_ID
-
-mention.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
-
-reminder.line_bot_api = line_bot_api
-reminder.GROUP_ID = GROUP_ID
-reminder.push_mention_message = mention.push_mention_message
+config.line_bot_api = line_bot_api
+config.user_state = user_state
+config.GROUP_ID = GROUP_ID
+config.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
 
 # =====================
 # LINE Callback
@@ -322,11 +298,11 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
-            user_state[user_id] = {
-                "mode": "搶票列表",
-                "shows": waiting,
-                "current_index": None,
-            }
+            set_show_list(
+                user_id,
+                "搶票列表",
+                waiting,
+            )
 
 
     # =====================
@@ -363,11 +339,11 @@ def handle_message(event):
                 )
 
 
-            user_state[user_id] = {
-                "mode": "取票列表",
-                "shows": pickup_list,
-                "current_index": None,
-            }
+            set_show_list(
+                user_id,
+                "取票列表",
+                pickup_list,
+            )
 
 
     # =====================
@@ -397,23 +373,9 @@ def handle_message(event):
 
                 status = show.get("搶票狀態", "等待搶票")
 
-                ticket_status = {
-                    "已搶票": "✅ 已搶票",
-                    "未搶到": "❌ 未搶到",
-                }.get(
-                    status,
-                    "⏳ 等待搶票"
-                )
+                ticket_status = format_ticket_status(status)
 
-                pickup_status = ""
-
-                if status == "已搶票":
-
-                    pickup_status = (
-                        "✅ 已取票"
-                        if show.get("取票狀態") == "已取票"
-                        else "🎫 未取票"
-                    )
+                pickup_status = format_pickup_status(show)
 
                 reply += (
                     f"\n{i}.\n"
@@ -433,11 +395,11 @@ def handle_message(event):
                 "輸入：查看 1"
             )
 
-            user_state[user_id] = {
-                "mode": "演出列表",
-                "shows": shows,
-                "current_index": None,
-            }
+            set_show_list(
+                user_id,
+                "演出列表",
+                shows,
+            )
 
 
     elif text == "上一筆":
