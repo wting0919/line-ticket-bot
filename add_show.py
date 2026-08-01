@@ -261,7 +261,7 @@ def handle_add_show_flow(event, text, user_id):
             TextSendMessage(
                 text=(
                     "📝 請輸入備註\n\n"
-                    "例如：會員預售\n\n"
+                    "例如：會員預售or卡友優先or公售\n\n"
                     "沒有備註可按略過"
                 ),
                 quick_reply=simple_quick_reply([
@@ -286,7 +286,7 @@ def handle_add_show_flow(event, text, user_id):
             f"🎟 {data['搶票時間']}\n"
             f"💰 {data['價格張數']}\n"
             f"🌐 {data['售票平台']}\n"
-            f"🎫 {data.get('取票日期') or '未設定'}\n"
+            f"📦 {data.get('取票日期') or '未設定'}\n"
             f"📝 {data.get('備註') or '無'}"
         )
 
