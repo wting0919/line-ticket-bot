@@ -418,7 +418,7 @@ def handle_message(event):
                     "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 演出日期\n{format_show_dates(show['演出日期'])}\n"
-                    f"{ticket_status}\n"
+                    f"{ticket_status}"
                 )
 
                 if pickup_status:
