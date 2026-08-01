@@ -173,6 +173,10 @@ def format_show_dates(value):
     return "\n".join(result)
 
 
+def format_show_dates_inline(value):
+
+    return format_show_dates(value).replace("\n", "、")
+
 # =====================
 # 時間
 # =====================
