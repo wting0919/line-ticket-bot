@@ -1,5 +1,4 @@
 import os
-import json
 
 from dotenv import load_dotenv
 from supabase import create_client
@@ -14,8 +13,6 @@ supabase = create_client(
     SUPABASE_KEY
 )
 
-USER_FILE = "./users.json"
-
 
 # =====================
 # 資料處理
@@ -23,46 +20,50 @@ USER_FILE = "./users.json"
 
 def load_data():
 
-    response = (
-        supabase
-        .table("shows")
-        .select("*")
-        .execute()
-    )
-
-    shows = response.data
-
-    return shows
-
-def save_data(data):
-
     try:
 
-        if data:
+        response = (
+            supabase
+            .table("shows")
+            .select("*")
+            .execute()
+        )
 
-            supabase.table("shows").upsert(
-                data
-            ).execute()
-
-
-        print("Supabase儲存完成")
-
+        return response.data or []
 
     except Exception as e:
 
-        print("Supabase儲存錯誤：", e)
+        print(
+            "讀取 shows 錯誤：",
+            repr(e),
+            flush=True,
+        )
+
+        return []
 
 def update_show(show):
 
-    show_id = show["id"]
+    try:
 
-    data = show.copy()
-    data.pop("id")
+        show_id = show["id"]
 
-    supabase.table("shows") \
-        .update(data) \
-        .eq("id", show_id) \
-        .execute()
+        data = show.copy()
+        data.pop("id", None)
+
+        supabase.table("shows") \
+            .update(data) \
+            .eq("id", show_id) \
+            .execute()
+
+    except Exception as e:
+
+        print(
+            "更新 show 錯誤：",
+            repr(e),
+            flush=True,
+        )
+
+        raise
 
 def insert_show(show):
 
@@ -120,8 +121,11 @@ def load_members():
         }
 
     except Exception as e:
-        print("讀取 members 錯誤：", e)
-        return {}
+        print(
+            "讀取 members 錯誤：",
+            repr(e),
+            flush=True,
+        )
 
 def get_member_user_id(name):
 
@@ -135,7 +139,6 @@ def get_member_user_id(name):
 __all__ = [
     "supabase",
     "load_data",
-    "save_data",
     "update_show",
     "insert_show",
     "get_user_id",
