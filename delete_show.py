@@ -8,6 +8,14 @@ from show_list import (
     get_all_shows,
 )
 
+from helpers import (
+    get_state,
+)
+
+from utils import (
+    format_show_dates,
+)
+
 import config
 
 
@@ -21,6 +29,16 @@ def handle_delete_show(
     user_id,
 ):
 
+    state = get_state(user_id)
+
+    if isinstance(state, dict) and "shows" in state:
+
+        target_list = state["shows"]
+
+    else:
+
+        target_list = get_all_shows()
+
     try:
 
         index = int(
@@ -30,15 +48,14 @@ def handle_delete_show(
             ).strip()
         ) - 1
 
-        state = get_state(user_id)
+    except ValueError:
 
-        if isinstance(state, dict) and "shows" in state:
+        reply = (
+            "請輸入格式：\n"
+            "刪除 1"
+        )
 
-            target_list = state["shows"]
-
-        else:
-
-            target_list = get_all_shows()
+    else:
 
         if index < 0 or index >= len(target_list):
 
@@ -48,28 +65,34 @@ def handle_delete_show(
 
             target = target_list[index]
 
-            supabase.table("shows") \
-                .delete() \
-                .eq(
-                    "id",
-                    target["id"]
-                ) \
-                .execute()
+            try:
 
-            reply = (
-                "✅ 刪除成功\n\n"
-                f"🎤 {target['演出名稱']}\n"
-                f"📅 演出日期：{target['演出日期']}"
-            )
+                supabase.table("shows") \
+                    .delete() \
+                    .eq(
+                        "id",
+                        target["id"]
+                    ) \
+                    .execute()
 
-    except Exception as e:
+            except Exception as e:
 
-        print("刪除錯誤：", e)
+                print(
+                    "刪除失敗：",
+                    repr(e),
+                    flush=True,
+                )
 
-        reply = (
-            "請輸入格式：\n"
-            "刪除 1"
-        )
+                reply = f"❌ 刪除失敗\n{e}"
+
+            else:
+
+                reply = (
+                    "✅ 已刪除演出\n"
+                    "──────────\n"
+                    f"🎤 {target['演出名稱']}\n"
+                    f"📅 {format_show_dates(target['演出日期'])}"
+                )
 
     config.line_bot_api.reply_message(
         event.reply_token,
