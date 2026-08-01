@@ -1,8 +1,5 @@
 import config
 
-push_mention_message = None
-
-
 from datetime import datetime, timedelta
 
 from linebot.models import TextSendMessage
@@ -10,7 +7,6 @@ from linebot.models import TextSendMessage
 from data import (
     supabase,
     load_data,
-    save_data,
     update_show,
 )
 
@@ -81,21 +77,32 @@ def check_reminders():
                 and not show["提醒"]["前一天"]
             ):
 
-                config.line_bot_api.push_message(
-                    config.GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "⏰ 明日搶票提醒\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}"
+                try:
+
+                    config.line_bot_api.push_message(
+                        config.GROUP_ID,
+                        TextSendMessage(
+                            text=(
+                                "⏰ 明日搶票提醒\n\n"
+                                f"🎤 {show['演出名稱']}\n"
+                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
+                                f"🌐 售票平台：{show['售票平台']}"
+                            )
                         )
                     )
-                )
 
+                except Exception as e:
 
-                show["提醒"]["前一天"] = True
-                update_show(show)
+                    print(
+                        "前一天提醒推播失敗：",
+                        repr(e),
+                        flush=True,
+                    )
+
+                else:
+
+                    show["提醒"]["前一天"] = True
+                    update_show(show)
 
 
             diff = ticket_time - now
@@ -122,22 +129,33 @@ def check_reminders():
                 print(">>> 發送30分鐘提醒")
 
 
-                config.line_bot_api.push_message(
-                    config.GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "⏰ 搶票倒數 30 分鐘\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}\n"
-                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                try:
+
+                    config.line_bot_api.push_message(
+                        config.GROUP_ID,
+                        TextSendMessage(
+                            text=(
+                                "⏰ 搶票倒數 30 分鐘\n\n"
+                                f"🎤 {show['演出名稱']}\n"
+                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
+                                f"🌐 售票平台：{show['售票平台']}\n"
+                                f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                            )
                         )
                     )
-                )
 
+                except Exception as e:
 
-                show["提醒"]["30分鐘"] = True
-                update_show(show)
+                    print(
+                        "30分鐘提醒推播失敗：",
+                        repr(e),
+                        flush=True,
+                    )
+
+                else:
+
+                    show["提醒"]["30分鐘"] = True
+                    update_show(show)
 
 
             # 前10分鐘
@@ -152,22 +170,34 @@ def check_reminders():
                 print(">>> 發送10分鐘提醒")
 
 
-                config.line_bot_api.push_message(
-                    config.GROUP_ID,
-                    TextSendMessage(
-                        text=(
-                            "🔐 搶票倒數 10 分鐘\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                            f"🌐 售票平台：{show['售票平台']}\n"
-                            f"💰 價格張數：{format_price(show['價格張數'])}\n"
-                            f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                try:
+
+                    config.line_bot_api.push_message(
+                        config.GROUP_ID,
+                        TextSendMessage(
+                            text=(
+                                "🔐 搶票倒數 10 分鐘\n\n"
+                                f"🎤 {show['演出名稱']}\n"
+                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
+                                f"🌐 售票平台：{show['售票平台']}\n"
+                                f"💰 價格張數：{format_price(show['價格張數'])}\n"
+                                f"📝 備註：{show['備註'] if show['備註'] else '無'}"
+                            )
                         )
                     )
-                )
 
-                show["提醒"]["10分鐘"] = True
-                update_show(show)
+                except Exception as e:
+
+                    print(
+                        "10分鐘提醒推播失敗：",
+                        repr(e),
+                        flush=True,
+                    )
+
+                else:
+
+                    show["提醒"]["10分鐘"] = True
+                    update_show(show)
 
 
         except Exception as e:
@@ -195,18 +225,30 @@ def check_reminders():
                     if x.strip()
                 ]
 
-                push_mention_message(
-                    config.GROUP_ID,
-                    (
-                        "🎫 取票提醒\n\n"
-                        f"🎤 {show['演出名稱']}\n"
-                        "🎫 可以取票囉～"
-                    ),
-                    participants
-                )
+                try:
 
-                show["提醒"]["取票"] = True
-                save_data(shows)
+                    config.push_mention_message(
+                        config.GROUP_ID,
+                        (
+                            "🎫 取票提醒\n\n"
+                            f"🎤 {show['演出名稱']}\n"
+                            "🎫 可以取票囉～"
+                        ),
+                        participants
+                    )
+
+                except Exception as e:
+
+                    print(
+                        "取票提醒推播失敗：",
+                        repr(e),
+                        flush=True,
+                    )
+
+                else:
+
+                    show["提醒"]["取票"] = True
+                    update_show(show)
 
 # =====================
 # 今日重點
@@ -236,7 +278,7 @@ def send_today_summary():
             ):
                 ticket_today.append(show)
 
-        except:
+        except Exception:
             pass
 
         # 今天可取票
@@ -248,7 +290,7 @@ def send_today_summary():
             ):
                 pickup_today.append(show)
 
-        except:
+        except Exception:
             pass
 
         # 今天演出
@@ -256,7 +298,7 @@ def send_today_summary():
             if parse_date(show["演出日期"]) == today:
                 show_today.append(show)
 
-        except:
+        except Exception:
             pass
 
         # 未來7天搶票
@@ -278,7 +320,7 @@ def send_today_summary():
                     )
                 )
 
-        except:
+        except Exception:
             pass
 
         # 未來7天取票
@@ -302,7 +344,7 @@ def send_today_summary():
                         )
                     )
 
-        except:
+        except Exception:
             pass
 
         # 未來7天演出
@@ -321,7 +363,7 @@ def send_today_summary():
                     )
                 )
 
-        except:
+        except Exception:
             pass
 
     msg = (
@@ -399,10 +441,22 @@ def send_today_summary():
             msg += "\n"
 
 
-    config.line_bot_api.push_message(
-        config.GROUP_ID,
-        TextSendMessage(text=msg)
-    )
+    try:
+
+        config.line_bot_api.push_message(
+            config.GROUP_ID,
+            TextSendMessage(
+                text=msg
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "今日重點推播失敗：",
+            repr(e),
+            flush=True,
+        )
 
 def clean_finished_shows():
 
@@ -470,7 +524,11 @@ def clean_finished_shows():
 
             except Exception as e:
 
-                print(f"刪除失敗：{show_id}", e)
+                print(
+                    "刪除失敗：",
+                    repr(e),
+                    flush=True,
+                )
         
 
     print("清除完成")

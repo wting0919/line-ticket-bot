@@ -148,6 +148,7 @@ config.line_bot_api = line_bot_api
 config.user_state = user_state
 config.GROUP_ID = GROUP_ID
 config.CHANNEL_ACCESS_TOKEN = CHANNEL_ACCESS_TOKEN
+config.push_mention_message = mention.push_mention_message
 
 # =====================
 # LINE Callback
