@@ -108,12 +108,12 @@ from helpers import (
 
 from utils import (
     format_datetime,
+    format_date,
     format_show_dates,
     format_ticket_status,
     format_pickup_status,
     LIST_FOOTER,
 )
-
 
 app = Flask(__name__)
 
@@ -358,7 +358,7 @@ def handle_message(event):
                 reply += (
                     "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
-                    f"📅 {show['取票日期']}\n"
+                    f"📅 {format_date(show['取票日期'])}\n"
                     f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
                     f"👤 取票人：{show.get('取票人') or '未設定'}\n"
                     f"{pickup_status}"

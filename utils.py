@@ -225,6 +225,16 @@ def format_datetime(value):
     return dt.strftime("%Y/%m/%d %H:%M")
 
 
+def format_date(value):
+
+    dt = parse_date(value)
+
+    if dt == datetime.max:
+        return str(value).replace("-", "/")
+
+    return dt.strftime("%Y/%m/%d")
+
+
 # =====================
 # 取票
 # =====================
