@@ -1,6 +1,6 @@
-line_bot_api = None
+import config
 
-GROUP_ID = None
+config.GROUP_ID
 
 push_mention_message = None
 
@@ -83,8 +83,8 @@ def check_reminders():
                 and not show["提醒"]["前一天"]
             ):
 
-                line_bot_api.push_message(
-                    GROUP_ID,
+                config.line_bot_api.push_message(
+                    config.GROUP_ID,
                     TextSendMessage(
                         text=(
                             "⏰ 明日搶票提醒\n\n"
@@ -198,7 +198,7 @@ def check_reminders():
                 ]
 
                 push_mention_message(
-                    GROUP_ID,
+                    config.GROUP_ID,
                     (
                         "🎫 取票提醒\n\n"
                         f"🎤 {show['演出名稱']}\n"

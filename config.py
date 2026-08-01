@@ -1,5 +1,3 @@
-# config.py
-
 line_bot_api = None
 
 user_state = {}
