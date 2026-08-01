@@ -309,10 +309,7 @@ def handle_message(event):
             reply += LIST_FOOTER
 
             if len(waiting) > 10:
-                reply += (
-                    "\n──────────\n"
-                    "💡 第 11 筆以上請輸入：查看 11"
-                )
+                reply += "\n💡 第 11 筆以上請輸入：查看 11"
 
             set_show_list(
                 user_id,
@@ -370,11 +367,7 @@ def handle_message(event):
             reply += LIST_FOOTER
 
             if len(pickup_list) > 10:
-
-                reply += (
-                    "\n──────────\n"
-                    "💡 第 11 筆以上請輸入：查看 編號"
-                )
+                reply += "\n💡 第 11 筆以上請輸入：查看 11"
 
             set_show_list(
                 user_id,
@@ -434,11 +427,8 @@ def handle_message(event):
 
             reply += LIST_FOOTER
 
-            if len(waiting) > 10:
-                reply += (
-                    "\n──────────\n"
-                    "💡 第 11 筆以上請輸入：查看 11"
-                )
+            if len(shows) > 10:
+                reply += "\n💡 第 11 筆以上請輸入：查看 11"
 
             set_show_list(
                 user_id,
