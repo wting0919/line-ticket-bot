@@ -327,7 +327,7 @@ def format_pickup_status(show):
     return (
         "✅ 已取票"
         if show.get("取票狀態") == "已取票"
-        else "🎫 未取票"
+        else "❗ 未取票"
     )
 
 # =====================
@@ -336,5 +336,5 @@ def format_pickup_status(show):
 
 LIST_FOOTER = (
     "\n──────────\n"
-    "💡 查看詳細資料：查看 1"
+    "👆 請使用下方按鈕查看詳細資料"
 )

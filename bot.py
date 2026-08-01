@@ -282,7 +282,7 @@ def handle_message(event):
 
         else:
 
-            reply = f"🎟️ 搶票列表（{len(waiting)}）"
+            reply = f"🎟 搶票列表（{len(waiting)}）"
 
             for i, show in enumerate(waiting, start=1):
 
@@ -309,10 +309,9 @@ def handle_message(event):
             reply += LIST_FOOTER
 
             if len(waiting) > 10:
-
                 reply += (
                     "\n──────────\n"
-                    "💡 第 11 筆以上請輸入：查看 編號"
+                    "💡 第 11 筆以上請輸入：查看 11"
                 )
 
             set_show_list(
@@ -356,7 +355,7 @@ def handle_message(event):
                 pickup_status = (
                     "✅ 已取票"
                     if show.get("取票狀態") == "已取票"
-                    else "未取票"
+                    else "❗ 未取票"
                 )
 
                 reply += (
@@ -364,7 +363,7 @@ def handle_message(event):
                     f"{i}. 🎤 {show['演出名稱']}\n"
                     f"📅 {show['取票日期']}\n"
                     f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
-                    f"🎫 取票人：{show.get('取票人') or '未設定'}\n"
+                    f"👤 取票人：{show.get('取票人') or '未設定'}\n"
                     f"{pickup_status}"
                 )
 
@@ -425,21 +424,20 @@ def handle_message(event):
                 reply += (
                     "\n──────────\n"
                     f"{i}. 🎤 {show['演出名稱']}\n"
-                    f"📅 {format_show_dates(show['演出日期'])}\n"
-                    f"{ticket_status}"
+                    f"📅 演出日期\n{format_show_dates(show['演出日期'])}\n"
+                    f"{ticket_status}\n"
                 )
 
                 if pickup_status:
-                    reply += f"{pickup_status}\n"
+                    reply += pickup_status
 
 
             reply += LIST_FOOTER
 
-            if len(shows) > 10:
-
+            if len(waiting) > 10:
                 reply += (
                     "\n──────────\n"
-                    "💡 第 11 筆以上請輸入：查看 編號"
+                    "💡 第 11 筆以上請輸入：查看 11"
                 )
 
             set_show_list(
@@ -641,8 +639,8 @@ def handle_message(event):
             "📄 複製 1\n"
             "🗑 刪除 1\n"
             "✅ 完成搶票 1\n"
-            "🎫 完成取票 1\n\n"
-            "💡 列表可直接點「👀 查看」查看詳細資料。\n"
+            "👤 完成取票 1\n\n"
+            "💡 列表可直接點「👀」查看詳細資料。\n"
             "💡 輸入「選單」可再次開啟快捷按鈕。"
         )
 
