@@ -4,8 +4,12 @@ from data import (
     supabase,
 )
 
-line_bot_api = None
+import config
 
+
+# =====================
+# 登記成員
+# =====================
 
 def handle_register_member(
     event,
@@ -14,31 +18,45 @@ def handle_register_member(
 ):
 
     nickname = text.replace(
-        "登記 ",
+        "登記",
         ""
     ).strip()
 
     if not nickname:
 
-        reply = "請輸入：登記 暱稱"
+        reply = "請輸入：\n登記 暱稱"
 
     else:
 
-        supabase.table("members").upsert(
-            {
-                "name": nickname,
-                "user_id": user_id,
-            },
-            on_conflict="user_id",
-        ).execute()
+        try:
 
-        reply = (
-            "✅ 登記成功\n\n"
-            f"暱稱：{nickname}\n"
-            f"ID：{user_id}"
-        )
+            supabase.table("members").upsert(
+                {
+                    "name": nickname,
+                    "user_id": user_id,
+                },
+                on_conflict="user_id",
+            ).execute()
 
-    line_bot_api.reply_message(
+        except Exception as e:
+
+            print(
+                "登記成員錯誤：",
+                repr(e),
+                flush=True,
+            )
+
+            reply = f"❌ 登記失敗\n{e}"
+
+        else:
+
+            reply = (
+                "✅ 已完成登記\n"
+                "──────────\n"
+                f"👤 {nickname}"
+            )
+
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=reply,
