@@ -62,11 +62,20 @@ def parse_date(value):
 
     except Exception as e:
 
-        print("日期解析錯誤：", value, e)
+        print(
+            "日期解析錯誤：",
+            value,
+            repr(e),
+            flush=True,
+        )
+
         return datetime.max
 
 
 def split_show_dates(value):
+
+    if not value:
+        return []
 
     value = value.strip().replace("，", "、").replace("-", "/")
 
@@ -130,16 +139,20 @@ def normalize_show_date(value):
 
 def get_first_show_date(show):
 
-    return split_show_dates(
-        show["演出日期"]
-    )[0]
+    dates = split_show_dates(
+        show.get("演出日期", "")
+    )
+
+    return dates[0] if dates else ""
 
 
 def get_last_show_date(show):
 
-    return split_show_dates(
-        show["演出日期"]
-    )[-1]
+    dates = split_show_dates(
+        show.get("演出日期", "")
+    )
+
+    return dates[-1] if dates else ""
 
 
 def format_show_dates(value):
@@ -192,7 +205,13 @@ def parse_datetime(value):
 
     except Exception as e:
 
-        print("時間解析錯誤：", value, e)
+        print(
+            "時間解析錯誤：",
+            value,
+            repr(e),
+            flush=True,
+        )
+
         return datetime.max
 
 
