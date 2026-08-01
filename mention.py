@@ -1,6 +1,5 @@
-CHANNEL_ACCESS_TOKEN = None
-
 import requests
+import config
 
 from data import (
     get_member_user_id,
@@ -62,15 +61,21 @@ def push_mention_message(to, message_text, names):
     if not substitution:
         payload["messages"][0].pop("substitution", None)
 
-    response = requests.post(
-        "https://api.line.me/v2/bot/message/push",
-        headers={
-            "Authorization": f"Bearer {CHANNEL_ACCESS_TOKEN}",
-            "Content-Type": "application/json"
-        },
-        json=payload,
-        timeout=15
-    )
+    try:
+        response = requests.post(
+            "https://api.line.me/v2/bot/message/push",
+            headers={
+                "Authorization": f"Bearer {config.CHANNEL_ACCESS_TOKEN}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=15
+        )
+    except Exception as e:
+
+        raise RuntimeError(
+            f"LINE Push 失敗：{e}"
+        )
 
     if not response.ok:
         raise RuntimeError(
@@ -78,6 +83,10 @@ def push_mention_message(to, message_text, names):
         )
 
     if missing_names:
-        print("以下成員找不到 user_id，改用普通文字：", missing_names)
+        print(
+            "以下成員找不到 user_id：",
+            missing_names,
+            flush=True,
+        )
 
     return True
