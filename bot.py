@@ -254,6 +254,15 @@ def handle_message(event):
 
         reply = "已發送測試提醒"
 
+    # =====================
+     今日重點
+    # =====================
+
+    elif text == "今日重點":
+
+        send_today_summary()
+
+        return
 
 
     # =====================

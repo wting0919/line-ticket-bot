@@ -1,7 +1,5 @@
 import config
 
-config.GROUP_ID
-
 push_mention_message = None
 
 
@@ -116,7 +114,7 @@ def check_reminders():
             if (
                 timedelta(minutes=29)
                 <= diff 
-                <= timedelta(minutes=30)
+                < timedelta(minutes=31)
                 and not show["提醒"]["30分鐘"]
             ):
 
@@ -124,8 +122,8 @@ def check_reminders():
                 print(">>> 發送30分鐘提醒")
 
 
-                line_bot_api.push_message(
-                    GROUP_ID,
+                config.line_bot_api.push_message(
+                    config.GROUP_ID,
                     TextSendMessage(
                         text=(
                             "⏰ 搶票倒數 30 分鐘\n\n"
@@ -147,15 +145,15 @@ def check_reminders():
             if (
                 timedelta(minutes=9)
                 <= diff 
-                <= timedelta(minutes=10)
+                < timedelta(minutes=11)
                 and not show["提醒"]["10分鐘"]
             ):
 
                 print(">>> 發送10分鐘提醒")
 
 
-                line_bot_api.push_message(
-                    GROUP_ID,
+                config.line_bot_api.push_message(
+                    config.GROUP_ID,
                     TextSendMessage(
                         text=(
                             "🔐 搶票倒數 10 分鐘\n\n"
@@ -401,8 +399,8 @@ def send_today_summary():
             msg += "\n"
 
 
-    line_bot_api.push_message(
-        GROUP_ID,
+    config.line_bot_api.push_message(
+        config.GROUP_ID,
         TextSendMessage(text=msg)
     )
 
