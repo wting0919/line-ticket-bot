@@ -3,7 +3,7 @@ import config
 from linebot.models import TextSendMessage
 
 from data import (
-    supabase,
+    insert_show,
 )
 
 from utils import (
@@ -17,16 +17,25 @@ from ui import (
     simple_quick_reply,
 )
 
+from helpers import (
+    get_state,
+    set_state,
+    clear_state,
+)
+
 
 def start_add_show(event, user_id):
 
-    user_state[user_id] = {
-        "mode": "新增演出",
-        "step": "name",
-        "data": {}
-    }
+    set_state(
+        user_id,
+        {
+            "mode": "新增演出",
+            "step": "name",
+            "data": {}
+        }
+    )
 
-    line_bot_api.reply_message(
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(
@@ -45,7 +54,7 @@ def start_add_show(event, user_id):
 
 def handle_add_show_flow(event, text, user_id):
 
-    state = config.user_state.get(user_id)
+    state = get_state(user_id)
 
     if not isinstance(state, dict):
         return False
@@ -55,7 +64,7 @@ def handle_add_show_flow(event, text, user_id):
 
     if text == "取消":
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -95,7 +104,7 @@ def handle_add_show_flow(event, text, user_id):
         try:
             data["演出日期"] = normalize_show_date(text)
 
-        except Exception:
+        except ValueError:
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -136,7 +145,7 @@ def handle_add_show_flow(event, text, user_id):
         try:
             data["搶票時間"] = normalize_ticket_time(text)
 
-        except Exception:
+        except ValueError:
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -226,7 +235,7 @@ def handle_add_show_flow(event, text, user_id):
                 data["演出日期"]
             )
 
-        except Exception:
+        except ValueError:
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -270,14 +279,15 @@ def handle_add_show_flow(event, text, user_id):
         state["step"] = "confirm"
 
         reply = (
-            "📋 請確認新增資料\n\n"
+            "📋 請確認新增資料\n"
+            "──────────\n"
             f"🎤 {data['演出名稱']}\n"
-            f"📅 演出日期：{data['演出日期']}\n"
-            f"🎟 搶票時間：{data['搶票時間']}\n"
-            f"💰 價格張數：{data['價格張數']}\n"
-            f"🌐 售票平台：{data['售票平台']}\n"
-            f"🎫 取票日期：{data.get('取票日期') or '未設定'}\n"
-            f"📝 備註：{data.get('備註') or '無'}"
+            f"📅 {format_show_dates(data['演出日期'])}\n"
+            f"🎟 {data['搶票時間']}\n"
+            f"💰 {data['價格張數']}\n"
+            f"🌐 {data['售票平台']}\n"
+            f"🎫 {data.get('取票日期') or '未設定'}\n"
+            f"📝 {data.get('備註') or '無'}"
         )
 
         config.line_bot_api.reply_message(
@@ -352,9 +362,7 @@ def handle_add_show_flow(event, text, user_id):
 
         try:
 
-            supabase.table("shows").insert(
-                show
-            ).execute()
+            show = insert_show(show)
 
         except Exception as e:
 
@@ -369,23 +377,24 @@ def handle_add_show_flow(event, text, user_id):
 
             return True
 
-        user_state.pop(user_id, None)
+        clear_state(user_id)
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "✅ 新增成功\n\n"
+                    "✅ 已新增演出\n"
+                    "──────────\n"
                     f"🎤 {show['演出名稱']}\n"
-                    f"📅\n{format_show_dates(show['演出日期'])}\n"
-                    f"🎟 {show['搶票時間']}"
+                    f"📅 {format_show_dates(show['演出日期'])}\n"
+                    f"🎟 {format_datetime(show['搶票時間'])}"
                 )
             )
         )
 
         return True
 
-    user_state.pop(user_id, None)
+    clear_state(user_id)
 
     config.line_bot_api.reply_message(
         event.reply_token,
