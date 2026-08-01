@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
 
 from data import (
     load_data,
 )
 
 from utils import (
-    parse_datetime,
     sort_shows,
     sort_by_show_date,
     sort_by_pickup_date,
@@ -38,15 +36,8 @@ def get_waiting_shows():
                     show["搶票時間"]
                 )
 
-                if ticket_time > now:
+                if show["搶票狀態"] == "等待搶票":
                     waiting.append(show)
-
-            except Exception as e:
-
-                print(
-                    "搶票時間錯誤：",
-                    e
-                )
 
     return waiting
 
