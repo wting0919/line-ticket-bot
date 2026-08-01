@@ -1,3 +1,5 @@
+from data import load_members
+
 from linebot.models import (
     TextSendMessage,
     QuickReply,
@@ -5,7 +7,38 @@ from linebot.models import (
     MessageAction,
 )
 
-from data import load_members
+# =====================
+# 查看列表 Quick Reply
+# =====================
+
+def view_list_quick_reply(count):
+
+    items = []
+
+    for i in range(1, min(count, 9) + 1):
+
+        items.append(
+            QuickReplyButton(
+                action=MessageAction(
+                    label=f"👀 {i}",
+                    text=f"查看 {i}"
+                )
+            )
+        )
+
+    return QuickReply(items=items)
+
+
+# =====================
+# 共用列表回覆
+# =====================
+
+def list_reply(reply, count):
+
+    return TextSendMessage(
+        text=reply,
+        quick_reply=view_list_quick_reply(count)
+    )
 
 
 def menu_reply(text):
@@ -14,7 +47,6 @@ def menu_reply(text):
         text=text,
         quick_reply=QuickReply(
             items=[
-
                 
                 QuickReplyButton(
                     action=MessageAction(
@@ -66,15 +98,9 @@ def member_quick_reply(
 
     members = load_members()
 
-    print(
-        "Quick Reply 讀到的成員：",
-        members,
-        flush=True
-    )
-
     items = []
 
-    for name in members.keys():
+    for name in members:
 
         if name in selected:
             continue
@@ -138,6 +164,7 @@ def simple_quick_reply(buttons):
         )
 
     return QuickReply(items=items)
+
 
 def edit_field_quick_reply():
 

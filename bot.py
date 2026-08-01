@@ -48,8 +48,8 @@ from show_list import (
 
 from ui import (
     menu_reply,
+    list_reply,
 )
-
 
 # Handlers
 from add_show import (
@@ -307,11 +307,28 @@ def handle_message(event):
 
             reply += LIST_FOOTER
 
+            if len(waiting) > 10:
+
+                reply += (
+                    "\n──────────\n"
+                    "💡 第 11 筆以上請輸入：查看 編號"
+                )
+
             set_show_list(
                 user_id,
                 "搶票列表",
                 waiting,
             )
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                list_reply(
+                    reply,
+                    len(waiting)
+                )
+            )
+
+            return
 
 
     # =====================
@@ -352,12 +369,28 @@ def handle_message(event):
 
             reply += LIST_FOOTER
 
+            if len(pickup_list) > 10:
+
+                reply += (
+                    "\n──────────\n"
+                    "💡 第 11 筆以上請輸入：查看 編號"
+                )
 
             set_show_list(
                 user_id,
                 "取票列表",
                 pickup_list,
             )
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                list_reply(
+                    reply,
+                    len(pickup_list)
+                )
+            )
+
+            return
 
 
     # =====================
@@ -401,11 +434,28 @@ def handle_message(event):
 
             reply += LIST_FOOTER
 
+            if len(shows) > 10:
+
+                reply += (
+                    "\n──────────\n"
+                    "💡 第 11 筆以上請輸入：查看 編號"
+                )
+
             set_show_list(
                 user_id,
                 "演出列表",
                 shows,
             )
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                list_reply(
+                    reply,
+                    len(shows)
+                )
+            )
+
+            return
 
 
     elif text == "上一筆":
@@ -591,6 +641,7 @@ def handle_message(event):
             "🗑 刪除 1\n"
             "✅ 完成搶票 1\n"
             "🎫 完成取票 1\n\n"
+            "💡 列表可直接點「👀 查看」查看詳細資料。\n"
             "💡 輸入「選單」可再次開啟快捷按鈕。"
         )
 
@@ -612,10 +663,12 @@ def handle_message(event):
 
         return
 
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=reply)
-    )
+    if reply:
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=reply)
+        )
 
 print("LINE SDK Version:", getattr(linebot, "__version__", "Unknown"))
 

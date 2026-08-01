@@ -14,6 +14,10 @@ from helpers import (
     set_show_list,
 )
 
+from ui import (
+    list_reply,
+)
+
 import config
 
 # 關鍵字別名
@@ -199,7 +203,17 @@ def handle_search_show(event, text, user_id):
         results,
     )
 
+    if len(results) > 10:
+
+        reply += (
+            "\n──────────\n"
+            "💡 第 11 筆以上請輸入：查看 編號"
+        )
+
     config.line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=reply)
+        list_reply(
+            reply,
+            len(results)
+        )
     )
