@@ -14,6 +14,11 @@ from ui import (
     edit_field_quick_reply,
 )
 
+from helpers import (
+    get_state,
+    set_state,
+)
+
 import config
 
 
@@ -31,7 +36,7 @@ def handle_copy_show(event, text, user_id):
             text.replace("複製", "").strip()
         ) - 1
 
-    except Exception:
+    except ValueError:
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -39,7 +44,7 @@ def handle_copy_show(event, text, user_id):
                 text="請輸入格式：\n複製 1"
             )
         )
-        return
+        return True
 
     if index < 0 or index >= len(shows):
 
@@ -49,7 +54,7 @@ def handle_copy_show(event, text, user_id):
                 text="❌ 找不到這筆演出"
             )
         )
-        return
+        return True
 
     new_show = deepcopy(shows[index])
 
@@ -82,23 +87,29 @@ def handle_copy_show(event, text, user_id):
                 text=f"❌ 複製失敗\n{e}"
             )
         )
-        return
+        return True
 
-    user_state[user_id] = {
-        "mode": "修改演出",
-        "step": "field",
-        "show_id": new_show["id"],
-    }
+    set_state(
+        user_id,
+        {
+            "mode": "修改演出",
+            "step": "field",
+            "show_id": new_show.get("id"),
+        }
+    )
 
     config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=(
-                "✅ 已建立複製演出\n\n"
-                    f"🎤 {new_show['演出名稱']}\n\n"
-                    "原演出已保留，新演出已建立。\n"
-                    "請選擇要修改的欄位："
+                "✅ 已建立複製演出\n"
+                "──────────\n"
+                f"🎤 {new_show['演出名稱']}\n"
+                "──────────\n"
+                "請選擇要修改的欄位"
             ),
             quick_reply=edit_field_quick_reply()
         )
     )
+
+    return True
