@@ -1,4 +1,3 @@
-
 from data import (
     load_data,
 )
@@ -19,8 +18,6 @@ def get_waiting_shows():
 
     waiting = []
 
-    now = datetime.now() + timedelta(hours=8)
-
     for show in shows:
 
         show.setdefault(
@@ -30,14 +27,7 @@ def get_waiting_shows():
 
         if show["搶票狀態"] == "等待搶票":
 
-            try:
-
-                ticket_time = parse_datetime(
-                    show["搶票時間"]
-                )
-
-                if show["搶票狀態"] == "等待搶票":
-                    waiting.append(show)
+            waiting.append(show)
 
     return waiting
 
@@ -67,7 +57,6 @@ def get_pickup_shows():
         ):
 
             pickup.append(show)
-
 
     return pickup
 
