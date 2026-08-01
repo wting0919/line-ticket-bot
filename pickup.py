@@ -1,4 +1,6 @@
-user_state = {}
+from helpers import (
+    get_state,
+)
 
 from linebot.models import TextSendMessage
 
@@ -11,7 +13,7 @@ from show_list import (
     get_pickup_shows,
 )
 
-line_bot_api = None
+import config
 
 
 # =====================
@@ -24,7 +26,7 @@ def handle_complete_pickup(
     user_id,
 ):
 
-    state = user_state.get(user_id)
+    state = get_state(user_id)
 
     if isinstance(state, dict) and "shows" in state:
 
@@ -42,6 +44,15 @@ def handle_complete_pickup(
                 ""
             ).strip()
         ) - 1
+
+    except ValueError:
+
+        reply = (
+            "請輸入格式：\n"
+            "完成取票 1"
+        )
+
+    else:
 
         if index < 0 or index >= len(pickup_list):
 
@@ -62,33 +73,44 @@ def handle_complete_pickup(
                 None,
             )
 
-            if not show:
+            if show is None:
 
                 reply = "❌ 找不到這筆演出"
+
+            elif show.get("取票狀態") == "已取票":
+
+                reply = "⚠️ 這筆演出已經完成取票"
 
             else:
 
                 show["取票狀態"] = "已取票"
 
-                update_show(show)
+                try:
 
-                reply = (
-                    "✅ 已完成取票\n\n"
-                    f"🎤 {target['演出名稱']}\n"
-                    f"📅 演出日期：{target['演出日期']}\n"
-                    "🎫 狀態：已取票"
-                )
+                    update_show(show)
 
-    except Exception as e:
+                except Exception as e:
 
-        print("完成取票錯誤：", e)
+                    print(
+                        "完成取票更新錯誤：",
+                        repr(e),
+                        flush=True,
+                    )
 
-        reply = (
-            "請輸入格式：\n"
-            "完成取票 1"
-        )
+                    reply = f"❌ 更新失敗\n{e}"
 
-    line_bot_api.reply_message(
+                else:
+
+                    reply = (
+                        "✅ 已完成取票\n"
+                        "──────────\n"
+                        f"🎤 {show['演出名稱']}\n"
+                        f"🎫 取票人：{show.get('取票人') or '未設定'}\n"
+                        "──────────\n"
+                        "✅ 已取票"
+                    )
+
+    config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
             text=reply
