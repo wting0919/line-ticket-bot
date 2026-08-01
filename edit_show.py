@@ -23,6 +23,7 @@ from show_list import (
 
 from helpers import (
     get_state,
+    set_state,
     clear_state,
 )
 
@@ -90,11 +91,14 @@ def start_edit_show(event, text, user_id):
 
     show = shows[index]
 
-    config.user_state[user_id] = {
-        "mode": "修改演出",
-        "step": "field",
-        "show_id": show["id"],
-    }
+    set_state(
+        user_id,
+        {
+            "mode": "修改演出",
+            "step": "field",
+            "show_id": show["id"],
+        }
+    )
 
     config.line_bot_api.reply_message(
         event.reply_token,
@@ -276,11 +280,13 @@ def handle_edit_show_flow(event, text, user_id):
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "✅ 修改成功\n\n"
+                    "✅ 修改成功\n"
+                    "──────────\n"
                     f"🎤 {show.get('演出名稱', '')}\n"
-                    f"✏️ 欄位：{field}\n"
-                    f"原本：{old_value}\n"
-                    f"修改後：{display_value}"
+                    "──────────\n"
+                    f"✏️ {field}\n"
+                    f"🔸 原本：{old_value}\n"
+                    f"🔹 修改後：{display_value}"
                 )
             )
         )
