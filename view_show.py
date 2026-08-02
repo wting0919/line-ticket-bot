@@ -845,8 +845,8 @@ def build_view_show_card(
                         {
                             "type": "box",
                             "layout": "vertical",
-                            "width": "80px",
-                            "height": "3px",
+                            "width": "140px",
+                            "height": "2px",
                             "backgroundColor": BUTTON_COLOR,
                             "cornerRadius": "2px",
                             "contents": [],
