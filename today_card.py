@@ -23,6 +23,7 @@ from utils import (
 
 HEADER_COLOR = "#C9B29B"
 BODY_COLOR = "#FFFCF8"
+SECTION_COLOR = "#F4ECE4"
 
 TEXT_COLOR = "#5C5148"
 SUBTEXT_COLOR = "#75695F"
@@ -43,6 +44,150 @@ SUCCESS_COLOR = "#879A7B"
 # =========================================================
 # 基本元件
 # =========================================================
+def safe_text(value, default="未設定"):
+    """
+    安全處理文字欄位。
+    None、空字串或純空白時顯示預設值。
+    """
+
+    if value is None:
+        return default
+
+    text = str(value).strip()
+
+    if not text:
+        return default
+
+    return text
+
+
+def build_info_row(label, value):
+    """
+    建立單筆欄位資訊。
+    """
+
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "margin": "xs",
+        "contents": [
+            {
+                "type": "text",
+                "text": safe_text(label, ""),
+                "size": "xs",
+                "color": SUBTEXT_COLOR,
+                "weight": "bold",
+                "wrap": True,
+                "flex": 3,
+            },
+            {
+                "type": "text",
+                "text": safe_text(value),
+                "size": "xs",
+                "color": TEXT_COLOR,
+                "wrap": True,
+                "flex": 7,
+            },
+        ],
+    }
+
+
+def build_task_item(
+    title,
+    info_rows=None,
+    badge_text=None,
+    action_label=None,
+    action_text=None,
+):
+    """
+    建立單筆今日待辦項目。
+    """
+
+    info_rows = info_rows or []
+
+    title_contents = [
+        {
+            "type": "text",
+            "text": safe_text(title, "未命名演出"),
+            "size": "md",
+            "weight": "bold",
+            "color": TEXT_COLOR,
+            "wrap": True,
+            "flex": 1,
+        }
+    ]
+
+    if badge_text:
+        title_contents.append(
+            {
+                "type": "box",
+                "layout": "vertical",
+                "backgroundColor": TAG_COLOR,
+                "cornerRadius": "10px",
+                "paddingTop": "3px",
+                "paddingBottom": "3px",
+                "paddingStart": "8px",
+                "paddingEnd": "8px",
+                "margin": "sm",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": safe_text(badge_text, ""),
+                        "size": "xxs",
+                        "weight": "bold",
+                        "color": TAG_TEXT_COLOR,
+                        "align": "center",
+                        "wrap": False,
+                    }
+                ],
+            }
+        )
+
+    contents = [
+        {
+            "type": "box",
+            "layout": "horizontal",
+            "alignItems": "center",
+            "contents": title_contents,
+        }
+    ]
+
+    for label, value in info_rows:
+        contents.append(
+            build_info_row(label, value)
+        )
+
+    if action_label and action_text:
+        contents.extend(
+            [
+                build_separator(margin="md"),
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "height": "sm",
+                    "margin": "md",
+                    "color": BUTTON_COLOR,
+                    "action": {
+                        "type": "message",
+                        "label": safe_text(
+                            action_label,
+                            "查看詳情",
+                        ),
+                        "text": safe_text(
+                            action_text,
+                            "演出列表",
+                        ),
+                    },
+                },
+            ]
+        )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": contents,
+    }
 
 def build_text(
     text,
