@@ -94,15 +94,6 @@ def build_today_card():
 
     body.append(
         {
-            "type": "text",
-            "text": f"📅 {today.strftime('%Y/%m/%d')}",
-            "size": "sm",
-            "color": "#888888",
-        }
-    )
-
-    body.append(
-        {
             "type": "separator",
             "margin": "lg",
         }
@@ -210,7 +201,7 @@ def build_today_card():
     body.append(
         {
             "type": "text",
-            "text": f"🎤 今日演出（{len(show_today)}）",
+            "text": f"📋 今日演出（{len(show_today)}）",
             "weight": "bold",
             "margin": "lg",
         }
@@ -254,17 +245,6 @@ def build_today_card():
         contents={
             "type": "bubble",
             "header": build_header(today),
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": "☀️ 今日任務",
-                        "weight": "bold",
-                        "size": "xl",
-                        "color": "#FFFFFF",
-                        "align": "center",
-                    }
-                ],
-            },
             "body": {
                 "type": "box",
                 "layout": "vertical",
