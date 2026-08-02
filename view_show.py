@@ -10,6 +10,8 @@ from utils import (
     format_price,
     format_datetime,
     format_show_dates,
+    parse_datetime,
+    parse_date,
 )
 
 from show_list import (
@@ -74,6 +76,69 @@ def safe_text(value, default="未設定"):
         return default
 
     return text
+
+WEEKDAY_TEXT = [
+    "一",
+    "二",
+    "三",
+    "四",
+    "五",
+    "六",
+    "日",
+]
+
+
+def format_datetime_with_weekday(value):
+    """
+    搶票時間格式：
+
+    2026/08/15（六）13:00
+    """
+
+    if not value:
+        return "未設定"
+
+    parsed_value = parse_datetime(value)
+
+    if parsed_value is None:
+        return safe_text(
+            format_datetime(value)
+        )
+
+    weekday = WEEKDAY_TEXT[
+        parsed_value.weekday()
+    ]
+
+    return (
+        f"{parsed_value.strftime('%Y/%m/%d')}"
+        f"（{weekday}）"
+        f"{parsed_value.strftime('%H:%M')}"
+    )
+
+
+def format_date_with_weekday(value):
+    """
+    取票日期格式：
+
+    2026/10/10（六）
+    """
+
+    if not value:
+        return "未設定"
+
+    parsed_value = parse_date(value)
+
+    if parsed_value is None:
+        return safe_text(value)
+
+    weekday = WEEKDAY_TEXT[
+        parsed_value.weekday()
+    ]
+
+    return (
+        f"{parsed_value.strftime('%Y/%m/%d')}"
+        f"（{weekday}）"
+    )
 
 
 def build_separator(margin="md"):
@@ -327,7 +392,21 @@ def build_detail_section(
         }
     ]
 
-    for row_icon, label, value in rows:
+    for row in rows:
+
+        if row is None:
+
+            contents.append(
+                {
+                    "type": "spacer",
+                    "size": "sm",
+                }
+            )
+
+            continue
+
+        row_icon, label, value = row
+
         contents.append(
             build_info_row(
                 icon=row_icon,
@@ -336,12 +415,12 @@ def build_detail_section(
             )
         )
 
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "margin": margin,
-        "contents": contents,
-    }
+        return {
+            "type": "box",
+            "layout": "vertical",
+            "margin": margin,
+            "contents": contents,
+        }
 
 
 # =========================================================
@@ -422,31 +501,45 @@ def build_note_section(note):
 def build_action_button(
     label,
     action_text,
-    style="secondary",
-    color=None,
     flex=1,
 ):
     """
-    建立操作按鈕。
+    建立小型奶茶色圓角按鈕。
+
+    使用 Box Action，
+    避免三個按鈕並排時文字被截斷。
     """
 
-    button = {
-        "type": "button",
-        "style": style,
-        "height": "sm",
+    return {
+        "type": "box",
+        "layout": "vertical",
         "flex": flex,
+        "height": "42px",
+        "backgroundColor": BUTTON_COLOR,
+        "cornerRadius": "10px",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "paddingStart": "5px",
+        "paddingEnd": "5px",
         "action": {
             "type": "message",
             "label": label,
             "text": action_text,
         },
+        "contents": [
+            {
+                "type": "text",
+                "text": label,
+                "size": "xs",
+                "weight": "bold",
+                "color": WHITE_COLOR,
+                "align": "center",
+                "wrap": False,
+                "maxLines": 1,
+                "adjustMode": "shrink-to-fit",
+            }
+        ],
     }
-
-    if color:
-        button["color"] = color
-
-    return button
-
 
 def build_action_area(
     index,
@@ -455,6 +548,8 @@ def build_action_area(
 ):
     """
     建立底部操作按鈕。
+
+    全部使用奶茶色圓角按鈕。
     """
 
     contents = [
@@ -464,7 +559,7 @@ def build_action_area(
         {
             "type": "box",
             "layout": "horizontal",
-            "spacing": "sm",
+            "spacing": "xs",
             "margin": "lg",
             "contents": [
                 build_action_button(
@@ -489,20 +584,16 @@ def build_action_area(
             {
                 "type": "box",
                 "layout": "horizontal",
-                "spacing": "sm",
+                "spacing": "xs",
                 "margin": "sm",
                 "contents": [
                     build_action_button(
                         label="✅ 完成搶票",
                         action_text=f"完成搶票 {index}",
-                        style="primary",
-                        color=SUCCESS_COLOR,
                     ),
                     build_action_button(
                         label="❌ 未搶到",
                         action_text=f"未搶到 {index}",
-                        style="primary",
-                        color=DANGER_COLOR,
                     ),
                 ],
             }
@@ -522,15 +613,12 @@ def build_action_area(
                     build_action_button(
                         label="✅ 完成取票",
                         action_text=f"完成取票 {index}",
-                        style="primary",
-                        color=SUCCESS_COLOR,
                     ),
                 ],
             }
         )
 
     return contents
-
 
 # =========================================================
 # 建立演出詳細 Flex
@@ -563,8 +651,8 @@ def build_view_show_card(
         show.get("演出日期", "")
     )
 
-    ticket_time = format_datetime(
-        show.get("搶票時間", "")
+    ticket_time = format_datetime_with_weekday(
+        show.get("搶票時間")
     )
 
     platform = safe_text(
@@ -575,7 +663,7 @@ def build_view_show_card(
         show.get("價格張數")
     )
 
-    pickup_date = safe_text(
+    pickup_date = format_date_with_weekday(
         show.get("取票日期")
     )
 
@@ -595,7 +683,7 @@ def build_view_show_card(
             pickup_status=pickup_status,
         ),
         build_detail_section(
-            icon="🎤",
+            icon="📋",
             title="演出資訊",
             rows=[
                 (
@@ -648,14 +736,15 @@ def build_view_show_card(
                             pickup_date,
                         ),
                         (
+                            "👤",
+                            "取票人員",
+                            pickup_person,
+                        ),
+                        None,
+                        (
                             "🎯",
                             "搶票大師",
                             ticket_master,
-                        ),
-                        (
-                            "👤",
-                            "取票人",
-                            pickup_person,
                         ),
                     ],
                 ),
@@ -697,7 +786,7 @@ def build_view_show_card(
                 {
                     "type": "text",
                     "text": f"🎤 {show_name}",
-                    "size": "xl",
+                    "size": "lg",
                     "weight": "bold",
                     "color": WHITE_COLOR,
                     "wrap": True,
