@@ -928,6 +928,7 @@ def build_summary(
 ):
     """
     建立今日待辦數量摘要。
+    三個統計區塊可直接點擊開啟對應列表。
     """
 
     total_count = (
@@ -969,33 +970,46 @@ def build_summary(
                 "spacing": "sm",
                 "contents": [
                     build_summary_count(
-                        "🎫",
-                        "搶票",
-                        ticket_count,
+                        icon="🎫",
+                        label="搶票",
+                        count=ticket_count,
+                        action_text="搶票列表",
                     ),
                     build_summary_count(
-                        "📮",
-                        "取票",
-                        pickup_count,
+                        icon="📦",
+                        label="取票",
+                        count=pickup_count,
+                        action_text="取票列表",
                     ),
                     build_summary_count(
-                        "🎤",
-                        "演出",
-                        show_count,
+                        icon="🎤",
+                        label="演出",
+                        count=show_count,
+                        action_text="演出列表",
                     ),
                 ],
             },
+            {
+                "type": "text",
+                "text": "點選上方分類可查看完整列表",
+                "size": "xxs",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
+                "margin": "sm",
+                "wrap": True,
+            },
         ],
     }
-
 
 def build_summary_count(
     icon,
     label,
     count,
+    action_text,
 ):
     """
     建立摘要中的單一統計欄位。
+    點擊後送出對應列表指令。
     """
 
     return {
@@ -1005,6 +1019,11 @@ def build_summary_count(
         "paddingAll": "8px",
         "backgroundColor": SECTION_COLOR,
         "cornerRadius": "10px",
+        "action": {
+            "type": "message",
+            "label": f"查看{label}列表",
+            "text": action_text,
+        },
         "contents": [
             {
                 "type": "text",
@@ -1031,7 +1050,6 @@ def build_summary_count(
             },
         ],
     }
-
 
 # =====================
 # Footer
@@ -1137,15 +1155,11 @@ def build_today_card(today=None):
                 show_section,
             ],
         },
-        "footer": build_footer(),
         "styles": {
             "header": {
                 "separator": False,
             },
             "body": {
-                "separator": False,
-            },
-            "footer": {
                 "separator": False,
             },
         },
