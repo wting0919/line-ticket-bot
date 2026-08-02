@@ -355,32 +355,23 @@ def build_info_row(
     icon,
     label,
     value,
+    margin="sm",
 ):
-    """
-    建立單筆資訊列。
-    """
-
     return {
         "type": "box",
         "layout": "horizontal",
-        "margin": "sm",
+        "margin": margin,
         "alignItems": "flex-start",
         "contents": [
             {
                 "type": "text",
-                "text": safe_text(
-                    icon,
-                    "",
-                ),
+                "text": safe_text(icon, ""),
                 "size": "sm",
                 "flex": 0,
             },
             {
                 "type": "text",
-                "text": safe_text(
-                    label,
-                    "",
-                ),
+                "text": safe_text(label, ""),
                 "size": "xs",
                 "weight": "bold",
                 "color": SUBTEXT_COLOR,
@@ -398,7 +389,6 @@ def build_info_row(
             },
         ],
     }
-
 
 # =========================================================
 # 共用資訊區塊
@@ -468,20 +458,7 @@ def build_detail_section(
         }
     ]
 
-    for row in rows:
-
-        if row is None:
-
-            contents.append(
-                {
-                    "type": "spacer",
-                    "size": "sm",
-                }
-            )
-
-            continue
-
-        row_icon, label, value = row
+    for row_icon, label, value in rows:
 
         contents.append(
             build_info_row(
@@ -840,7 +817,6 @@ def build_view_show_card(
                             "取票人員",
                             pickup_person,
                         ),
-                        None,
                         (
                             "🎯",
                             "搶票大師",
