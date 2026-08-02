@@ -230,9 +230,9 @@ def check_reminders():
                     config.push_mention_message(
                         config.GROUP_ID,
                         (
-                            "🎫 取票提醒\n\n"
+                            "📦 取票提醒\n\n"
                             f"🎤 {show['演出名稱']}\n"
-                            "🎫 可以取票囉～"
+                            "👤 可以取票囉～"
                         ),
                         participants
                     )
@@ -340,7 +340,7 @@ def send_today_summary():
                     upcoming.append(
                         (
                             pickup_date,
-                            f"{pickup_date.strftime('%m/%d')}　🎫 {show['演出名稱']}"
+                            f"{pickup_date.strftime('%m/%d')}　📦 {show['演出名稱']}"
                         )
                     )
 
@@ -372,7 +372,7 @@ def send_today_summary():
 
     if not ticket_today and not pickup_today and not show_today:
 
-        msg += "🎉 今天沒有待辦事項\n"
+        msg += "🎉 今天沒有待辦事項"
 
     else:
 
@@ -395,7 +395,7 @@ def send_today_summary():
         if pickup_today:
 
             msg += "━━━━━━━━━━━━\n"
-            msg += f"🎫 今天可取票（{len(pickup_today)}）\n\n"
+            msg += f"📦 今天可取票（{len(pickup_today)}）\n\n"
 
             for show in pickup_today:
 
