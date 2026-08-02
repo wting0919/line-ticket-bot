@@ -249,10 +249,10 @@ def build_status_tag(
         "layout": "vertical",
         "backgroundColor": background_color,
         "cornerRadius": "12px",
-        "paddingTop": "4px",
-        "paddingBottom": "4px",
-        "paddingStart": "10px",
-        "paddingEnd": "10px",
+        "paddingTop": "7px",
+        "paddingBottom": "7px",
+        "paddingStart": "12px",
+        "paddingEnd": "12px",
         "contents": [
             {
                 "type": "text",
@@ -844,9 +844,13 @@ def build_view_show_card(
                     "margin": "md",
                     "contents": [
                         {
-                            "type": "separator",
-                            "color": "#D8C7B5",
-                            "flex": 2,
+                            "type": "box",
+                            "layout": "vertical",
+                            "width": "40px",
+                            "height": "4px",
+                            "backgroundColor": "#D8C7B5",
+                            "cornerRadius": "2px",
+                            "contents": [],
                         }
                     ],
                 },
