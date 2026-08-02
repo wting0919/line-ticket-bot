@@ -840,15 +840,14 @@ def build_view_show_card(
                 {
                     "type": "box",
                     "layout": "horizontal",
-                    "justifyContent": "center",
                     "margin": "md",
                     "contents": [
                         {
                             "type": "box",
                             "layout": "vertical",
-                            "width": "40px",
-                            "height": "4px",
-                            "backgroundColor": "#D8C7B5",
+                            "width": "80px",
+                            "height": "3px",
+                            "backgroundColor": BUTTON_COLOR,
                             "cornerRadius": "2px",
                             "contents": [],
                         }
@@ -905,8 +904,8 @@ def build_view_show_card(
             "type": "box",
             "layout": "vertical",
             "backgroundColor": HEADER_COLOR,
-            "paddingTop": "14px",
-            "paddingBottom": "14px",
+            "paddingTop": "16px",
+            "paddingBottom": "16px",
             "paddingStart": "16px",
             "paddingEnd": "16px",
             "contents": [
