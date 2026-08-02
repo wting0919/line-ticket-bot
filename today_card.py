@@ -15,274 +15,1020 @@ from utils import (
     format_show_dates_inline,
 )
 
-# =====================
-# Color
-# =====================
+
+# =========================================================
+# Today Card V2
+# 奶茶色系
+# =========================================================
 
 HEADER_COLOR = "#C9B29B"
-
 BODY_COLOR = "#FFFCF8"
 
 TEXT_COLOR = "#5C5148"
-
 SUBTEXT_COLOR = "#75695F"
+LIGHT_TEXT_COLOR = "#9A8D82"
 
 LINE_COLOR = "#E7DDD2"
 
 BUTTON_COLOR = "#B99F86"
+BUTTON_TEXT_COLOR = "#FFFFFF"
 
+TAG_COLOR = "#F1E8DE"
+TAG_TEXT_COLOR = "#75695F"
+
+WARNING_COLOR = "#B67C62"
+SUCCESS_COLOR = "#879A7B"
+
+
+# =========================================================
+# 基本元件
+# =========================================================
+
+def build_text(
+    text,
+    size="sm",
+    color=TEXT_COLOR,
+    weight="regular",
+    wrap=True,
+    flex=None,
+    align=None,
+    margin=None,
+):
+    """
+    建立共用文字元件。
+    """
+
+    component = {
+        "type": "text",
+        "text": str(text),
+        "size": size,
+        "color": color,
+        "weight": weight,
+        "wrap": wrap,
+    }
+
+    if flex is not None:
+        component["flex"] = flex
+
+    if align is not None:
+        component["align"] = align
+
+    if margin is not None:
+        component["margin"] = margin
+
+    return component
+
+
+def build_separator(margin="md"):
+    """
+    建立奶茶色分隔線。
+    """
+
+    return {
+        "type": "separator",
+        "margin": margin,
+        "color": LINE_COLOR,
+    }
+
+
+def build_spacer(size="sm"):
+    """
+    建立空白間距。
+    """
+
+    return {
+        "type": "spacer",
+        "size": size,
+    }
+
+
+def build_status_tag(text, color=TAG_COLOR, text_color=TAG_TEXT_COLOR):
+    """
+    建立狀態標籤。
+    """
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "backgroundColor": color,
+        "cornerRadius": "10px",
+        "paddingTop": "3px",
+        "paddingBottom": "3px",
+        "paddingStart": "8px",
+        "paddingEnd": "8px",
+        "contents": [
+            {
+                "type": "text",
+                "text": str(text),
+                "size": "xxs",
+                "color": text_color,
+                "weight": "bold",
+                "align": "center",
+                "wrap": False,
+            }
+        ],
+    }
+
+
+# =========================================================
+# 日期處理
+# =========================================================
+
+def get_today_date():
+    """
+    取得今日日期。
+
+    回傳：
+        datetime.date
+    """
+
+    return datetime.now().date()
+
+
+def get_weekday_text(date_value):
+    """
+    將星期轉成中文。
+    """
+
+    weekdays = [
+        "星期一",
+        "星期二",
+        "星期三",
+        "星期四",
+        "星期五",
+        "星期六",
+        "星期日",
+    ]
+
+    return weekdays[date_value.weekday()]
+
+
+def format_today_date(date_value):
+    """
+    將日期格式化為：
+    2026年8月2日 星期日
+    """
+
+    weekday = get_weekday_text(date_value)
+
+    return (
+        f"{date_value.year}年"
+        f"{date_value.month}月"
+        f"{date_value.day}日 "
+        f"{weekday}"
+    )
+
+
+# =========================================================
+# Header
+# =========================================================
 
 def build_header(today):
+    """
+    建立今日待辦事項標題區塊。
+    """
 
     return {
         "type": "box",
         "layout": "vertical",
         "backgroundColor": HEADER_COLOR,
-        "paddingTop": "12px",
-        "paddingBottom": "12px",
-        "paddingStart": "18px",
-        "paddingEnd": "18px",
+        "paddingTop": "14px",
+        "paddingBottom": "14px",
+        "paddingStart": "16px",
+        "paddingEnd": "16px",
         "contents": [
-
             {
                 "type": "text",
                 "text": "☀️ 今日待辦事項",
-                "weight": "bold",
                 "size": "lg",
-                "color": "#FFFFFF"
+                "weight": "bold",
+                "color": "#FFFFFF",
+                "wrap": True,
             },
-
             {
                 "type": "text",
-                "text": today.strftime("%Y/%m/%d"),
+                "text": format_today_date(today),
                 "size": "xs",
+                "color": "#FFF9F3",
                 "margin": "sm",
-                "color": "#F8F5F2"
-            }
-
-        ]
+                "wrap": True,
+            },
+        ],
     }
 
 
-def build_today_card():
+# =========================================================
+# 區塊標題
+# =========================================================
 
-    today = datetime.now().date()
+def build_section_title(icon, title, count=None):
+    """
+    建立區塊標題。
 
-    ticket_today = [
-        show
-        for show in get_waiting_shows()
-        if parse_datetime(show.get("搶票時間")).date() == today
-    ]
+    範例：
+        🎫 今日搶票    2
+    """
 
-    pickup_today = [
-        show
-        for show in get_pickup_shows()
-        if parse_date(show.get("取票日期")).date() == today
-    ]
-
-    show_today = [
-        show
-        for show in get_all_shows()
-        if today
-        in [
-            parse_date(d).date()
-            for d in show["演出日期"].split("、")
-        ]
-    ]
-
-    body = []
-
-    body.append(
-        {
-            "type": "separator",
-            "margin": "lg",
-        }
-    )
-
-    # 搶票
-    body.append(
+    left_contents = [
         {
             "type": "text",
-            "text": f"🎟 今日搶票（{len(ticket_today)}）",
+            "text": f"{icon} {title}",
+            "size": "md",
             "weight": "bold",
-            "margin": "lg",
+            "color": TEXT_COLOR,
+            "wrap": True,
         }
-    )
+    ]
 
-    if ticket_today:
+    contents = [
+        {
+            "type": "box",
+            "layout": "vertical",
+            "flex": 1,
+            "contents": left_contents,
+        }
+    ]
 
-        for show in ticket_today:
-
-            body.extend(
-                [
-                    {
-                        "type": "text",
-                        "text": show["演出名稱"],
-                        "weight": "bold",
-                        "margin": "md",
-                    },
-                    {
-                        "type": "text",
-                        "text": f"🕒 {format_datetime(show['搶票時間'])}",
-                        "size": "sm",
-                        "color": "#666666",
-                    },
-                ]
+    if count is not None:
+        contents.append(
+            build_status_tag(
+                text=str(count),
+                color=TAG_COLOR,
+                text_color=TAG_TEXT_COLOR,
             )
-
-    else:
-
-        body.append(
-            {
-                "type": "text",
-                "text": "今天沒有搶票",
-                "size": "sm",
-                "color": "#888888",
-            }
         )
 
-    body.append(
-        {
-            "type": "separator",
-            "margin": "lg",
-        }
-    )
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "alignItems": "center",
+        "contents": contents,
+    }
 
-    # 取票
-    body.append(
-        {
-            "type": "text",
-            "text": f"📦 今日取票（{len(pickup_today)}）",
-            "weight": "bold",
-            "margin": "lg",
-        }
-    )
 
-    if pickup_today:
+# =========================================================
+# 空白狀態
+# =========================================================
 
-        for show in pickup_today:
+def build_empty_content(empty_text):
+    """
+    建立區塊沒有資料時的顯示內容。
+    """
 
-            body.extend(
-                [
-                    {
-                        "type": "text",
-                        "text": show["演出名稱"],
-                        "weight": "bold",
-                        "margin": "md",
-                    },
-                    {
-                        "type": "text",
-                        "text": f"👤 {show.get('取票人') or '未設定'}",
-                        "size": "sm",
-                        "color": "#666666",
-                    },
-                ]
-            )
-
-    else:
-
-        body.append(
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "backgroundColor": "#FAF5EF",
+        "cornerRadius": "10px",
+        "paddingAll": "12px",
+        "contents": [
             {
                 "type": "text",
-                "text": "今天沒有取票",
+                "text": empty_text,
                 "size": "sm",
-                "color": "#888888",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
+                "wrap": True,
             }
-        )
+        ],
+    }
 
-    body.append(
-        {
-            "type": "separator",
-            "margin": "lg",
-        }
-    )
 
-    # 演出
-    body.append(
-        {
-            "type": "text",
-            "text": f"📋 今日演出（{len(show_today)}）",
-            "weight": "bold",
-            "margin": "lg",
-        }
-    )
+# =========================================================
+# 共用 Section
+# =========================================================
 
-    if show_today:
+def build_section(
+    icon,
+    title,
+    items,
+    item_builder,
+    empty_text="目前沒有待辦事項",
+    show_count=True,
+    margin="lg",
+):
+    """
+    建立共用待辦區塊。
 
-        for show in show_today:
+    參數：
+        icon:
+            區塊圖示，例如「🎫」。
 
-            body.extend(
-                [
-                    {
-                        "type": "text",
-                        "text": show["演出名稱"],
-                        "weight": "bold",
-                        "margin": "md",
-                    },
-                    {
-                        "type": "text",
-                        "text": format_show_dates_inline(show["演出日期"]),
-                        "size": "sm",
-                        "color": "#666666",
-                        "wrap": True,
-                    },
-                ]
-            )
+        title:
+            區塊名稱，例如「今日搶票」。
 
-    else:
+        items:
+            該區塊的演出資料列表。
 
-        body.append(
+        item_builder:
+            將單筆演出資料轉換成 Flex 元件的函式。
+
+        empty_text:
+            沒有資料時顯示的文字。
+
+        show_count:
+            是否顯示資料筆數。
+
+        margin:
+            區塊與上一個元件的距離。
+    """
+
+    safe_items = items or []
+
+    section_contents = [
+        build_section_title(
+            icon=icon,
+            title=title,
+            count=len(safe_items) if show_count else None,
+        ),
+        build_separator(margin="md"),
+    ]
+
+    if not safe_items:
+        section_contents.append(
             {
-                "type": "text",
-                "text": "今天沒有演出",
-                "size": "sm",
-                "color": "#888888",
-            }
-        )
-
-    return FlexSendMessage(
-        alt_text="今日任務",
-        contents={
-            "type": "bubble",
-            "header": build_header(today),
-            "body": {
                 "type": "box",
                 "layout": "vertical",
-                "contents": body,
+                "margin": "md",
+                "contents": [
+                    build_empty_content(empty_text),
+                ],
+            }
+        )
+
+    else:
+        item_contents = []
+
+        for index, item in enumerate(safe_items):
+            try:
+                built_item = item_builder(item, index)
+
+            except TypeError:
+                # 相容只接收一個參數的 item_builder
+                built_item = item_builder(item)
+
+            except Exception as error:
+                print(
+                    f"[today_card] 建立區塊項目失敗："
+                    f"title={title}, index={index}, error={error}"
+                )
+                continue
+
+            if not built_item:
+                continue
+
+            if item_contents:
+                item_contents.append(
+                    build_separator(margin="md")
+                )
+
+            item_contents.append(built_item)
+
+        if item_contents:
+            section_contents.append(
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "margin": "md",
+                    "spacing": "md",
+                    "contents": item_contents,
+                }
+            )
+
+        else:
+            section_contents.append(
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "margin": "md",
+                    "contents": [
+                        build_empty_content(empty_text),
+                    ],
+                }
+            )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "margin": margin,
+        "contents": section_contents,
+    }
+
+# =====================
+# 日期判斷工具
+# =====================
+
+def is_same_date(value, target_date):
+    """
+    判斷日期或日期時間是否為指定日期。
+    """
+
+    if not value:
+        return False
+
+    parsed_value = parse_datetime(value)
+
+    if parsed_value is None:
+        parsed_value = parse_date(value)
+
+    if parsed_value is None:
+        return False
+
+    return parsed_value.date() == target_date.date()
+
+
+def is_show_date_today(show, today):
+    """
+    判斷演出是否在今天。
+
+    支援：
+    - 單一演出日期
+    - 多個演出日期
+    - list / tuple
+    - 使用逗號或換行分隔的日期字串
+    """
+
+    show_dates = show.get("演出日期")
+
+    if not show_dates:
+        return False
+
+    if isinstance(show_dates, (list, tuple)):
+        date_values = show_dates
+
+    else:
+        text = str(show_dates).strip()
+
+        text = text.replace("，", ",")
+        text = text.replace("\n", ",")
+
+        date_values = [
+            value.strip()
+            for value in text.split(",")
+            if value.strip()
+        ]
+
+    return any(
+        is_same_date(value, today)
+        for value in date_values
+    )
+
+
+# =====================
+# 今日資料篩選
+# =====================
+
+def get_today_ticket_shows(today):
+    """
+    取得今天需要搶票的演出。
+    """
+
+    waiting_shows = get_waiting_shows()
+
+    return [
+        show
+        for show in waiting_shows
+        if is_same_date(
+            show.get("搶票時間"),
+            today,
+        )
+    ]
+
+
+def get_today_pickup_shows(today):
+    """
+    取得今天需要取票的演出。
+    """
+
+    pickup_shows = get_pickup_shows()
+
+    return [
+        show
+        for show in pickup_shows
+        if is_same_date(
+            show.get("取票日期"),
+            today,
+        )
+    ]
+
+
+def get_today_show_shows(today):
+    """
+    取得今天舉行的演出。
+    """
+
+    all_shows = get_all_shows()
+
+    return [
+        show
+        for show in all_shows
+        if is_show_date_today(show, today)
+    ]
+
+
+# =====================
+# 排序工具
+# =====================
+
+def sort_today_ticket_shows(shows):
+    """
+    今日搶票依搶票時間排序。
+    """
+
+    return sorted(
+        shows,
+        key=lambda show: (
+            parse_datetime(
+                show.get("搶票時間")
+            )
+            or datetime.max
+        ),
+    )
+
+
+def sort_today_pickup_shows(shows):
+    """
+    今日取票依取票日期排序。
+    """
+
+    return sorted(
+        shows,
+        key=lambda show: (
+            parse_date(
+                show.get("取票日期")
+            )
+            or datetime.max
+        ),
+    )
+
+
+def get_first_show_date(show):
+    """
+    取得演出的第一個日期，供排序使用。
+    """
+
+    show_dates = show.get("演出日期")
+
+    if not show_dates:
+        return datetime.max
+
+    if isinstance(show_dates, (list, tuple)):
+        date_values = show_dates
+
+    else:
+        text = str(show_dates).strip()
+
+        text = text.replace("，", ",")
+        text = text.replace("\n", ",")
+
+        date_values = [
+            value.strip()
+            for value in text.split(",")
+            if value.strip()
+        ]
+
+    parsed_dates = [
+        parse_date(value)
+        for value in date_values
+    ]
+
+    parsed_dates = [
+        value
+        for value in parsed_dates
+        if value is not None
+    ]
+
+    return min(parsed_dates) if parsed_dates else datetime.max
+
+
+def sort_today_show_shows(shows):
+    """
+    今日演出依演出日期排序。
+    """
+
+    return sorted(
+        shows,
+        key=get_first_show_date,
+    )
+
+
+# =====================
+# 今日搶票項目
+# =====================
+
+def build_ticket_item(show, index):
+    """
+    建立今日搶票項目。
+    """
+
+    ticket_time = format_datetime(
+        show.get("搶票時間")
+    )
+
+    platform = safe_text(
+        show.get("售票平台")
+    )
+
+    price_quantity = safe_text(
+        show.get("價格張數")
+    )
+
+    note = show.get("備註")
+
+    info_rows = [
+        (
+            "搶票時間",
+            ticket_time,
+        ),
+        (
+            "售票平台",
+            platform,
+        ),
+        (
+            "價格張數",
+            price_quantity,
+        ),
+    ]
+
+    if note:
+        info_rows.append(
+            (
+                "備註",
+                note,
+            )
+        )
+
+    return build_task_item(
+        title=show.get("演出名稱"),
+        info_rows=info_rows,
+        badge_text="等待搶票",
+        action_label="查看搶票列表",
+        action_text="搶票列表",
+    )
+
+
+# =====================
+# 今日取票項目
+# =====================
+
+def build_pickup_item(show, index):
+    """
+    建立今日取票項目。
+    """
+
+    pickup_date = parse_date(
+        show.get("取票日期")
+    )
+
+    if pickup_date:
+        pickup_date_text = (
+            pickup_date.strftime("%Y / %m / %d")
+        )
+    else:
+        pickup_date_text = safe_text(
+            show.get("取票日期")
+        )
+
+    show_dates = format_show_dates_inline(
+        show.get("演出日期")
+    )
+
+    platform = show.get("售票平台")
+
+    info_rows = [
+        (
+            "取票日期",
+            pickup_date_text,
+        ),
+        (
+            "演出日期",
+            show_dates,
+        ),
+    ]
+
+    if platform:
+        info_rows.append(
+            (
+                "售票平台",
+                platform,
+            )
+        )
+
+    return build_task_item(
+        title=show.get("演出名稱"),
+        info_rows=info_rows,
+        badge_text="未取票",
+        action_label="查看取票列表",
+        action_text="取票列表",
+    )
+
+
+# =====================
+# 今日演出項目
+# =====================
+
+def build_show_item(show, index):
+    """
+    建立今日演出項目。
+    """
+
+    show_dates = format_show_dates_inline(
+        show.get("演出日期")
+    )
+
+    platform = show.get("售票平台")
+
+    note = show.get("備註")
+
+    info_rows = [
+        (
+            "演出日期",
+            show_dates,
+        ),
+    ]
+
+    if platform:
+        info_rows.append(
+            (
+                "售票平台",
+                platform,
+            )
+        )
+
+    if note:
+        info_rows.append(
+            (
+                "備註",
+                note,
+            )
+        )
+
+    return build_task_item(
+        title=show.get("演出名稱"),
+        info_rows=info_rows,
+        badge_text="今天演出",
+        action_label="查看演出列表",
+        action_text="演出列表",
+    )
+
+
+# =====================
+# 統計摘要
+# =====================
+
+def build_summary(
+    ticket_count,
+    pickup_count,
+    show_count,
+):
+    """
+    建立今日待辦數量摘要。
+    """
+
+    total_count = (
+        ticket_count
+        + pickup_count
+        + show_count
+    )
+
+    if total_count == 0:
+        summary_text = "今天沒有待辦事項，好好休息 ☕"
+
+    else:
+        summary_text = (
+            f"今天共有 {total_count} 項待辦"
+        )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "paddingAll": "14px",
+        "backgroundColor": BODY_COLOR,
+        "cornerRadius": "12px",
+        "borderWidth": "1px",
+        "borderColor": LINE_COLOR,
+        "contents": [
+            {
+                "type": "text",
+                "text": summary_text,
+                "size": "sm",
+                "weight": "bold",
+                "color": TEXT_COLOR,
+                "align": "center",
+                "wrap": True,
             },
-            "footer": {
+            {
                 "type": "box",
                 "layout": "horizontal",
+                "margin": "md",
                 "spacing": "sm",
                 "contents": [
-                    {
-                        "type": "button",
-                        "style": "primary",
-                        "action": {
-                            "type": "message",
-                            "label": "🎟",
-                            "text": "搶票列表",
-                        },
-                    },
-                    {
-                        "type": "button",
-                        "style": "primary",
-                        "action": {
-                            "type": "message",
-                            "label": "📦",
-                            "text": "取票列表",
-                        },
-                    },
-                    {
-                        "type": "button",
-                        "style": "primary",
-                        "action": {
-                            "type": "message",
-                            "label": "📋",
-                            "text": "演出列表",
-                        },
-                    },
+                    build_summary_count(
+                        "🎫",
+                        "搶票",
+                        ticket_count,
+                    ),
+                    build_summary_count(
+                        "📮",
+                        "取票",
+                        pickup_count,
+                    ),
+                    build_summary_count(
+                        "🎤",
+                        "演出",
+                        show_count,
+                    ),
                 ],
             },
-        },
+        ],
+    }
+
+
+def build_summary_count(
+    icon,
+    label,
+    count,
+):
+    """
+    建立摘要中的單一統計欄位。
+    """
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "flex": 1,
+        "paddingAll": "8px",
+        "backgroundColor": SECTION_COLOR,
+        "cornerRadius": "10px",
+        "contents": [
+            {
+                "type": "text",
+                "text": icon,
+                "size": "md",
+                "align": "center",
+            },
+            {
+                "type": "text",
+                "text": str(count),
+                "size": "lg",
+                "weight": "bold",
+                "color": TEXT_COLOR,
+                "align": "center",
+                "margin": "xs",
+            },
+            {
+                "type": "text",
+                "text": label,
+                "size": "xxs",
+                "color": SUBTEXT_COLOR,
+                "align": "center",
+                "margin": "xs",
+            },
+        ],
+    }
+
+
+# =====================
+# Footer
+# =====================
+
+def build_footer():
+    """
+    建立底部按鈕。
+    """
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "paddingTop": "4px",
+        "paddingBottom": "16px",
+        "paddingStart": "16px",
+        "paddingEnd": "16px",
+        "backgroundColor": BODY_COLOR,
+        "contents": [
+            {
+                "type": "button",
+                "style": "primary",
+                "height": "sm",
+                "color": BUTTON_COLOR,
+                "action": {
+                    "type": "message",
+                    "label": "查看全部演出",
+                    "text": "演出列表",
+                },
+            }
+        ],
+    }
+
+
+# =====================
+# 建立今日待辦卡片
+# =====================
+
+def build_today_card(today=None):
+    """
+    建立完整的「☀️ 今日待辦事項」Flex Message。
+    """
+
+    if today is None:
+        today = datetime.now()
+
+    ticket_shows = sort_today_ticket_shows(
+        get_today_ticket_shows(today)
     )
+
+    pickup_shows = sort_today_pickup_shows(
+        get_today_pickup_shows(today)
+    )
+
+    show_shows = sort_today_show_shows(
+        get_today_show_shows(today)
+    )
+
+    ticket_section = build_section(
+        icon="🎫",
+        title="今日搶票",
+        items=ticket_shows,
+        item_builder=build_ticket_item,
+        empty_text="今天沒有需要搶票的演出",
+    )
+
+    pickup_section = build_section(
+        icon="📮",
+        title="今日取票",
+        items=pickup_shows,
+        item_builder=build_pickup_item,
+        empty_text="今天沒有需要取票的演出",
+    )
+
+    show_section = build_section(
+        icon="🎤",
+        title="今日演出",
+        items=show_shows,
+        item_builder=build_show_item,
+        empty_text="今天沒有舉行中的演出",
+    )
+
+    bubble = {
+        "type": "bubble",
+        "size": "mega",
+        "header": build_header(today),
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": BODY_COLOR,
+            "paddingTop": "16px",
+            "paddingBottom": "16px",
+            "paddingStart": "14px",
+            "paddingEnd": "14px",
+            "contents": [
+                build_summary(
+                    ticket_count=len(ticket_shows),
+                    pickup_count=len(pickup_shows),
+                    show_count=len(show_shows),
+                ),
+                ticket_section,
+                pickup_section,
+                show_section,
+            ],
+        },
+        "footer": build_footer(),
+        "styles": {
+            "header": {
+                "separator": False,
+            },
+            "body": {
+                "separator": False,
+            },
+            "footer": {
+                "separator": False,
+            },
+        },
+    }
+
+    return FlexSendMessage(
+        alt_text="☀️ 今日待辦事項",
+        contents=bubble,
+    )
+
+
+# =====================
+# 相容舊函式名稱
+# =====================
+
+def create_today_card(today=None):
+    """
+    舊程式若使用 create_today_card()，
+    可繼續直接呼叫。
+    """
+
+    return build_today_card(today)
+
+
+def get_today_card(today=None):
+    """
+    舊程式若使用 get_today_card()，
+    可繼續直接呼叫。
+    """
+
+    return build_today_card(today)
