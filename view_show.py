@@ -83,6 +83,30 @@ def safe_text(
 
     return text
 
+def remove_none_elements(value):
+    """
+    遞迴移除 Flex JSON 中的 None。
+
+    避免 LINE 回傳：
+    cannot contain null elements
+    """
+
+    if isinstance(value, list):
+        return [
+            remove_none_elements(item)
+            for item in value
+            if item is not None
+        ]
+
+    if isinstance(value, dict):
+        return {
+            key: remove_none_elements(item)
+            for key, item in value.items()
+            if item is not None
+        }
+
+    return value
+
 
 def build_separator(
     margin="md",
@@ -556,12 +580,9 @@ def build_action_button(
 ):
     """
     建立奶茶色操作按鈕。
-
-    使用 LINE 官方 button 元件，
-    避免整張 Flex 因自製 Box Action 驗證失敗。
     """
 
-    return {
+    button = {
         "type": "button",
         "style": "primary",
         "height": "sm",
@@ -574,6 +595,7 @@ def build_action_button(
         },
     }
 
+    return button
 
 def build_action_area(
     index,
@@ -582,15 +604,28 @@ def build_action_area(
 ):
     """
     建立底部操作按鈕。
-
-    第一排：
-    ✏️ 修改、📄 複製、🗑️ 刪除
-
-    第二排依狀態顯示：
-    ✅ 完成搶票、❌ 未搶到
-    或
-    ✅ 完成取票
     """
+
+    main_buttons = [
+        build_action_button(
+            label="✏️ 修改",
+            action_text=f"修改 {index}",
+        ),
+        build_action_button(
+            label="📄 複製",
+            action_text=f"複製 {index}",
+        ),
+        build_action_button(
+            label="🗑️ 刪除",
+            action_text=f"刪除 {index}",
+        ),
+    ]
+
+    main_buttons = [
+        button
+        for button in main_buttons
+        if button is not None
+    ]
 
     contents = [
         build_separator(
@@ -601,24 +636,28 @@ def build_action_area(
             "layout": "horizontal",
             "spacing": "xs",
             "margin": "lg",
-            "contents": [
-                build_action_button(
-                    label="✏️ 修改",
-                    action_text=f"修改 {index}",
-                ),
-                build_action_button(
-                    label="📄 複製",
-                    action_text=f"複製 {index}",
-                ),
-                build_action_button(
-                    label="🗑️ 刪除",
-                    action_text=f"刪除 {index}",
-                ),
-            ],
+            "contents": main_buttons,
         },
     ]
 
     if status == "等待搶票":
+
+        ticket_buttons = [
+            build_action_button(
+                label="✅ 完成搶票",
+                action_text=f"完成搶票 {index}",
+            ),
+            build_action_button(
+                label="❌ 未搶到",
+                action_text=f"未搶到 {index}",
+            ),
+        ]
+
+        ticket_buttons = [
+            button
+            for button in ticket_buttons
+            if button is not None
+        ]
 
         contents.append(
             {
@@ -626,16 +665,7 @@ def build_action_area(
                 "layout": "horizontal",
                 "spacing": "xs",
                 "margin": "sm",
-                "contents": [
-                    build_action_button(
-                        label="✅ 完成搶票",
-                        action_text=f"完成搶票 {index}",
-                    ),
-                    build_action_button(
-                        label="❌ 未搶到",
-                        action_text=f"未搶到 {index}",
-                    ),
-                ],
+                "contents": ticket_buttons,
             }
         )
 
@@ -644,22 +674,29 @@ def build_action_area(
         and pickup_status != "已取票"
     ):
 
+        pickup_buttons = [
+            build_action_button(
+                label="✅ 完成取票",
+                action_text=f"完成取票 {index}",
+            )
+        ]
+
+        pickup_buttons = [
+            button
+            for button in pickup_buttons
+            if button is not None
+        ]
+
         contents.append(
             {
                 "type": "box",
                 "layout": "horizontal",
                 "margin": "sm",
-                "contents": [
-                    build_action_button(
-                        label="✅ 完成取票",
-                        action_text=f"完成取票 {index}",
-                    ),
-                ],
+                "contents": pickup_buttons,
             }
         )
 
     return contents
-
 
 # =========================================================
 # 建立演出詳細 Flex
@@ -842,6 +879,8 @@ def build_view_show_card(
             pickup_status=pickup_status,
         )
     )
+
+    print(body_contents)
 
     bubble = {
         "type": "bubble",
