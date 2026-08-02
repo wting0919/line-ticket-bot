@@ -263,7 +263,7 @@ def handle_message(event):
     # 今日重點
     # =====================
 
-    elif text == "今日任務":
+    elif text == "今日待辦":
     
         line_bot_api.reply_message(
             event.reply_token,
