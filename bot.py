@@ -110,10 +110,14 @@ from utils import (
     format_datetime,
     format_date,
     format_show_dates,
+    format_show_dates_inline,
     format_ticket_status,
     format_pickup_status,
     LIST_FOOTER,
 )
+
+from today_card import build_today_card
+
 
 app = Flask(__name__)
 
@@ -259,7 +263,12 @@ def handle_message(event):
     # 今日重點
     # =====================
 
-    elif text == "今日重點":
+    elif text == "今日任務":
+    
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_today_card()
+        )
 
         send_today_summary()
 
@@ -422,7 +431,7 @@ def handle_message(event):
                 )
 
                 if pickup_status:
-                    reply += pickup_status
+                    reply += f"\n{pickup_status}"
 
 
             reply += LIST_FOOTER
