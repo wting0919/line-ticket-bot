@@ -12,9 +12,56 @@ from utils import (
     parse_datetime,
     parse_date,
     format_datetime,
-    format_date,
     format_show_dates_inline,
 )
+
+# =====================
+# Color
+# =====================
+
+HEADER_COLOR = "#C9B29B"
+
+BODY_COLOR = "#FFFCF8"
+
+TEXT_COLOR = "#5C5148"
+
+SUBTEXT_COLOR = "#75695F"
+
+LINE_COLOR = "#E7DDD2"
+
+BUTTON_COLOR = "#B99F86"
+
+
+def build_header(today):
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "backgroundColor": HEADER_COLOR,
+        "paddingTop": "12px",
+        "paddingBottom": "12px",
+        "paddingStart": "18px",
+        "paddingEnd": "18px",
+        "contents": [
+
+            {
+                "type": "text",
+                "text": "☀️ 今日待辦事項",
+                "weight": "bold",
+                "size": "lg",
+                "color": "#FFFFFF"
+            },
+
+            {
+                "type": "text",
+                "text": today.strftime("%Y/%m/%d"),
+                "size": "xs",
+                "margin": "sm",
+                "color": "#F8F5F2"
+            }
+
+        ]
+    }
 
 
 def build_today_card():
@@ -206,11 +253,7 @@ def build_today_card():
         alt_text="今日任務",
         contents={
             "type": "bubble",
-            "header": {
-                "type": "box",
-                "layout": "vertical",
-                "backgroundColor": "#06C755",
-                "paddingAll": "16px",
+            "header": build_header(today),
                 "contents": [
                     {
                         "type": "text",
