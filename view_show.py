@@ -352,6 +352,9 @@ def build_detail_section(
         ("📅", "演出日期", "2026/10/18"),
         ("🕒", "搶票時間", "2026/08/15 13:00"),
     ]
+
+    rows 中放入 None，
+    可在兩筆資訊中間加入空白間距。
     """
 
     contents = [
@@ -415,13 +418,12 @@ def build_detail_section(
             )
         )
 
-        return {
-            "type": "box",
-            "layout": "vertical",
-            "margin": margin,
-            "contents": contents,
-        }
-
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "margin": margin,
+        "contents": contents,
+    }
 
 # =========================================================
 # 備註區塊
