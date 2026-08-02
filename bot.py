@@ -265,29 +265,30 @@ def handle_message(event):
 
     elif text == "今日待辦":
 
-    try:
-        line_bot_api.reply_message(
-            event.reply_token,
-            build_today_card()
-        )
+        try:
+            line_bot_api.reply_message(
+                event.reply_token,
+                build_today_card()
+            )
 
-    except Exception as error:
-        print(
-            "[今日待辦] 卡片建立失敗：",
-            repr(error)
-        )
+        except Exception as error:
+            print(
+                "[今日待辦] 卡片建立失敗：",
+                repr(error)
+            )
 
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=(
-                    "❌ 今日待辦載入失敗\n"
-                    f"{type(error).__name__}: {error}"
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 今日待辦載入失敗\n"
+                        f"{type(error).__name__}: {error}"
+                    )
                 )
             )
-        )
 
-    return
+        return
+
 
 
     # =====================
