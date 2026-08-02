@@ -970,7 +970,7 @@ def build_summary(
                 "spacing": "sm",
                 "contents": [
                     build_summary_count(
-                        icon="🎫",
+                        icon="🎟",
                         label="搶票",
                         count=ticket_count,
                         action_text="搶票列表",
@@ -1109,7 +1109,7 @@ def build_today_card(today=None):
     )
 
     ticket_section = build_section(
-        icon="🎫",
+        icon="🎟",
         title="今日搶票",
         items=ticket_shows,
         item_builder=build_ticket_item,
@@ -1117,7 +1117,7 @@ def build_today_card(today=None):
     )
 
     pickup_section = build_section(
-        icon="📮",
+        icon="📦",
         title="今日取票",
         items=pickup_shows,
         item_builder=build_pickup_item,
