@@ -24,6 +24,8 @@ from helpers import (
     set_current_index,
 )
 
+from linebot.exceptions import LineBotApiError
+
 import config
 
 
@@ -981,9 +983,20 @@ def handle_view_show(
             index=index + 1,
         )
 
+        print(
+            "[view_show] 準備送出 Flex：",
+            show.get("演出名稱"),
+            flush=True,
+        )
+
         config.line_bot_api.reply_message(
             event.reply_token,
             message,
+        )
+
+        print(
+            "[view_show] Flex 送出成功",
+            flush=True,
         )
 
         return True
@@ -999,22 +1012,87 @@ def handle_view_show(
 
         return True
 
-    except Exception as error:
+    except LineBotApiError as error:
 
         print(
-            "查看錯誤：",
+            "========== 查看 Flex LINE API 錯誤 ==========",
+            flush=True,
+        )
+
+        print(
+            "status_code：",
+            getattr(error, "status_code", None),
+            flush=True,
+        )
+
+        print(
+            "request_id：",
+            getattr(error, "request_id", None),
+            flush=True,
+        )
+
+        print(
+            "error_response：",
+            getattr(error, "error_response", None),
+            flush=True,
+        )
+
+        print(
+            "完整錯誤：",
             repr(error),
             flush=True,
         )
 
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=(
-                    "❌ 演出詳細資料載入失敗\n"
-                    f"{type(error).__name__}: {error}"
+        print(
+            "=============================================",
+            flush=True,
+        )
+
+        # 不要再次使用 event.reply_token
+        return True
+
+    except Exception as error:
+
+        print(
+            "========== 查看功能程式錯誤 ==========",
+            flush=True,
+        )
+
+        print(
+            "錯誤類型：",
+            type(error).__name__,
+            flush=True,
+        )
+
+        print(
+            "錯誤內容：",
+            repr(error),
+            flush=True,
+        )
+
+        print(
+            "=======================================",
+            flush=True,
+        )
+
+        # 只有在尚未呼叫 reply_message 前發生的一般錯誤，
+        # 才嘗試回覆使用者。
+        try:
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 演出詳細資料載入失敗\n"
+                        f"{type(error).__name__}: {error}"
+                    )
                 )
             )
-        )
+
+        except LineBotApiError as reply_error:
+            print(
+                "錯誤訊息回覆失敗：",
+                repr(reply_error),
+                flush=True,
+            )
 
         return True
