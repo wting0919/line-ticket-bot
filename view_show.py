@@ -83,6 +83,7 @@ def safe_text(
 
     return text
 
+
 def remove_none_elements(value):
     """
     遞迴移除 Flex JSON 中的 None。
@@ -119,6 +120,24 @@ def build_separator(
         "type": "separator",
         "margin": margin,
         "color": LINE_COLOR,
+    }
+
+def build_dashed_separator(
+    margin="md",
+):
+    """
+    用文字模擬奶茶色虛線，
+    避免使用 None 或不支援的線條樣式。
+    """
+
+    return {
+        "type": "text",
+        "text": "· · · · · · · · · · · · · · ·",
+        "size": "xxs",
+        "color": LINE_COLOR,
+        "align": "center",
+        "margin": margin,
+        "wrap": False,
     }
 
 
@@ -554,23 +573,42 @@ def build_action_button(
     flex=1,
 ):
     """
-    建立奶茶色操作按鈕。
+    自製奶茶色圓角按鈕。
+
+    Box 元件支援 action，
+    文字大小可自行控制。
     """
 
-    button = {
-        "type": "button",
-        "style": "primary",
-        "height": "sm",
+    return {
+        "type": "box",
+        "layout": "vertical",
         "flex": flex,
-        "color": BUTTON_COLOR,
+        "backgroundColor": BUTTON_COLOR,
+        "cornerRadius": "10px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
+        "paddingStart": "3px",
+        "paddingEnd": "3px",
+        "justifyContent": "center",
+        "alignItems": "center",
         "action": {
             "type": "message",
             "label": label,
             "text": action_text,
         },
+        "contents": [
+            {
+                "type": "text",
+                "text": label,
+                "size": "xxs",
+                "weight": "bold",
+                "color": WHITE_COLOR,
+                "align": "center",
+                "wrap": False,
+            }
+        ],
     }
 
-    return button
 
 def build_action_area(
     index,
@@ -583,15 +621,15 @@ def build_action_area(
 
     main_buttons = [
         build_action_button(
-            label="✏️ 修改",
+            label="✏️修改",
             action_text=f"修改 {index}",
         ),
         build_action_button(
-            label="📄 複製",
+            label="📄複製",
             action_text=f"複製 {index}",
         ),
         build_action_button(
-            label="🗑️ 刪除",
+            label="🗑️刪除",
             action_text=f"刪除 {index}",
         ),
     ]
@@ -604,13 +642,13 @@ def build_action_area(
 
     contents = [
         build_separator(
-            margin="xl",
+            margin="lg",
         ),
         {
             "type": "box",
             "layout": "horizontal",
             "spacing": "xs",
-            "margin": "lg",
+            "margin": "md",
             "contents": main_buttons,
         },
     ]
@@ -619,11 +657,11 @@ def build_action_area(
 
         ticket_buttons = [
             build_action_button(
-                label="✅ 完成搶票",
+                label="✅完成搶票",
                 action_text=f"完成搶票 {index}",
             ),
             build_action_button(
-                label="❌ 未搶到",
+                label="❌未搶到",
                 action_text=f"未搶到 {index}",
             ),
         ]
@@ -651,7 +689,7 @@ def build_action_area(
 
         pickup_buttons = [
             build_action_button(
-                label="✅ 完成取票",
+                label="✅完成取票",
                 action_text=f"完成取票 {index}",
             )
         ]
@@ -815,12 +853,16 @@ def build_view_show_card(
                             "取票人員",
                             pickup_person,
                         ),
-                        (
-                            "🎯",
-                            "搶票大師",
-                            ticket_master,
-                        ),
                     ],
+                ),
+                build_dashed_separator(
+                    margin="md",
+                ),
+                build_info_row(
+                    icon="🎯",
+                    label="搶票大師",
+                    value=ticket_master,
+                    margin="md",
                 ),
             ]
         )
@@ -867,15 +909,15 @@ def build_view_show_card(
             "type": "box",
             "layout": "vertical",
             "backgroundColor": HEADER_COLOR,
-            "paddingTop": "16px",
-            "paddingBottom": "16px",
-            "paddingStart": "18px",
-            "paddingEnd": "18px",
+            "paddingTop": "13px",
+            "paddingBottom": "13px",
+            "paddingStart": "16px",
+            "paddingEnd": "16px",
             "contents": [
                 {
                     "type": "text",
                     "text": f"🎤 {show_name}",
-                    "size": "lg",
+                    "size": "md",
                     "weight": "bold",
                     "color": WHITE_COLOR,
                     "wrap": True,
@@ -883,9 +925,9 @@ def build_view_show_card(
                 {
                     "type": "text",
                     "text": "演出詳細資料",
-                    "size": "xs",
+                    "size": "xxs",
                     "color": HEADER_SUBTEXT_COLOR,
-                    "margin": "sm",
+                    "margin": "xs",
                     "wrap": True,
                 },
             ],
@@ -900,7 +942,7 @@ def build_view_show_card(
             "layout": "vertical",
             "backgroundColor": BODY_COLOR,
             "paddingTop": "14px",
-            "paddingBottom": "18px",
+            "paddingBottom": "14px",
             "paddingStart": "16px",
             "paddingEnd": "16px",
             "contents": body_contents,
