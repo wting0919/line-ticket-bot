@@ -18,6 +18,8 @@ from utils import (
     get_last_show_date,
 )
 
+from today_card import build_today_card
+
 # =====================
 # 提醒功能
 # =====================
@@ -256,204 +258,19 @@ def check_reminders():
 
 def send_today_summary():
 
-    now = datetime.now() + timedelta(hours=8)
-    today = now.date()
-
-    shows = load_data()
-
-    ticket_today = []
-    pickup_today = []
-    show_today = []
-    upcoming = []
-
-    for show in shows:
-
-        # 今天搶票
-        try:
-            ticket_time = parse_datetime(show["搶票時間"])
-
-            if (
-                ticket_time.date() == today
-                and show.get("搶票狀態", "等待搶票") == "等待搶票"
-            ):
-                ticket_today.append(show)
-
-        except Exception:
-            pass
-
-        # 今天可取票
-        try:
-            if (
-                show.get("取票日期")
-                and parse_date(show["取票日期"]) == today
-                and show.get("取票狀態", "未取票") == "未取票"
-            ):
-                pickup_today.append(show)
-
-        except Exception:
-            pass
-
-        # 今天演出
-        try:
-            if parse_date(show["演出日期"]) == today:
-                show_today.append(show)
-
-        except Exception:
-            pass
-
-        # 未來7天搶票
-        try:
-
-            ticket_time = parse_datetime(show["搶票時間"])
-
-            days = (ticket_time.date() - today).days
-
-            if (
-                1 <= days <= 7
-                and show.get("搶票狀態", "等待搶票") == "等待搶票"
-            ):
-
-                upcoming.append(
-                    (
-                        ticket_time.date(),
-                        f"{ticket_time.strftime('%m/%d')}　🎟 {show['演出名稱']}（{ticket_time.strftime('%H:%M')}）"
-                    )
-                )
-
-        except Exception:
-            pass
-
-        # 未來7天取票
-        try:
-
-            if show.get("取票日期"):
-
-                pickup_date = parse_date(show["取票日期"])
-
-                days = (pickup_date - today).days
-
-                if (
-                    1 <= days <= 7
-                    and show.get("取票狀態", "未取票") == "未取票"
-                ):
-
-                    upcoming.append(
-                        (
-                            pickup_date,
-                            f"{pickup_date.strftime('%m/%d')}　📦 {show['演出名稱']}"
-                        )
-                    )
-
-        except Exception:
-            pass
-
-        # 未來7天演出
-        try:
-
-            show_date = parse_date(show["演出日期"])
-
-            days = (show_date - today).days
-
-            if 1 <= days <= 7:
-
-                upcoming.append(
-                    (
-                        show_date,
-                        f"{show_date.strftime('%m/%d')}　🎤 {show['演出名稱']}"
-                    )
-                )
-
-        except Exception:
-            pass
-
-    msg = (
-        f"📅 今日重點（{today.strftime('%m/%d')}）\n\n"
-    )
-
-    if not ticket_today and not pickup_today and not show_today:
-
-        msg += "🎉 今天沒有待辦事項"
-
-    else:
-
-        if ticket_today:
-
-            msg += "━━━━━━━━━━━━\n"
-            msg += f"🎟 今天要搶票（{len(ticket_today)}）\n\n"
-
-            for show in ticket_today:
-
-                ticket_time = parse_datetime(show["搶票時間"])
-
-                msg += (
-                    f"🎤 {show['演出名稱']}\n"
-                    f"🕛 {ticket_time.strftime('%H:%M')}\n"
-                    f"💰 {format_price(show['價格張數'])}\n"
-                    f"🌐 {show['售票平台']}\n\n"
-                )
-
-        if pickup_today:
-
-            msg += "━━━━━━━━━━━━\n"
-            msg += f"📦 今天可取票（{len(pickup_today)}）\n\n"
-
-            for show in pickup_today:
-
-                msg += (
-                    f"🎤 {show['演出名稱']}\n"
-                )
-
-            msg += "\n"
-
-        if show_today:
-
-            msg += "━━━━━━━━━━━━\n"
-            msg += f"🎤 今天演出（{len(show_today)}）\n\n"
-
-            for show in show_today:
-
-                msg += (
-                    f"🎤 {show['演出名稱']}\n"
-                )
-
-        # 未來7天
-        upcoming.sort(key=lambda x: x[0])
-
-        if upcoming:
-
-            if ticket_today or pickup_today or show_today:
-                msg += "\n━━━━━━━━━━━━\n\n"
-
-            msg += "📆 未來 7 天\n\n"
-
-            current_date = None
-
-            for date, item in upcoming:
-
-                if date != current_date:
-
-                    current_date = date
-
-                    msg += f"📅 {date.strftime('%m/%d')}\n"
-
-                msg += item[6:] + "\n"
-
-            msg += "\n"
-
-
     try:
 
         config.line_bot_api.push_message(
             config.GROUP_ID,
-            TextSendMessage(
-                text=msg
-            )
+            build_today_card()
         )
+
+        print("今日待辦卡片已推送")
 
     except Exception as e:
 
         print(
-            "今日重點推播失敗：",
+            "今日待辦卡片推播失敗：",
             repr(e),
             flush=True,
         )
