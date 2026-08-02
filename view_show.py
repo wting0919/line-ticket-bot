@@ -410,8 +410,6 @@ def build_detail_section(
         ("🕒", "搶票時間", "2026/08/15（六）13:00"),
     ]
 
-    rows 中加入 None，
-    可在兩筆資料中間增加空白。
     """
 
     contents = [
@@ -856,7 +854,6 @@ def build_view_show_card(
         )
     )
 
-    print(body_contents)
 
     bubble = {
         "type": "bubble",
@@ -918,6 +915,10 @@ def build_view_show_card(
             },
         },
     }
+
+    bubble = remove_none_elements(
+        bubble
+    )
 
     return FlexSendMessage(
         alt_text=(
