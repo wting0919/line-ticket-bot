@@ -249,7 +249,17 @@ def build_task_item(
             "color": TEXT_COLOR,
             "wrap": True,
             "flex": 1,
-        }
+        },
+        {
+            "type": "text",
+            "text": "›",
+            "size": "xl",
+            "weight": "bold",
+            "color": BUTTON_COLOR,
+            "align": "end",
+            "flex": 0,
+            "margin": "sm",
+        },
     ]
 
     if badge_text:
