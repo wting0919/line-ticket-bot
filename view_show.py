@@ -235,7 +235,7 @@ def build_status_area(
         "type": "box",
         "layout": "horizontal",
         "spacing": "sm",
-        "margin": "sm",
+        "margin": "md",
         "contents": contents,
     }
 
@@ -640,18 +640,19 @@ def build_view_show_card(
                 {
                     "type": "text",
                     "text": "🎤",
-                    "size": "sm",
+                    "size": "xs",
                     "flex": 0,
                 },
                 {
                     "type": "text",
                     "text": show_name,
-                    "size": "lg",
+                    "size": "md",
                     "weight": "bold",
                     "color": TEXT_COLOR,
                     "margin": "xs",
                     "flex": 1,
                     "wrap": True,
+                    "maxLines": 2,
                 },
             ],
         },
