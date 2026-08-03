@@ -24,30 +24,21 @@ from components import (
     build_today_summary,
 )
 
-# =========================================================
-# Dashboard V1
-# 奶茶色系
-# =========================================================
-
-HEADER_COLOR = "#C9B29B"
-BODY_COLOR = "#FFFCF8"
-
-CARD_COLOR = "#FFFFFF"
-SECTION_COLOR = "#F4ECE4"
-
-TICKET_CARD_COLOR = "#FFF4D6"
-PICKUP_CARD_COLOR = "#EEF3E8"
-SHOW_CARD_COLOR = "#F8EAE4"
-
-TEXT_COLOR = "#5C5148"
-SUBTEXT_COLOR = "#75695F"
-LIGHT_TEXT_COLOR = "#9A8D82"
-
-LINE_COLOR = "#E7DDD2"
-BUTTON_COLOR = "#B99F86"
-
-WHITE_COLOR = "#FFFFFF"
-HEADER_SUBTEXT_COLOR = "#FFF9F3"
+from theme import (
+    BODY_COLOR,
+    CARD_COLOR,
+    SECTION_COLOR,
+    TICKET_CARD_COLOR,
+    TEXT_COLOR,
+    SUBTEXT_COLOR,
+    LIGHT_TEXT_COLOR,
+    LINE_COLOR,
+    BUTTON_COLOR,
+    build_brand_header,
+    build_brand_footer,
+    safe_text,
+    remove_none_elements,
+)
 
 # =========================================================
 # TicketCat 每日一句
@@ -89,47 +80,6 @@ def get_cat_header_message():
 # 基本工具
 # =========================================================
 
-def safe_text(
-    value,
-    default="未設定",
-):
-    """
-    安全處理空值。
-    """
-
-    if value is None:
-        return default
-
-    text = str(value).strip()
-
-    return text if text else default
-
-
-def remove_none_elements(value):
-    """
-    遞迴移除 Flex JSON 中的 None，
-    避免 LINE 回傳 null element 錯誤。
-    """
-
-    if isinstance(value, list):
-
-        return [
-            remove_none_elements(item)
-            for item in value
-            if item is not None
-        ]
-
-    if isinstance(value, dict):
-
-        return {
-            key: remove_none_elements(item)
-            for key, item in value.items()
-            if item is not None
-        }
-
-    return value
-
-
 def normalize_today(today=None):
     """
     統一取得台灣時間。
@@ -146,183 +96,21 @@ def normalize_today(today=None):
         datetime.min.time(),
     )
 
-
-def build_separator(
-    margin="lg",
-):
-    """
-    建立奶茶色分隔線。
-    """
-
-    return {
-        "type": "separator",
-        "margin": margin,
-        "color": LINE_COLOR,
-    }
-
-
-# =========================================================
-# Logo
-# =========================================================
-
-def get_dashboard_logo_url():
-    """
-    從 config 讀取 Logo 公開網址。
-
-    沒有設定時，Header 會自動省略圖片，
-    不影響 Dashboard 顯示。
-    """
-
-    logo_url = getattr(
-        config,
-        "DASHBOARD_LOGO_URL",
-        None,
-    )
-
-    if not logo_url:
-        return None
-
-    logo_url = str(logo_url).strip()
-
-    if not logo_url.startswith("https://"):
-        return None
-
-    return logo_url
-
-
-def build_logo():
-    """
-    建立圓形搶票貓 Logo。
-    """
-
-    logo_url = get_dashboard_logo_url()
-
-    if not logo_url:
-        return None
-
-    return {
-        "type": "image",
-        "url": logo_url,
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "1:1",
-    }
-
-
-def build_logo_box():
-    """
-    Logo 外框。
-    """
-
-    logo = build_logo()
-
-    if logo is None:
-
-        return {
-            "type": "box",
-            "layout": "vertical",
-            "width": "52px",
-            "height": "52px",
-            "backgroundColor": "#FFF7EC",
-            "cornerRadius": "28px",
-            "justifyContent": "center",
-            "alignItems": "center",
-            "contents": [
-                {
-                    "type": "text",
-                    "text": "🐱",
-                    "size": "xxl",
-                    "align": "center",
-                }
-            ],
-        }
-
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "width": "52px",
-        "height": "52px",
-        "cornerRadius": "26px",
-        "contents": [
-            logo
-        ],
-    }
-
-
 # =========================================================
 # Header
 # =========================================================
 
 def build_header():
     """
-    建立 Dashboard Header。
+    建立 Dashboard 品牌 Header。
     """
 
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "backgroundColor": HEADER_COLOR,
-        "paddingTop": "13px",
-        "paddingBottom": "13px",
-        "paddingStart": "18px",
-        "paddingEnd": "18px",
-        "contents": [
-            {
-                "type": "box",
-                "layout": "horizontal",
-                "alignItems": "center",
-                "contents": [
-                    build_logo_box(),
-                    {
-                        "type": "box",
-                        "layout": "vertical",
-                        "margin": "md",
-                        "flex": 1,
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": "🐱 TicketCat",
-                                "size": "lg",
-                                "weight": "bold",
-                                "color": WHITE_COLOR,
-                                "wrap": True,
-                            },
-                            {
-                                "type": "text",
-                                "text": "陪你追每一場演出",
-                                "size": "xs",
-                                "color": HEADER_SUBTEXT_COLOR,
-                                "margin": "sm",
-                                "wrap": True,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                "type": "box",
-                "layout": "vertical",
-                "margin": "sm",
-                "backgroundColor": "#FFF7EC",
-                "cornerRadius": "14px",
-                "paddingTop": "6px",
-                "paddingBottom": "6px",
-                "paddingStart": "10px",
-                "paddingEnd": "10px",
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": get_cat_header_message(),
-                        "size": "xxs",
-                        "weight": "bold",
-                        "color": TEXT_COLOR,
-                        "align": "center",
-                        "wrap": True,
-                    }
-                ],
-            },
-        ],
-    }
+    return build_brand_header(
+        subtitle=None,
+        message=get_cat_header_message(),
+        logo_size=44,
+        compact=True,
+    )
 
 # =========================================================
 # 下一場演出
@@ -499,7 +287,10 @@ def build_next_show_card(
         "margin": "md",
         "backgroundColor": SECTION_COLOR,
         "cornerRadius": "14px",
-        "paddingAll": "12px",
+        "paddingTop": "11px",
+        "paddingBottom": "11px",
+        "paddingStart": "12px",
+        "paddingEnd": "12px",
         "action": {
             "type": "message",
             "label": "查看下一場演出",
@@ -722,40 +513,6 @@ def build_menu_area():
         ],
     }
 
-
-# =========================================================
-# Footer
-# =========================================================
-
-def build_footer():
-    """
-    建立單行品牌 Footer。
-    """
-
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "margin": "md",
-        "paddingTop": "7px",
-        "paddingBottom": "0px",
-        "contents": [
-            {
-                "type": "separator",
-                "color": LINE_COLOR,
-            },
-            {
-                "type": "text",
-                "text": "🐱 TicketCat ︱ 陪你追每一場演出",
-                "size": "xxs",
-                "weight": "bold",
-                "color": LIGHT_TEXT_COLOR,
-                "align": "center",
-                "margin": "sm",
-                "wrap": False,
-            },
-        ],
-    }
-
 # =========================================================
 # 建立 Dashboard
 # =========================================================
@@ -808,7 +565,7 @@ def build_dashboard(today=None):
             today=today,
         ),
         build_menu_area(),
-        build_footer(),
+        build_brand_footer(),
     ]
 
     bubble = {

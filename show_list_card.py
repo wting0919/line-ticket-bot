@@ -19,7 +19,6 @@ from theme import (
     FAILED_BACKGROUND_COLOR,
     FAILED_TEXT_COLOR,
     build_brand_header,
-    build_separator,
     safe_text,
     remove_none_elements,
 )
@@ -506,25 +505,40 @@ def build_show_list_item(
             "alignItems": "center",
             "contents": [
                 {
-                    "type": "text",
-                    "text": str(display_index),
-                    "size": "xxs",
-                    "weight": "bold",
-                    "color": WHITE_COLOR,
-                    "align": "center",
-                    "gravity": "center",
-                    "flex": 0,
+                    "type": "box",
+                    "layout": "vertical",
+                    "width": "25px",
+                    "height": "25px",
                     "backgroundColor": BUTTON_COLOR,
-                    "cornerRadius": "12px",
-                    "paddingAll": "5px",
+                    "cornerRadius": "13px",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                    "flex": 0,
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": str(display_index),
+                            "size": "xxs",
+                            "weight": "bold",
+                            "color": WHITE_COLOR,
+                            "align": "center",
+                        }
+                    ],
                 },
                 {
                     "type": "text",
-                    "text": f"🎤 {show_name}",
+                    "text": "🎤",
+                    "size": "xs",
+                    "margin": "sm",
+                    "flex": 0,
+                },
+                {
+                    "type": "text",
+                    "text": show_name,
                     "size": "sm",
                     "weight": "bold",
                     "color": TEXT_COLOR,
-                    "margin": "sm",
+                    "margin": "xs",
                     "flex": 1,
                     "wrap": True,
                 },
@@ -570,10 +584,10 @@ def build_show_list_item(
         "cornerRadius": "12px",
         "borderWidth": "1px",
         "borderColor": LINE_COLOR,
-        "paddingTop": "11px",
-        "paddingBottom": "11px",
-        "paddingStart": "11px",
-        "paddingEnd": "11px",
+        "paddingTop": "14px",
+        "paddingBottom": "14px",
+        "paddingStart": "13px",
+        "paddingEnd": "13px",
         "action": {
             "type": "message",
             "label": "查看詳細",
@@ -791,16 +805,6 @@ def build_show_list_card(
                 + local_index
             )
 
-            if body_contents:
-
-                body_contents.append(
-                    {
-                        "type": "separator",
-                        "margin": "sm",
-                        "color": LINE_COLOR,
-                    }
-                )
-
             body_contents.append(
                 build_show_list_item(
                     show=show,
@@ -809,7 +813,7 @@ def build_show_list_card(
                 )
             )
 
-    if safe_shows:
+    if safe_shows and total_pages > 1:
 
         body_contents.append(
             build_pagination(
@@ -823,14 +827,14 @@ def build_show_list_card(
         "type": "bubble",
         "size": "mega",
         "header": build_brand_header(
-            subtitle=(
-                f"{config['icon']} "
-                f"{config['title']}"
-            ),
+            subtitle=None,
             message=(
+                f"{config['icon']} "
+                f"{config['title']}・"
                 f"共 {len(safe_shows)} 筆"
             ),
-            logo_size=52,
+            logo_size=44,
+            compact=True,
         ),
         "body": {
             "type": "box",

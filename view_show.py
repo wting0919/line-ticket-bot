@@ -31,7 +31,6 @@ from theme import (
     SECTION_COLOR,
     TEXT_COLOR,
     SUBTEXT_COLOR,
-    LINE_COLOR,
     BUTTON_COLOR,
     WHITE_COLOR,
     WAITING_BACKGROUND_COLOR,
@@ -43,15 +42,13 @@ from theme import (
     build_brand_header,
     safe_text,
     remove_none_elements,
+    build_separator,
+    build_status_tag,
+    build_brand_footer,
 )
 
 import config
 
-
-# =========================================================
-# View Show V4
-# TicketCat 奶茶色系
-# =========================================================
 
 WEEKDAY_TEXT = [
     "一",
@@ -62,25 +59,6 @@ WEEKDAY_TEXT = [
     "六",
     "日",
 ]
-
-
-# =========================================================
-# 共用工具
-# =========================================================
-
-def build_separator(
-    margin="md",
-):
-    """
-    建立奶茶色分隔線。
-    """
-
-    return {
-        "type": "separator",
-        "margin": margin,
-        "color": LINE_COLOR,
-    }
-
 
 # =========================================================
 # 日期格式
@@ -183,41 +161,6 @@ def view_navigation_quick_reply():
 # =========================================================
 # 狀態膠囊
 # =========================================================
-
-def build_status_tag(
-    text,
-    background_color,
-    text_color,
-):
-    """
-    建立三字狀態膠囊。
-    """
-
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "backgroundColor": background_color,
-        "cornerRadius": "10px",
-        "paddingTop": "5px",
-        "paddingBottom": "5px",
-        "paddingStart": "12px",
-        "paddingEnd": "12px",
-        "contents": [
-            {
-                "type": "text",
-                "text": safe_text(
-                    text,
-                    "",
-                ),
-                "size": "xxs",
-                "weight": "bold",
-                "color": text_color,
-                "align": "center",
-                "wrap": False,
-            }
-        ],
-    }
-
 
 def build_status_area(
     status,
@@ -690,12 +633,27 @@ def build_view_show_card(
 
     body_contents = [
         {
-            "type": "text",
-            "text": f"🎤 {show_name}",
-            "size": "xl",
-            "weight": "bold",
-            "color": TEXT_COLOR,
-            "wrap": True,
+            "type": "box",
+            "layout": "horizontal",
+            "alignItems": "center",
+            "contents": [
+                {
+                    "type": "text",
+                    "text": "🎤",
+                    "size": "sm",
+                    "flex": 0,
+                },
+                {
+                    "type": "text",
+                    "text": show_name,
+                    "size": "lg",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "margin": "xs",
+                    "flex": 1,
+                    "wrap": True,
+                },
+            ],
         },
 
         build_status_area(
@@ -812,13 +770,27 @@ def build_view_show_card(
         )
     )
 
+    body_contents.extend(
+        [
+            build_separator(
+                margin="md",
+            ),
+            build_brand_footer(
+                margin="md",
+                show_separator=False,
+            ),
+        ]
+    )
+
     bubble = {
         "type": "bubble",
         "size": "mega",
 
         "header": build_brand_header(
-            subtitle="🎤 演出詳細",
-            logo_size=52,
+            subtitle=None,
+            message="🎤 演出詳細",
+            logo_size=44,
+            compact=True,
         ),
 
         "body": {

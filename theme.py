@@ -92,7 +92,7 @@ def remove_none_elements(value):
 
 
 def build_separator(
-    margin="lg",
+    margin="md",
     color=LINE_COLOR,
 ):
     """
@@ -195,42 +195,37 @@ def build_logo_box(
 # =========================================================
 
 def build_brand_header(
-    subtitle,
-    message="陪你追每一場演出",
-    logo_size=52,
+    subtitle=None,
+    message=None,
+    logo_size=44,
     urgent=False,
     show_logo=True,
+    compact=True,
 ):
     """
-    建立共用品牌 Header。
+    TicketCat 共用 Header。
 
     subtitle：
-        卡片功能名稱，例如：
-        ☀️ 今日待辦
-        🎟 明日搶票
-        🎤 演出詳細
+        品牌區下方的普通白字標題。
 
     message：
-        額外提示文字，例如 Dashboard 每日一句。
+        米白色膠囊文字。
 
     urgent：
-        True 時使用深紅棕色 Header，
-        適合倒數 10 分鐘提醒。
+        True 時使用深紅棕色。
 
-    show_logo：
-        是否顯示貓貓 Logo。
+    compact：
+        True 使用精簡高度。
     """
 
     brand_contents = []
 
     if show_logo:
-
         brand_contents.append(
             build_logo_box(
                 size=logo_size
             )
         )
-
 
     brand_contents.append(
         {
@@ -246,7 +241,7 @@ def build_brand_header(
                 {
                     "type": "text",
                     "text": f"🐱 {BRAND_NAME}",
-                    "size": "lg",
+                    "size": "md",
                     "weight": "bold",
                     "color": WHITE_COLOR,
                     "wrap": True,
@@ -254,7 +249,7 @@ def build_brand_header(
                 {
                     "type": "text",
                     "text": BRAND_SLOGAN,
-                    "size": "xs",
+                    "size": "xxs",
                     "color": HEADER_SUBTEXT_COLOR,
                     "margin": "xs",
                     "wrap": True,
@@ -281,10 +276,10 @@ def build_brand_header(
                     subtitle,
                     "",
                 ),
-                "size": "sm",
+                "size": "xs",
                 "weight": "bold",
                 "color": WHITE_COLOR,
-                "margin": "md",
+                "margin": "sm",
                 "wrap": True,
             }
         )
@@ -295,13 +290,13 @@ def build_brand_header(
             {
                 "type": "box",
                 "layout": "vertical",
-                "margin": "md",
+                "margin": "sm",
                 "backgroundColor": "#FFF7EC",
-                "cornerRadius": "12px",
-                "paddingTop": "8px",
-                "paddingBottom": "8px",
-                "paddingStart": "12px",
-                "paddingEnd": "12px",
+                "cornerRadius": "10px",
+                "paddingTop": "6px",
+                "paddingBottom": "6px",
+                "paddingStart": "10px",
+                "paddingEnd": "10px",
                 "contents": [
                     {
                         "type": "text",
@@ -309,7 +304,7 @@ def build_brand_header(
                             message,
                             "",
                         ),
-                        "size": "xs",
+                        "size": "xxs",
                         "weight": "bold",
                         "color": TEXT_COLOR,
                         "align": "center",
@@ -327,13 +322,20 @@ def build_brand_header(
             if urgent
             else HEADER_COLOR
         ),
-        "paddingTop": "16px",
-        "paddingBottom": "16px",
-        "paddingStart": "18px",
-        "paddingEnd": "18px",
+        "paddingTop": (
+            "11px"
+            if compact
+            else "14px"
+        ),
+        "paddingBottom": (
+            "11px"
+            if compact
+            else "14px"
+        ),
+        "paddingStart": "16px",
+        "paddingEnd": "16px",
         "contents": contents,
     }
-
 
 # =========================================================
 # TicketCat 品牌 Footer
@@ -386,8 +388,8 @@ def build_brand_footer(
         "type": "box",
         "layout": "vertical",
         "margin": margin,
-        "paddingTop": "10px",
-        "paddingBottom": "4px",
+        "paddingTop": "8px",
+        "paddingBottom": "2px",
         "contents": contents,
     }
 
@@ -487,8 +489,8 @@ def build_milk_tea_button(
         "flex": flex,
         "backgroundColor": BUTTON_COLOR,
         "cornerRadius": "10px",
-        "paddingTop": "11px",
-        "paddingBottom": "11px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
         "paddingStart": "4px",
         "paddingEnd": "4px",
         "justifyContent": "center",

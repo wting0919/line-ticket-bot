@@ -189,8 +189,8 @@ def build_note(note):
     return {
         "type": "box",
         "layout": "vertical",
-        "margin": "lg",
-        "paddingAll": "12px",
+        "margin": "md",
+        "paddingAll": "10px",
         "backgroundColor": SECTION_COLOR,
         "cornerRadius": "10px",
         "contents": [
@@ -221,8 +221,8 @@ def build_time_focus(
         "type": "box",
         "layout": "vertical",
         "margin": "lg",
-        "paddingTop": "10px",
-        "paddingBottom": "10px",
+        "paddingTop": "8px",
+        "paddingBottom": "8px",
         "contents": [
             {
                 "type": "text",
@@ -278,25 +278,30 @@ def build_milk_tea_divider():
 
 def build_detail_button(show):
     """
-    直接用 Supabase id 開啟這一筆。
+    有 Supabase id 時直接開啟該筆；
+    沒有 id 時回到演出列表。
     """
 
-    show_id = safe_text(
-        show.get("id"),
-        "",
-    )
+    show_id = str(
+        show.get("id") or ""
+    ).strip()
+
+    if show_id:
+        action_text = f"查看ID {show_id}"
+    else:
+        action_text = "演出列表"
 
     return {
         "type": "box",
         "layout": "vertical",
         "backgroundColor": BUTTON_COLOR,
         "cornerRadius": "10px",
-        "paddingTop": "11px",
-        "paddingBottom": "11px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
         "action": {
             "type": "message",
             "label": "🔍 查看詳細",
-            "text": f"查看ID {show_id}",
+            "text": action_text,
         },
         "contents": [
             {
@@ -309,7 +314,6 @@ def build_detail_button(show):
             }
         ],
     }
-
 
 # =========================================================
 # 通用 Bubble
@@ -327,17 +331,21 @@ def build_reminder_bubble(
         "type": "bubble",
         "size": "mega",
         "header": build_brand_header(
-            subtitle=header_title,
-            message=header_subtitle,
-            logo_size=52,
+            subtitle=None,
+            message=(
+                f"{header_title}・"
+                f"{header_subtitle}"
+            ),
+            logo_size=44,
             urgent=urgent,
+            compact=True,
         ),
         "body": {
             "type": "box",
             "layout": "vertical",
             "backgroundColor": BODY_COLOR,
-            "paddingTop": "16px",
-            "paddingBottom": "16px",
+            "paddingTop": "12px",
+            "paddingBottom": "12px",
             "paddingStart": "16px",
             "paddingEnd": "16px",
             "contents": body_contents,

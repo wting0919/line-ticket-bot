@@ -143,11 +143,13 @@ def build_header(today):
     """
 
     return build_brand_header(
-        subtitle=(
-            "☀️ 今日待辦｜"
+        subtitle=None,
+        message=(
+            "☀️ 今日待辦・"
             f"{format_today_date(today)}"
         ),
-        logo_size=52,
+        logo_size=44,
+        compact=True,
     )
 
 
@@ -1041,7 +1043,7 @@ def build_today_card(today=None):
 
     body_contents.append(
         build_brand_footer(
-            margin="lg",
+            margin="md",
             show_separator=True,
         )
     )
@@ -1055,7 +1057,7 @@ def build_today_card(today=None):
             "layout": "vertical",
             "backgroundColor": BODY_COLOR,
             "paddingTop": "12px",
-            "paddingBottom": "10px",
+            "paddingBottom": "12px",
             "paddingStart": "14px",
             "paddingEnd": "14px",
             "contents": body_contents,
