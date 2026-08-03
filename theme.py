@@ -195,11 +195,11 @@ def build_logo_box(
 # =========================================================
 
 def build_brand_header(
-    subtitle=None,
-    message=None,
+    subtitle,
+    message="陪你追每一場演出",
+    logo_size=52,
     urgent=False,
     show_logo=True,
-    logo_size=54,
 ):
     """
     建立共用品牌 Header。
@@ -230,6 +230,7 @@ def build_brand_header(
                 size=logo_size
             )
         )
+
 
     brand_contents.append(
         {
@@ -408,9 +409,9 @@ def build_status_tag(
         "type": "box",
         "layout": "vertical",
         "backgroundColor": background_color,
-        "cornerRadius": "12px",
-        "paddingTop": "7px",
-        "paddingBottom": "7px",
+        "cornerRadius": "10px",
+        "paddingTop": "5px",
+        "paddingBottom": "5px",
         "paddingStart": "12px",
         "paddingEnd": "12px",
         "contents": [

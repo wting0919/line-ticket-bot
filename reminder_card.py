@@ -7,33 +7,22 @@ from utils import (
     parse_datetime,
 )
 
-
-# =========================================================
-# Reminder Card V2
-# 奶茶色系
-# =========================================================
-
-HEADER_COLOR = "#C9B29B"
-URGENT_HEADER_COLOR = "#B56C55"
-
-BODY_COLOR = "#FFFCF8"
-SECTION_COLOR = "#F4ECE4"
-
-TEXT_COLOR = "#5C5148"
-SUBTEXT_COLOR = "#75695F"
-LIGHT_TEXT_COLOR = "#9A8D82"
-
-LINE_COLOR = "#E7DDD2"
-BUTTON_COLOR = "#B99F86"
-
-WHITE_COLOR = "#FFFFFF"
-HEADER_SUBTEXT_COLOR = "#FFF9F3"
-
-WAITING_BACKGROUND_COLOR = "#FFF4D6"
-WAITING_TEXT_COLOR = "#A87300"
-
-SUCCESS_BACKGROUND_COLOR = "#E8F3E6"
-SUCCESS_TEXT_COLOR = "#5B7D4A"
+from theme import (
+    BODY_COLOR,
+    SECTION_COLOR,
+    TEXT_COLOR,
+    SUBTEXT_COLOR,
+    BUTTON_COLOR,
+    WHITE_COLOR,
+    URGENT_HEADER_COLOR,
+    SUCCESS_TEXT_COLOR,
+    build_brand_header,
+    build_separator,
+    build_waiting_tag,
+    build_success_tag,
+    safe_text,
+    remove_none_elements,
+)
 
 
 WEEKDAY_TEXT = [
@@ -50,50 +39,6 @@ WEEKDAY_TEXT = [
 # =========================================================
 # 基本工具
 # =========================================================
-
-def safe_text(
-    value,
-    default="未設定",
-):
-    if value is None:
-        return default
-
-    text = str(value).strip()
-
-    return text if text else default
-
-
-def remove_none_elements(value):
-    """
-    避免 Flex contents 出現 null。
-    """
-
-    if isinstance(value, list):
-        return [
-            remove_none_elements(item)
-            for item in value
-            if item is not None
-        ]
-
-    if isinstance(value, dict):
-        return {
-            key: remove_none_elements(item)
-            for key, item in value.items()
-            if item is not None
-        }
-
-    return value
-
-
-def build_separator(
-    margin="lg",
-):
-    return {
-        "type": "separator",
-        "margin": margin,
-        "color": LINE_COLOR,
-    }
-
 
 def format_datetime_with_weekday(value):
     """
@@ -183,50 +128,6 @@ def format_ticket_date(value):
 # =========================================================
 # 狀態膠囊
 # =========================================================
-
-def build_status_tag(
-    text,
-    background_color,
-    text_color,
-):
-    return {
-        "type": "box",
-        "layout": "vertical",
-        "backgroundColor": background_color,
-        "cornerRadius": "12px",
-        "paddingTop": "7px",
-        "paddingBottom": "7px",
-        "paddingStart": "12px",
-        "paddingEnd": "12px",
-        "contents": [
-            {
-                "type": "text",
-                "text": text,
-                "size": "xxs",
-                "weight": "bold",
-                "color": text_color,
-                "align": "center",
-                "wrap": False,
-            }
-        ],
-    }
-
-
-def build_waiting_tag(text):
-    return build_status_tag(
-        text=text,
-        background_color=WAITING_BACKGROUND_COLOR,
-        text_color=WAITING_TEXT_COLOR,
-    )
-
-
-def build_success_tag(text):
-    return build_status_tag(
-        text=text,
-        background_color=SUCCESS_BACKGROUND_COLOR,
-        text_color=SUCCESS_TEXT_COLOR,
-    )
-
 
 def build_status_area(tags):
     return {
@@ -425,37 +326,12 @@ def build_reminder_bubble(
     bubble = {
         "type": "bubble",
         "size": "mega",
-        "header": {
-            "type": "box",
-            "layout": "vertical",
-            "backgroundColor": (
-                URGENT_HEADER_COLOR
-                if urgent
-                else HEADER_COLOR
-            ),
-            "paddingTop": "16px",
-            "paddingBottom": "16px",
-            "paddingStart": "18px",
-            "paddingEnd": "18px",
-            "contents": [
-                {
-                    "type": "text",
-                    "text": header_title,
-                    "size": "xl",
-                    "weight": "bold",
-                    "color": WHITE_COLOR,
-                    "wrap": True,
-                },
-                {
-                    "type": "text",
-                    "text": header_subtitle,
-                    "size": "xs",
-                    "color": HEADER_SUBTEXT_COLOR,
-                    "margin": "sm",
-                    "wrap": True,
-                },
-            ],
-        },
+        "header": build_brand_header(
+            subtitle=header_title,
+            message=header_subtitle,
+            logo_size=52,
+            urgent=urgent,
+        ),
         "body": {
             "type": "box",
             "layout": "vertical",
