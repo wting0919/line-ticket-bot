@@ -218,10 +218,10 @@ def build_logo_box():
         return {
             "type": "box",
             "layout": "vertical",
-            "width": "66px",
-            "height": "66px",
+            "width": "52px",
+            "height": "52px",
             "backgroundColor": "#FFF7EC",
-            "cornerRadius": "33px",
+            "cornerRadius": "28px",
             "justifyContent": "center",
             "alignItems": "center",
             "contents": [
@@ -237,9 +237,9 @@ def build_logo_box():
     return {
         "type": "box",
         "layout": "vertical",
-        "width": "66px",
-        "height": "66px",
-        "cornerRadius": "33px",
+        "width": "56px",
+        "height": "56px",
+        "cornerRadius": "28px",
         "contents": [
             logo
         ],
@@ -259,8 +259,8 @@ def build_header():
         "type": "box",
         "layout": "vertical",
         "backgroundColor": HEADER_COLOR,
-        "paddingTop": "18px",
-        "paddingBottom": "18px",
+        "paddingTop": "13px",
+        "paddingBottom": "13px",
         "paddingStart": "18px",
         "paddingEnd": "18px",
         "contents": [
@@ -279,7 +279,7 @@ def build_header():
                             {
                                 "type": "text",
                                 "text": "🐱 TicketCat",
-                                "size": "xl",
+                                "size": "lg",
                                 "weight": "bold",
                                 "color": WHITE_COLOR,
                                 "wrap": True,
@@ -299,18 +299,18 @@ def build_header():
             {
                 "type": "box",
                 "layout": "vertical",
-                "margin": "md",
+                "margin": "sm",
                 "backgroundColor": "#FFF7EC",
                 "cornerRadius": "14px",
-                "paddingTop": "8px",
-                "paddingBottom": "8px",
-                "paddingStart": "12px",
-                "paddingEnd": "12px",
+                "paddingTop": "6px",
+                "paddingBottom": "6px",
+                "paddingStart": "10px",
+                "paddingEnd": "10px",
                 "contents": [
                     {
                         "type": "text",
                         "text": get_cat_header_message(),
-                        "size": "xs",
+                        "size": "xxs",
                         "weight": "bold",
                         "color": TEXT_COLOR,
                         "align": "center",
@@ -331,7 +331,7 @@ def get_today_cat_message(
     show_count,
 ):
     """
-    依照今日待辦內容產生搶票貓訊息。
+    依今日待辦產生一行貓咪訊息。
     """
 
     total_count = (
@@ -340,53 +340,28 @@ def get_today_cat_message(
         + show_count
     )
 
-    active_types = sum(
-        [
-            ticket_count > 0,
-            pickup_count > 0,
-            show_count > 0,
-        ]
-    )
+    active_types = sum([
+        ticket_count > 0,
+        pickup_count > 0,
+        show_count > 0,
+    ])
 
     if total_count == 0:
-
-        return (
-            "🐱 今天沒有待辦",
-            "好好休息吧 ☕",
-        )
+        return "🐱 今天沒有待辦，好好休息吧 ☕"
 
     if active_types >= 2:
-
-        return (
-            "🐱 今天很忙喔！",
-            "我陪你一起完成 💪",
-        )
+        return "🐱 今天很忙喔，我陪你一起完成 💪"
 
     if show_count > 0:
-
-        return (
-            "🐱 今天就是演出日！",
-            "玩得開心 ✨",
-        )
+        return "🐱 今天就是演出日，玩得開心 ✨"
 
     if ticket_count > 0:
-
-        return (
-            "🐱 今天要搶票！",
-            "祝你順利搶到 🎟",
-        )
+        return "🐱 今天要搶票，祝你順利搶到 🎟"
 
     if pickup_count > 0:
+        return "🐱 記得去取票喔，不要白跑一趟 📦"
 
-        return (
-            "🐱 記得去取票喔",
-            "不要白跑一趟 📦",
-        )
-
-    return (
-        "🐱 今天有待辦喔！",
-        "記得查看一下～",
-    )
+    return "🐱 今天有待辦，記得查看一下～"
 
 
 def build_today_cat_message(
@@ -395,10 +370,10 @@ def build_today_cat_message(
     show_count,
 ):
     """
-    建立今日待辦底下的貓咪訊息。
+    建立單行今日問候。
     """
 
-    title, subtitle = get_today_cat_message(
+    message = get_today_cat_message(
         ticket_count=ticket_count,
         pickup_count=pickup_count,
         show_count=show_count,
@@ -406,42 +381,25 @@ def build_today_cat_message(
 
     return {
         "type": "box",
-        "layout": "horizontal",
-        "margin": "md",
-        "paddingTop": "9px",
-        "paddingBottom": "9px",
-        "paddingStart": "10px",
-        "paddingEnd": "10px",
+        "layout": "vertical",
+        "margin": "sm",
+        "paddingTop": "7px",
+        "paddingBottom": "7px",
+        "paddingStart": "9px",
+        "paddingEnd": "9px",
         "backgroundColor": SECTION_COLOR,
-        "cornerRadius": "10px",
-        "alignItems": "center",
+        "cornerRadius": "9px",
         "contents": [
             {
-                "type": "box",
-                "layout": "vertical",
-                "flex": 1,
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": title,
-                        "size": "xs",
-                        "weight": "bold",
-                        "color": TEXT_COLOR,
-                        "wrap": True,
-                    },
-                    {
-                        "type": "text",
-                        "text": subtitle,
-                        "size": "xxs",
-                        "color": SUBTEXT_COLOR,
-                        "margin": "xs",
-                        "wrap": True,
-                    },
-                ],
+                "type": "text",
+                "text": message,
+                "size": "xxs",
+                "weight": "bold",
+                "color": TEXT_COLOR,
+                "wrap": True,
             }
         ],
     }
-
 
 # =========================================================
 # 今日待辦摘要
@@ -464,8 +422,8 @@ def build_summary_card(
         "flex": 1,
         "backgroundColor": background_color,
         "cornerRadius": "11px",
-        "paddingTop": "8px",
-        "paddingBottom": "8px",
+        "paddingTop": "6px",
+        "paddingBottom": "6px",
         "paddingStart": "7px",
         "paddingEnd": "7px",
         "alignItems": "center",
@@ -530,10 +488,10 @@ def build_today_summary(
         "layout": "vertical",
         "backgroundColor": CARD_COLOR,
         "cornerRadius": "14px",
-        "paddingTop": "12px",
-        "paddingBottom": "12px",
-        "paddingStart": "12px",
-        "paddingEnd": "12px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
+        "paddingStart": "10px",
+        "paddingEnd": "10px",
         "borderWidth": "1px",
         "borderColor": LINE_COLOR,
         "contents": [
@@ -558,7 +516,7 @@ def build_today_summary(
                     },
                     {
                         "type": "text",
-                        "text": f"{total_count} 項",
+                        "text": f"共 {total_count} 項",
                         "size": "xxs",
                         "color": SUBTEXT_COLOR,
                         "align": "end",
@@ -587,11 +545,11 @@ def build_today_summary(
                         action_text="取票列表",
                     ),
                     build_summary_card(
-                        icon="🎤",
-                        label="今日演出",
+                        icon="📋",
+                        label="演出表",
                         count=show_count,
                         background_color=SHOW_CARD_COLOR,
-                        action_text="今日待辦",
+                        action_text="演出列表",
                     ),
                 ],
             },
@@ -776,10 +734,10 @@ def build_next_show_card(
     return {
         "type": "box",
         "layout": "vertical",
-        "margin": "lg",
+        "margin": "md",
         "backgroundColor": SECTION_COLOR,
         "cornerRadius": "14px",
-        "paddingAll": "15px",
+        "paddingAll": "12px",
         "action": {
             "type": "message",
             "label": "查看下一場演出",
@@ -787,11 +745,31 @@ def build_next_show_card(
         },
         "contents": [
             {
-                "type": "text",
-                "text": "📅 下一場演出",
-                "size": "xs",
-                "weight": "bold",
-                "color": SUBTEXT_COLOR,
+                "type": "box",
+                "layout": "horizontal",
+                "alignItems": "center",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "📅 下一場演出",
+                        "size": "xs",
+                        "weight": "bold",
+                        "color": SUBTEXT_COLOR,
+                        "flex": 1,
+                        "wrap": False,
+                    },
+                    {
+                        "type": "text",
+                        "text": format_show_dates_inline(
+                            show.get("演出日期")
+                        ),
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "align": "end",
+                        "flex": 0,
+                        "wrap": True,
+                    },
+                ],
             },
             {
                 "type": "text",
@@ -799,19 +777,9 @@ def build_next_show_card(
                     f"🎤 "
                     f"{safe_text(show.get('演出名稱'), '未命名演出')}"
                 ),
-                "size": "lg",
+                "size": "sm",
                 "weight": "bold",
                 "color": TEXT_COLOR,
-                "margin": "md",
-                "wrap": True,
-            },
-            {
-                "type": "text",
-                "text": format_show_dates_inline(
-                    show.get("演出日期")
-                ),
-                "size": "sm",
-                "color": SUBTEXT_COLOR,
                 "margin": "sm",
                 "wrap": True,
             },
@@ -825,10 +793,10 @@ def build_next_show_card(
                         "layout": "vertical",
                         "backgroundColor": TICKET_CARD_COLOR,
                         "cornerRadius": "12px",
-                        "paddingTop": "6px",
-                        "paddingBottom": "6px",
-                        "paddingStart": "12px",
-                        "paddingEnd": "12px",
+                        "paddingTop": "5px",
+                        "paddingBottom": "5px",
+                        "paddingStart": "14px",
+                        "paddingEnd": "14px",
                         "contents": [
                             {
                                 "type": "text",
@@ -875,8 +843,8 @@ def build_menu_item(
         "layout": "horizontal",
         "backgroundColor": CARD_COLOR,
         "cornerRadius": "13px",
-        "paddingTop": "12px",
-        "paddingBottom": "12px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
         "paddingStart": "12px",
         "paddingEnd": "12px",
         "borderWidth": "1px",
@@ -891,8 +859,8 @@ def build_menu_item(
             {
                 "type": "box",
                 "layout": "vertical",
-                "width": "42px",
-                "height": "42px",
+                "width": "38px",
+                "height": "38px",
                 "backgroundColor": icon_background,
                 "cornerRadius": "21px",
                 "justifyContent": "center",
@@ -999,15 +967,15 @@ def build_menu_area():
 
 def build_footer():
     """
-    建立品牌 Footer。
+    建立單行品牌 Footer。
     """
 
     return {
         "type": "box",
         "layout": "vertical",
-        "margin": "lg",
-        "paddingTop": "10px",
-        "paddingBottom": "4px",
+        "margin": "md",
+        "paddingTop": "7px",
+        "paddingBottom": "0px",
         "contents": [
             {
                 "type": "separator",
@@ -1015,20 +983,13 @@ def build_footer():
             },
             {
                 "type": "text",
-                "text": "🐱 TicketCat",
-                "size": "xs",
+                "text": "🐱 TicketCat︱陪你追每一場演出",
+                "size": "xxs",
                 "weight": "bold",
                 "color": LIGHT_TEXT_COLOR,
                 "align": "center",
-                "margin": "md",
-            },
-            {
-                "type": "text",
-                "text": "陪你追每一場演出",
-                "size": "xxs",
-                "color": LIGHT_TEXT_COLOR,
-                "align": "center",
-                "margin": "xs",
+                "margin": "sm",
+                "wrap": False,
             },
         ],
     }
@@ -1096,8 +1057,8 @@ def build_dashboard(today=None):
             "type": "box",
             "layout": "vertical",
             "backgroundColor": BODY_COLOR,
-            "paddingTop": "16px",
-            "paddingBottom": "16px",
+            "paddingTop": "12px",
+            "paddingBottom": "12px",
             "paddingStart": "14px",
             "paddingEnd": "14px",
             "contents": body_contents,

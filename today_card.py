@@ -64,6 +64,25 @@ def safe_text(value, default="未設定"):
     return text
 
 
+def get_show_detail_action(
+    show,
+    fallback_text="演出列表",
+):
+    """
+    有 Supabase id 時直接查看該筆詳細；
+    沒有 id 時回到指定列表。
+    """
+
+    show_id = str(
+        show.get("id") or ""
+    ).strip()
+
+    if show_id:
+        return f"查看ID {show_id}"
+
+    return fallback_text
+
+
 def normalize_today(today=None):
     """
     將 today 統一轉成 datetime。
@@ -207,18 +226,13 @@ def build_task_item(
     title,
     info_rows=None,
     badge_text=None,
-    action_label=None,
     action_text=None,
 ):
     """
     建立單筆今日待辦項目。
 
-    info_rows 格式：
-
-    [
-        ("搶票時間", "2026/08/02 12:00"),
-        ("售票平台", "拓元"),
-    ]
+    整個項目可以直接點擊，
+    進入該筆演出詳細資料。
     """
 
     info_rows = info_rows or []
@@ -239,6 +253,7 @@ def build_task_item(
     ]
 
     if badge_text:
+
         title_contents.append(
             {
                 "type": "box",
@@ -277,6 +292,7 @@ def build_task_item(
     ]
 
     for label, value in info_rows:
+
         contents.append(
             build_info_row(
                 label,
@@ -284,40 +300,24 @@ def build_task_item(
             )
         )
 
-    if action_label and action_text:
-        contents.extend(
-            [
-                build_separator(
-                    margin="md",
-                ),
-                {
-                    "type": "button",
-                    "style": "primary",
-                    "height": "sm",
-                    "margin": "md",
-                    "color": BUTTON_COLOR,
-                    "action": {
-                        "type": "message",
-                        "label": safe_text(
-                            action_label,
-                            "查看詳情",
-                        ),
-                        "text": safe_text(
-                            action_text,
-                            "演出列表",
-                        ),
-                    },
-                },
-            ]
-        )
-
-    return {
+    item = {
         "type": "box",
         "layout": "vertical",
         "spacing": "sm",
+        "paddingTop": "4px",
+        "paddingBottom": "4px",
         "contents": contents,
     }
 
+    if action_text:
+
+        item["action"] = {
+            "type": "message",
+            "label": "查看詳細",
+            "text": action_text,
+        }
+
+    return item
 
 # =========================================================
 # 日期顯示
@@ -894,9 +894,11 @@ def build_ticket_item(
     return build_task_item(
         title=show.get("演出名稱"),
         info_rows=info_rows,
-        badge_text="等待搶票",
-        action_label="查看搶票列表",
-        action_text="搶票列表",
+        badge_text="待搶票",
+        action_text=get_show_detail_action(
+            show,
+            fallback_text="搶票列表",
+        ),
     )
 
 
@@ -961,8 +963,10 @@ def build_pickup_item(
         title=show.get("演出名稱"),
         info_rows=info_rows,
         badge_text="未取票",
-        action_label="查看取票列表",
-        action_text="取票列表",
+        action_text=get_show_detail_action(
+            show,
+            fallback_text="取票列表",
+        ),
     )
 
 
@@ -1018,9 +1022,11 @@ def build_show_item(
     return build_task_item(
         title=show.get("演出名稱"),
         info_rows=info_rows,
-        badge_text="今天演出",
-        action_label="查看演出列表",
-        action_text="演出列表",
+        badge_text="演出日",
+        action_text=get_show_detail_action(
+            show,
+            fallback_text="演出列表",
+        ),
     )
 
 
@@ -1127,32 +1133,23 @@ def build_summary(
                 "contents": [
                     build_summary_count(
                         icon="🎟",
-                        label="搶票",
+                        label="待搶票",
                         count=ticket_count,
                         action_text="搶票列表",
                     ),
                     build_summary_count(
                         icon="📦",
-                        label="取票",
+                        label="待取票",
                         count=pickup_count,
                         action_text="取票列表",
                     ),
                     build_summary_count(
-                        icon="🎤",
-                        label="演出",
+                        icon="📋",
+                        label="演出表",
                         count=show_count,
                         action_text="演出列表",
                     ),
                 ],
-            },
-            {
-                "type": "text",
-                "text": "點選上方分類可查看完整列表",
-                "size": "xxs",
-                "color": LIGHT_TEXT_COLOR,
-                "align": "center",
-                "margin": "sm",
-                "wrap": True,
             },
         ],
     }
