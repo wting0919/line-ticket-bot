@@ -6,6 +6,8 @@ from linebot.models import (
     MessageAction,
 )
 
+from linebot.exceptions import LineBotApiError
+
 from utils import (
     format_price,
     format_datetime,
@@ -24,90 +26,47 @@ from helpers import (
     set_current_index,
 )
 
-from linebot.exceptions import LineBotApiError
+from theme import (
+    BODY_COLOR,
+    SECTION_COLOR,
+    TEXT_COLOR,
+    SUBTEXT_COLOR,
+    LINE_COLOR,
+    BUTTON_COLOR,
+    WHITE_COLOR,
+    WAITING_BACKGROUND_COLOR,
+    WAITING_TEXT_COLOR,
+    SUCCESS_BACKGROUND_COLOR,
+    SUCCESS_TEXT_COLOR,
+    FAILED_BACKGROUND_COLOR,
+    FAILED_TEXT_COLOR,
+    build_brand_header,
+    safe_text,
+    remove_none_elements,
+)
 
 import config
 
 
 # =========================================================
-# View Show V3
-# 奶茶色系
+# View Show V4
+# TicketCat 奶茶色系
 # =========================================================
 
-HEADER_COLOR = "#C9B29B"
-BODY_COLOR = "#FFFCF8"
-SECTION_COLOR = "#F4ECE4"
-
-TEXT_COLOR = "#5C5148"
-SUBTEXT_COLOR = "#75695F"
-LIGHT_TEXT_COLOR = "#9A8D82"
-
-LINE_COLOR = "#E7DDD2"
-
-BUTTON_COLOR = "#B99F86"
-WHITE_COLOR = "#FFFFFF"
-HEADER_SUBTEXT_COLOR = "#FFF9F3"
-
-WAITING_BACKGROUND_COLOR = "#FFF4D6"
-WAITING_TEXT_COLOR = "#A87300"
-
-SUCCESS_BACKGROUND_COLOR = "#E8F3E6"
-SUCCESS_TEXT_COLOR = "#5B7D4A"
-
-FAILED_BACKGROUND_COLOR = "#F8E5E2"
-FAILED_TEXT_COLOR = "#A05A4A"
+WEEKDAY_TEXT = [
+    "一",
+    "二",
+    "三",
+    "四",
+    "五",
+    "六",
+    "日",
+]
 
 
 # =========================================================
-# 基本工具
+# 共用工具
 # =========================================================
-
-def safe_text(
-    value,
-    default="未設定",
-):
-    """
-    安全處理空值。
-
-    None、空字串或純空白時，
-    回傳指定的預設文字。
-    """
-
-    if value is None:
-        return default
-
-    text = str(value).strip()
-
-    if not text:
-        return default
-
-    return text
-
-
-def remove_none_elements(value):
-    """
-    遞迴移除 Flex JSON 中的 None。
-
-    避免 LINE 回傳：
-    cannot contain null elements
-    """
-
-    if isinstance(value, list):
-        return [
-            remove_none_elements(item)
-            for item in value
-            if item is not None
-        ]
-
-    if isinstance(value, dict):
-        return {
-            key: remove_none_elements(item)
-            for key, item in value.items()
-            if item is not None
-        }
-
-    return value
-
 
 def build_separator(
     margin="md",
@@ -127,17 +86,6 @@ def build_separator(
 # 日期格式
 # =========================================================
 
-WEEKDAY_TEXT = [
-    "一",
-    "二",
-    "三",
-    "四",
-    "五",
-    "六",
-    "日",
-]
-
-
 def format_datetime_with_weekday(value):
     """
     搶票時間格式：
@@ -153,6 +101,7 @@ def format_datetime_with_weekday(value):
     )
 
     if parsed_value is None:
+
         return safe_text(
             format_datetime(value)
         )
@@ -248,9 +197,9 @@ def build_status_tag(
         "type": "box",
         "layout": "vertical",
         "backgroundColor": background_color,
-        "cornerRadius": "12px",
-        "paddingTop": "7px",
-        "paddingBottom": "7px",
+        "cornerRadius": "10px",
+        "paddingTop": "5px",
+        "paddingBottom": "5px",
         "paddingStart": "12px",
         "paddingEnd": "12px",
         "contents": [
@@ -343,7 +292,7 @@ def build_status_area(
         "type": "box",
         "layout": "horizontal",
         "spacing": "sm",
-        "margin": "md",
+        "margin": "sm",
         "contents": contents,
     }
 
@@ -358,6 +307,10 @@ def build_info_row(
     value,
     margin="sm",
 ):
+    """
+    建立共用欄位資訊。
+    """
+
     return {
         "type": "box",
         "layout": "horizontal",
@@ -366,13 +319,19 @@ def build_info_row(
         "contents": [
             {
                 "type": "text",
-                "text": safe_text(icon, ""),
+                "text": safe_text(
+                    icon,
+                    "",
+                ),
                 "size": "sm",
                 "flex": 0,
             },
             {
                 "type": "text",
-                "text": safe_text(label, ""),
+                "text": safe_text(
+                    label,
+                    "",
+                ),
                 "size": "xs",
                 "weight": "bold",
                 "color": SUBTEXT_COLOR,
@@ -399,7 +358,7 @@ def build_detail_section(
     icon,
     title,
     rows,
-    margin="lg",
+    margin="md",
 ):
     """
     建立演出、搶票、取票資訊區塊。
@@ -410,7 +369,6 @@ def build_detail_section(
         ("📅", "演出日期", "2026/10/18（六）"),
         ("🕒", "搶票時間", "2026/08/15（六）13:00"),
     ]
-
     """
 
     contents = [
@@ -422,10 +380,10 @@ def build_detail_section(
                 {
                     "type": "box",
                     "layout": "vertical",
-                    "width": "34px",
-                    "height": "34px",
+                    "width": "30px",
+                    "height": "30px",
                     "backgroundColor": SECTION_COLOR,
-                    "cornerRadius": "17px",
+                    "cornerRadius": "15px",
                     "justifyContent": "center",
                     "alignItems": "center",
                     "contents": [
@@ -435,7 +393,7 @@ def build_detail_section(
                                 icon,
                                 "",
                             ),
-                            "size": "md",
+                            "size": "sm",
                             "align": "center",
                         }
                     ],
@@ -487,7 +445,7 @@ def build_note_section(note):
     return {
         "type": "box",
         "layout": "vertical",
-        "margin": "lg",
+        "margin": "md",
         "contents": [
             {
                 "type": "box",
@@ -497,17 +455,17 @@ def build_note_section(note):
                     {
                         "type": "box",
                         "layout": "vertical",
-                        "width": "34px",
-                        "height": "34px",
+                        "width": "30px",
+                        "height": "30px",
                         "backgroundColor": SECTION_COLOR,
-                        "cornerRadius": "17px",
+                        "cornerRadius": "15px",
                         "justifyContent": "center",
                         "alignItems": "center",
                         "contents": [
                             {
                                 "type": "text",
                                 "text": "📝",
-                                "size": "md",
+                                "size": "sm",
                                 "align": "center",
                             }
                         ],
@@ -525,8 +483,8 @@ def build_note_section(note):
             {
                 "type": "box",
                 "layout": "vertical",
-                "margin": "md",
-                "paddingAll": "12px",
+                "margin": "sm",
+                "paddingAll": "10px",
                 "backgroundColor": SECTION_COLOR,
                 "cornerRadius": "10px",
                 "contents": [
@@ -545,6 +503,7 @@ def build_note_section(note):
         ],
     }
 
+
 # =========================================================
 # 操作按鈕
 # =========================================================
@@ -555,10 +514,7 @@ def build_action_button(
     flex=1,
 ):
     """
-    自製奶茶色圓角按鈕。
-
-    Box 元件支援 action，
-    文字大小可自行控制。
+    建立奶茶色圓角按鈕。
     """
 
     return {
@@ -567,8 +523,8 @@ def build_action_button(
         "flex": flex,
         "backgroundColor": BUTTON_COLOR,
         "cornerRadius": "10px",
-        "paddingTop": "11px",
-        "paddingBottom": "11px",
+        "paddingTop": "10px",
+        "paddingBottom": "10px",
         "paddingStart": "3px",
         "paddingEnd": "3px",
         "justifyContent": "center",
@@ -598,7 +554,7 @@ def build_action_area(
     pickup_status,
 ):
     """
-    建立底部操作按鈕。
+    建立卡片底部操作區。
     """
 
     main_buttons = [
@@ -616,12 +572,6 @@ def build_action_area(
         ),
     ]
 
-    main_buttons = [
-        button
-        for button in main_buttons
-        if button is not None
-    ]
-
     contents = [
         build_separator(
             margin="xl",
@@ -630,29 +580,12 @@ def build_action_area(
             "type": "box",
             "layout": "horizontal",
             "spacing": "xs",
-            "margin": "lg",
+            "margin": "md",
             "contents": main_buttons,
         },
     ]
 
     if status == "等待搶票":
-
-        ticket_buttons = [
-            build_action_button(
-                label="✅ 完成搶票",
-                action_text=f"完成搶票 {index}",
-            ),
-            build_action_button(
-                label="❌ 未搶到",
-                action_text=f"未搶到 {index}",
-            ),
-        ]
-
-        ticket_buttons = [
-            button
-            for button in ticket_buttons
-            if button is not None
-        ]
 
         contents.append(
             {
@@ -660,7 +593,16 @@ def build_action_area(
                 "layout": "horizontal",
                 "spacing": "xs",
                 "margin": "sm",
-                "contents": ticket_buttons,
+                "contents": [
+                    build_action_button(
+                        label="✅ 完成搶票",
+                        action_text=f"完成搶票 {index}",
+                    ),
+                    build_action_button(
+                        label="❌ 未搶到",
+                        action_text=f"未搶到 {index}",
+                    ),
+                ],
             }
         )
 
@@ -669,29 +611,22 @@ def build_action_area(
         and pickup_status != "已取票"
     ):
 
-        pickup_buttons = [
-            build_action_button(
-                label="✅ 完成取票",
-                action_text=f"完成取票 {index}",
-            )
-        ]
-
-        pickup_buttons = [
-            button
-            for button in pickup_buttons
-            if button is not None
-        ]
-
         contents.append(
             {
                 "type": "box",
                 "layout": "horizontal",
                 "margin": "sm",
-                "contents": pickup_buttons,
+                "contents": [
+                    build_action_button(
+                        label="✅ 完成取票",
+                        action_text=f"完成取票 {index}",
+                    )
+                ],
             }
         )
 
     return contents
+
 
 # =========================================================
 # 建立演出詳細 Flex
@@ -727,10 +662,8 @@ def build_view_show_card(
         )
     )
 
-    ticket_time = (
-        format_datetime_with_weekday(
-            show.get("搶票時間")
-        )
+    ticket_time = format_datetime_with_weekday(
+        show.get("搶票時間")
     )
 
     platform = safe_text(
@@ -741,10 +674,8 @@ def build_view_show_card(
         show.get("價格張數")
     )
 
-    pickup_date = (
-        format_date_with_weekday(
-            show.get("取票日期")
-        )
+    pickup_date = format_date_with_weekday(
+        show.get("取票日期")
     )
 
     pickup_person = safe_text(
@@ -758,14 +689,19 @@ def build_view_show_card(
     note = show.get("備註")
 
     body_contents = [
+        {
+            "type": "text",
+            "text": f"🎤 {show_name}",
+            "size": "xl",
+            "weight": "bold",
+            "color": TEXT_COLOR,
+            "wrap": True,
+        },
+
         build_status_area(
             status=status,
             pickup_status=pickup_status,
         ),
-
-        # =====================
-        # 演出資訊
-        # =====================
 
         build_detail_section(
             icon="📋",
@@ -777,15 +713,12 @@ def build_view_show_card(
                     show_dates,
                 ),
             ],
+            margin="md",
         ),
 
         build_separator(
-            margin="lg",
+            margin="md",
         ),
-
-        # =====================
-        # 搶票資訊
-        # =====================
 
         build_detail_section(
             icon="🎟",
@@ -807,19 +740,16 @@ def build_view_show_card(
                     price_quantity,
                 ),
             ],
+            margin="md",
         ),
     ]
-
-    # =====================
-    # 取票資訊
-    # =====================
 
     if status == "已搶票":
 
         body_contents.extend(
             [
                 build_separator(
-                    margin="lg",
+                    margin="md",
                 ),
                 build_detail_section(
                     icon="📦",
@@ -836,6 +766,7 @@ def build_view_show_card(
                             pickup_person,
                         ),
                     ],
+                    margin="md",
                 ),
                 {
                     "type": "box",
@@ -862,26 +793,16 @@ def build_view_show_card(
             ]
         )
 
-    # =====================
-    # 備註
-    # =====================
-
     if note:
 
         body_contents.extend(
             [
                 build_separator(
-                    margin="lg",
+                    margin="md",
                 ),
-                build_note_section(
-                    note
-                ),
+                build_note_section(note),
             ]
         )
-
-    # =====================
-    # 操作按鈕
-    # =====================
 
     body_contents.extend(
         build_action_area(
@@ -891,45 +812,21 @@ def build_view_show_card(
         )
     )
 
-
     bubble = {
         "type": "bubble",
         "size": "mega",
 
-        # =====================
-        # Header
-        # =====================
-
-        "header": {
-            "type": "box",
-            "layout": "vertical",
-            "backgroundColor": HEADER_COLOR,
-            "paddingTop": "16px",
-            "paddingBottom": "16px",
-            "paddingStart": "16px",
-            "paddingEnd": "16px",
-            "contents": [
-                {
-                    "type": "text",
-                    "text": f"🎤 {show_name}",
-                    "size": "md",
-                    "weight": "bold",
-                    "color": WHITE_COLOR,
-                    "wrap": True,
-                },
-            ],
-        },
-
-        # =====================
-        # Body
-        # =====================
+        "header": build_brand_header(
+            subtitle="🎤 演出詳細",
+            logo_size=52,
+        ),
 
         "body": {
             "type": "box",
             "layout": "vertical",
             "backgroundColor": BODY_COLOR,
-            "paddingTop": "14px",
-            "paddingBottom": "14px",
+            "paddingTop": "12px",
+            "paddingBottom": "12px",
             "paddingStart": "16px",
             "paddingEnd": "16px",
             "contents": body_contents,
@@ -970,7 +867,10 @@ def handle_view_show(
     user_id,
 ):
     """
-    處理「查看 1」指令。
+    支援：
+
+    查看 1
+    查看ID Supabase-ID
     """
 
     state = get_state(
@@ -982,6 +882,7 @@ def handle_view_show(
     )
 
     if current_shows is None:
+
         current_shows = get_all_shows()
 
     current_shows = current_shows or []
@@ -1000,11 +901,18 @@ def handle_view_show(
 
             matched_index = None
 
-            for current_index, current_show in enumerate(shows):
+            for current_index, current_show in enumerate(
+                shows
+            ):
 
-                if str(
-                    current_show.get("id", "")
-                ) == show_id:
+                current_show_id = str(
+                    current_show.get(
+                        "id",
+                        "",
+                    )
+                ).strip()
+
+                if current_show_id == show_id:
 
                     matched_index = current_index
                     break
@@ -1057,6 +965,7 @@ def handle_view_show(
             state,
             dict,
         ):
+
             set_current_index(
                 user_id,
                 index,
@@ -1105,19 +1014,31 @@ def handle_view_show(
 
         print(
             "status_code：",
-            getattr(error, "status_code", None),
+            getattr(
+                error,
+                "status_code",
+                None,
+            ),
             flush=True,
         )
 
         print(
             "request_id：",
-            getattr(error, "request_id", None),
+            getattr(
+                error,
+                "request_id",
+                None,
+            ),
             flush=True,
         )
 
         print(
             "error_response：",
-            getattr(error, "error_response", None),
+            getattr(
+                error,
+                "error_response",
+                None,
+            ),
             flush=True,
         )
 
@@ -1132,7 +1053,8 @@ def handle_view_show(
             flush=True,
         )
 
-        # 不要再次使用 event.reply_token
+        # reply token 可能已經使用，
+        # 不要在這裡再次回覆。
         return True
 
     except Exception as error:
@@ -1159,20 +1081,21 @@ def handle_view_show(
             flush=True,
         )
 
-        # 只有在尚未呼叫 reply_message 前發生的一般錯誤，
-        # 才嘗試回覆使用者。
         try:
+
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
                     text=(
                         "❌ 演出詳細資料載入失敗\n"
-                        f"{type(error).__name__}: {error}"
+                        f"{type(error).__name__}: "
+                        f"{error}"
                     )
                 )
             )
 
         except LineBotApiError as reply_error:
+
             print(
                 "錯誤訊息回覆失敗：",
                 repr(reply_error),
