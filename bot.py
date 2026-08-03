@@ -47,7 +47,6 @@ from show_list import (
 )
 
 from ui import (
-    menu_reply,
     list_reply,
 )
 
@@ -117,6 +116,8 @@ from utils import (
 )
 
 from today_card import build_today_card
+
+from dashboard import build_dashboard
 
 
 app = Flask(__name__)
@@ -227,18 +228,14 @@ def handle_message(event):
         "menu",
         "Menu",
         "MENU",
-        "help",
-        "Help",
-        "HELP"
+        "首頁",
     ):
 
-        line_bot_api.reply_message(
+        config.line_bot_api.reply_message(
             event.reply_token,
-            menu_reply(
-                "📋 演唱會小助手\n\n"
-                "請點選下方快捷按鈕 👇"
-            )
+            build_dashboard()
         )
+
         return
 
 
@@ -656,7 +653,7 @@ def handle_message(event):
             "✅ 完成搶票 1\n"
             "👤 完成取票 1\n\n"
             "💡 列表可直接點「👀」查看詳細資料。\n"
-            "💡 輸入「選單」可再次開啟快捷按鈕。"
+            "💡 輸入「選單」即可開啟首頁 Dashboard。"
         )
 
 
