@@ -46,10 +46,6 @@ from show_list import (
     get_waiting_shows,
 )
 
-from ui import (
-    list_reply,
-)
-
 # Handlers
 from add_show import (
     start_add_show,
@@ -105,19 +101,14 @@ from helpers import (
     set_show_list,
 )
 
-from utils import (
-    format_datetime,
-    format_date,
-    format_show_dates,
-    format_show_dates_inline,
-    format_ticket_status,
-    format_pickup_status,
-    LIST_FOOTER,
-)
-
 from today_card import build_today_card
 
 from dashboard import build_dashboard
+
+from show_list_card import (
+    build_show_list_card,
+    parse_list_page,
+)
 
 
 app = Flask(__name__)
@@ -192,6 +183,8 @@ def handle_message(event):
     text = event.message.text.strip()
 
     user_id = event.source.user_id
+
+    reply = None
 
 
     # =====================
@@ -292,181 +285,84 @@ def handle_message(event):
     # 搶票列表功能
     # =====================
 
-    elif text == "搶票列表":
+    elif text.startswith("搶票列表"):
 
-        waiting = get_waiting_shows()
+        waiting = get_waiting_shows() or []
 
+        page = parse_list_page(text)
 
-        if not waiting:
+        set_show_list(
+            user_id,
+            "搶票列表",
+            waiting,
+        )
 
-            reply = "目前沒有待搶票演出"
-
-
-        else:
-
-            reply = f"🎟 搶票列表（{len(waiting)}）"
-
-            for i, show in enumerate(waiting, start=1):
-
-                ticket_status = format_ticket_status(
-                    show.get("搶票狀態", "等待搶票")
-                )
-
-                platform = show.get("售票平台") or "未設定"
-                note = show.get("備註")
-
-                platform_line = f"🏢 {platform}"
-
-                if note:
-                    platform_line += f"｜{note}"
-
-                reply += (
-                    "\n──────────\n"
-                    f"{i}. 🎤 {show['演出名稱']}\n"
-                    f"🕒 {format_datetime(show['搶票時間'])}\n"
-                    f"{platform_line}\n"
-                    f"{ticket_status}"
-                )
-
-            reply += LIST_FOOTER
-
-            if len(waiting) > 10:
-                reply += "\n💡 第 11 筆以上請輸入：查看 11"
-
-            set_show_list(
-                user_id,
-                "搶票列表",
-                waiting,
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=waiting,
+                mode="ticket",
+                page=page,
             )
+        )
 
-            line_bot_api.reply_message(
-                event.reply_token,
-                list_reply(
-                    reply,
-                    len(waiting)
-                )
-            )
-
-            return
+        return
 
 
     # =====================
     # 取票列表功能
     # =====================
 
-    elif text == "取票列表":
+    elif text.startswith("取票列表"):
 
-        pickup_list = get_pickup_shows()
+        pickup_list = get_pickup_shows() or []
 
+        page = parse_list_page(text)
 
-        if not pickup_list:
+        set_show_list(
+            user_id,
+            "取票列表",
+            pickup_list,
+        )
 
-            reply = "目前沒有取票資料"
-
-
-        else:
-
-            reply = f"📦 取票列表（{len(pickup_list)}）"
-
-
-            for i, show in enumerate(pickup_list, start=1):
-
-                pickup_status = (
-                    "✅ 已取票"
-                    if show.get("取票狀態") == "已取票"
-                    else "❗ 未取票"
-                )
-
-                reply += (
-                    "\n──────────\n"
-                    f"{i}. 🎤 {show['演出名稱']}\n"
-                    f"📅 {format_date(show['取票日期'])}\n"
-                    f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
-                    f"👤 取票人：{show.get('取票人') or '未設定'}\n"
-                    f"{pickup_status}"
-                )
-
-            reply += LIST_FOOTER
-
-            if len(pickup_list) > 10:
-                reply += "\n💡 第 11 筆以上請輸入：查看 11"
-
-            set_show_list(
-                user_id,
-                "取票列表",
-                pickup_list,
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=pickup_list,
+                mode="pickup",
+                page=page,
             )
+        )
 
-            line_bot_api.reply_message(
-                event.reply_token,
-                list_reply(
-                    reply,
-                    len(pickup_list)
-                )
-            )
-
-            return
+        return
 
 
     # =====================
     # 演出列表功能
     # =====================
 
-    elif text == "演出列表":
+    elif text.startswith("演出列表"):
 
+        shows = get_all_shows() or []
 
-        shows = get_all_shows()
+        page = parse_list_page(text)
 
+        set_show_list(
+            user_id,
+            "演出列表",
+            shows,
+        )
 
-        if not shows:
-
-            reply = "目前沒有演出資料"
-
-
-        else:
-
-            reply = f"📋 演出列表（{len(shows)}）"
-
-
-            for i, show in enumerate(shows, start=1):
-
-                ticket_status = format_ticket_status(
-                    show.get("搶票狀態", "等待搶票")
-                )
-
-                pickup_status = format_pickup_status(show)
-
-                reply += (
-                    "\n──────────\n"
-                    f"{i}. 🎤 {show['演出名稱']}\n"
-                    f"📅 {format_show_dates_inline(show['演出日期'])}\n"
-                    f"{ticket_status}"
-                )
-
-                if pickup_status:
-                    reply += f"\n{pickup_status}"
-
-
-            reply += LIST_FOOTER
-
-            if len(shows) > 10:
-                reply += "\n💡 第 11 筆以上請輸入：查看 11"
-
-            set_show_list(
-                user_id,
-                "演出列表",
-                shows,
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=shows,
+                mode="all",
+                page=page,
             )
+        )
 
-            line_bot_api.reply_message(
-                event.reply_token,
-                list_reply(
-                    reply,
-                    len(shows)
-                )
-            )
-
-            return
+        return
 
 
     elif text == "上一筆":
@@ -652,8 +548,8 @@ def handle_message(event):
             "🗑 刪除 1\n"
             "✅ 完成搶票 1\n"
             "👤 完成取票 1\n\n"
-            "💡 列表可直接點「👀」查看詳細資料。\n"
-            "💡 輸入「選單」即可開啟首頁Dashboard。"
+            "💡 點選列表中的演出即可查看詳細資料。\n"
+            "💡 輸入「選單」即可開啟首頁 Dashboard。"
         )
 
 
