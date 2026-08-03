@@ -653,7 +653,7 @@ def handle_message(event):
             "✅ 完成搶票 1\n"
             "👤 完成取票 1\n\n"
             "💡 列表可直接點「👀」查看詳細資料。\n"
-            "💡 輸入「選單」即可開啟首頁 Dashboard。"
+            "💡 輸入「選單」即可開啟首頁Dashboard。"
         )
 
 
