@@ -1,0 +1,511 @@
+import config
+
+
+# =========================================================
+# TicketCat 共用品牌設定
+# =========================================================
+
+BRAND_NAME = "TicketCat"
+BRAND_SLOGAN = "陪你追每一場演出"
+
+
+# =========================================================
+# 奶茶色系
+# =========================================================
+
+HEADER_COLOR = "#C9B29B"
+URGENT_HEADER_COLOR = "#B56C55"
+
+BODY_COLOR = "#FFFCF8"
+CARD_COLOR = "#FFFFFF"
+SECTION_COLOR = "#F4ECE4"
+
+TEXT_COLOR = "#5C5148"
+SUBTEXT_COLOR = "#75695F"
+LIGHT_TEXT_COLOR = "#9A8D82"
+
+LINE_COLOR = "#E7DDD2"
+BUTTON_COLOR = "#B99F86"
+
+WHITE_COLOR = "#FFFFFF"
+HEADER_SUBTEXT_COLOR = "#FFF9F3"
+
+TICKET_CARD_COLOR = "#FFF4D6"
+PICKUP_CARD_COLOR = "#EEF3E8"
+SHOW_CARD_COLOR = "#F8EAE4"
+
+WAITING_BACKGROUND_COLOR = "#FFF4D6"
+WAITING_TEXT_COLOR = "#A87300"
+
+SUCCESS_BACKGROUND_COLOR = "#E8F3E6"
+SUCCESS_TEXT_COLOR = "#5B7D4A"
+
+FAILED_BACKGROUND_COLOR = "#F8E5E2"
+FAILED_TEXT_COLOR = "#A05A4A"
+
+
+# =========================================================
+# 基本工具
+# =========================================================
+
+def safe_text(
+    value,
+    default="未設定",
+):
+    """
+    安全處理 None、空字串與純空白。
+    """
+
+    if value is None:
+        return default
+
+    text = str(value).strip()
+
+    return text if text else default
+
+
+def remove_none_elements(value):
+    """
+    遞迴移除 Flex JSON 裡的 None。
+
+    避免 LINE 回傳：
+    cannot contain null elements
+    """
+
+    if isinstance(value, list):
+
+        return [
+            remove_none_elements(item)
+            for item in value
+            if item is not None
+        ]
+
+    if isinstance(value, dict):
+
+        return {
+            key: remove_none_elements(item)
+            for key, item in value.items()
+            if item is not None
+        }
+
+    return value
+
+
+def build_separator(
+    margin="lg",
+    color=LINE_COLOR,
+):
+    """
+    建立共用分隔線。
+    """
+
+    return {
+        "type": "separator",
+        "margin": margin,
+        "color": color,
+    }
+
+
+# =========================================================
+# TicketCat Logo
+# =========================================================
+
+def get_logo_url():
+    """
+    從 config 讀取公開 Logo 網址。
+
+    網址不存在或不是 https 時，
+    自動改用貓咪 Emoji。
+    """
+
+    logo_url = getattr(
+        config,
+        "DASHBOARD_LOGO_URL",
+        "",
+    )
+
+    logo_url = str(
+        logo_url or ""
+    ).strip()
+
+    if not logo_url.startswith("https://"):
+        return None
+
+    return logo_url
+
+
+def build_logo_box(
+    size=54,
+):
+    """
+    建立圓形 TicketCat Logo。
+
+    size 必須傳入整數，例如：
+    54、60、66。
+    """
+
+    logo_url = get_logo_url()
+
+    size_px = f"{size}px"
+    radius_px = f"{size // 2}px"
+
+    if not logo_url:
+
+        return {
+            "type": "box",
+            "layout": "vertical",
+            "width": size_px,
+            "height": size_px,
+            "backgroundColor": "#FFF7EC",
+            "cornerRadius": radius_px,
+            "justifyContent": "center",
+            "alignItems": "center",
+            "flex": 0,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": "🐱",
+                    "size": "xl",
+                    "align": "center",
+                }
+            ],
+        }
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "width": size_px,
+        "height": size_px,
+        "cornerRadius": radius_px,
+        "flex": 0,
+        "contents": [
+            {
+                "type": "image",
+                "url": logo_url,
+                "size": "full",
+                "aspectMode": "cover",
+                "aspectRatio": "1:1",
+            }
+        ],
+    }
+
+
+# =========================================================
+# TicketCat 品牌 Header
+# =========================================================
+
+def build_brand_header(
+    subtitle=None,
+    message=None,
+    urgent=False,
+    show_logo=True,
+    logo_size=54,
+):
+    """
+    建立共用品牌 Header。
+
+    subtitle：
+        卡片功能名稱，例如：
+        ☀️ 今日待辦
+        🎟 明日搶票
+        🎤 演出詳細
+
+    message：
+        額外提示文字，例如 Dashboard 每日一句。
+
+    urgent：
+        True 時使用深紅棕色 Header，
+        適合倒數 10 分鐘提醒。
+
+    show_logo：
+        是否顯示貓貓 Logo。
+    """
+
+    brand_contents = []
+
+    if show_logo:
+
+        brand_contents.append(
+            build_logo_box(
+                size=logo_size
+            )
+        )
+
+    brand_contents.append(
+        {
+            "type": "box",
+            "layout": "vertical",
+            "margin": (
+                "md"
+                if show_logo
+                else "none"
+            ),
+            "flex": 1,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": f"🐱 {BRAND_NAME}",
+                    "size": "lg",
+                    "weight": "bold",
+                    "color": WHITE_COLOR,
+                    "wrap": True,
+                },
+                {
+                    "type": "text",
+                    "text": BRAND_SLOGAN,
+                    "size": "xs",
+                    "color": HEADER_SUBTEXT_COLOR,
+                    "margin": "xs",
+                    "wrap": True,
+                },
+            ],
+        }
+    )
+
+    contents = [
+        {
+            "type": "box",
+            "layout": "horizontal",
+            "alignItems": "center",
+            "contents": brand_contents,
+        }
+    ]
+
+    if subtitle:
+
+        contents.append(
+            {
+                "type": "text",
+                "text": safe_text(
+                    subtitle,
+                    "",
+                ),
+                "size": "sm",
+                "weight": "bold",
+                "color": WHITE_COLOR,
+                "margin": "md",
+                "wrap": True,
+            }
+        )
+
+    if message:
+
+        contents.append(
+            {
+                "type": "box",
+                "layout": "vertical",
+                "margin": "md",
+                "backgroundColor": "#FFF7EC",
+                "cornerRadius": "12px",
+                "paddingTop": "8px",
+                "paddingBottom": "8px",
+                "paddingStart": "12px",
+                "paddingEnd": "12px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": safe_text(
+                            message,
+                            "",
+                        ),
+                        "size": "xs",
+                        "weight": "bold",
+                        "color": TEXT_COLOR,
+                        "align": "center",
+                        "wrap": True,
+                    }
+                ],
+            }
+        )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "backgroundColor": (
+            URGENT_HEADER_COLOR
+            if urgent
+            else HEADER_COLOR
+        ),
+        "paddingTop": "16px",
+        "paddingBottom": "16px",
+        "paddingStart": "18px",
+        "paddingEnd": "18px",
+        "contents": contents,
+    }
+
+
+# =========================================================
+# TicketCat 品牌 Footer
+# =========================================================
+
+def build_brand_footer(
+    margin="lg",
+    show_separator=True,
+):
+    """
+    建立共用品牌 Footer。
+    """
+
+    contents = []
+
+    if show_separator:
+
+        contents.append(
+            {
+                "type": "separator",
+                "color": LINE_COLOR,
+            }
+        )
+
+    contents.extend(
+        [
+            {
+                "type": "text",
+                "text": f"🐱 {BRAND_NAME}",
+                "size": "xs",
+                "weight": "bold",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
+                "margin": "md",
+                "wrap": False,
+            },
+            {
+                "type": "text",
+                "text": BRAND_SLOGAN,
+                "size": "xxs",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
+                "margin": "xs",
+                "wrap": True,
+            },
+        ]
+    )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "margin": margin,
+        "paddingTop": "10px",
+        "paddingBottom": "4px",
+        "contents": contents,
+    }
+
+
+# =========================================================
+# 共用狀態膠囊
+# =========================================================
+
+def build_status_tag(
+    text,
+    background_color,
+    text_color,
+):
+    """
+    建立三字狀態膠囊。
+    """
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "backgroundColor": background_color,
+        "cornerRadius": "12px",
+        "paddingTop": "7px",
+        "paddingBottom": "7px",
+        "paddingStart": "12px",
+        "paddingEnd": "12px",
+        "contents": [
+            {
+                "type": "text",
+                "text": safe_text(
+                    text,
+                    "",
+                ),
+                "size": "xxs",
+                "weight": "bold",
+                "color": text_color,
+                "align": "center",
+                "wrap": False,
+            }
+        ],
+    }
+
+
+def build_waiting_tag(text):
+    """
+    黃色等待狀態。
+    """
+
+    return build_status_tag(
+        text=text,
+        background_color=WAITING_BACKGROUND_COLOR,
+        text_color=WAITING_TEXT_COLOR,
+    )
+
+
+def build_success_tag(text):
+    """
+    綠色完成狀態。
+    """
+
+    return build_status_tag(
+        text=text,
+        background_color=SUCCESS_BACKGROUND_COLOR,
+        text_color=SUCCESS_TEXT_COLOR,
+    )
+
+
+def build_failed_tag(text):
+    """
+    紅色失敗狀態。
+    """
+
+    return build_status_tag(
+        text=text,
+        background_color=FAILED_BACKGROUND_COLOR,
+        text_color=FAILED_TEXT_COLOR,
+    )
+
+
+# =========================================================
+# 共用奶茶按鈕
+# =========================================================
+
+def build_milk_tea_button(
+    label,
+    action_text,
+    flex=1,
+    text_size="xs",
+):
+    """
+    建立可調整字體大小的奶茶色圓角按鈕。
+    """
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "flex": flex,
+        "backgroundColor": BUTTON_COLOR,
+        "cornerRadius": "10px",
+        "paddingTop": "11px",
+        "paddingBottom": "11px",
+        "paddingStart": "4px",
+        "paddingEnd": "4px",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "action": {
+            "type": "message",
+            "label": label,
+            "text": action_text,
+        },
+        "contents": [
+            {
+                "type": "text",
+                "text": label,
+                "size": text_size,
+                "weight": "bold",
+                "color": WHITE_COLOR,
+                "align": "center",
+                "wrap": False,
+            }
+        ],
+    }
