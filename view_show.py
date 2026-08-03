@@ -977,26 +977,65 @@ def handle_view_show(
         user_id
     )
 
-    shows = get_current_shows(
+    current_shows = get_current_shows(
         user_id
     )
 
-    if shows is None:
-        shows = get_all_shows()
+    if current_shows is None:
+        current_shows = get_all_shows()
 
-    shows = shows or []
+    current_shows = current_shows or []
 
     try:
 
-        index = (
-            int(
-                text.replace(
-                    "查看",
-                    "",
-                ).strip()
+        if text.startswith("查看ID"):
+
+            show_id = text.replace(
+                "查看ID",
+                "",
+                1,
+            ).strip()
+
+            shows = get_all_shows() or []
+
+            matched_index = None
+
+            for current_index, current_show in enumerate(shows):
+
+                if str(
+                    current_show.get("id", "")
+                ) == show_id:
+
+                    matched_index = current_index
+                    break
+
+            if matched_index is None:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="❌ 找不到這筆演出"
+                    )
+                )
+
+                return True
+
+            index = matched_index
+
+        else:
+
+            shows = current_shows
+
+            index = (
+                int(
+                    text.replace(
+                        "查看",
+                        "",
+                        1,
+                    ).strip()
+                )
+                - 1
             )
-            - 1
-        )
 
         if (
             index < 0

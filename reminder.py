@@ -2,8 +2,6 @@ import config
 
 from datetime import datetime, timedelta
 
-from linebot.models import TextSendMessage
-
 from data import (
     supabase,
     load_data,
@@ -11,14 +9,19 @@ from data import (
 )
 
 from utils import (
-    format_price,
     parse_date,
     parse_datetime,
-    format_datetime,
     get_last_show_date,
 )
 
 from today_card import build_today_card
+
+from reminder_card import (
+    build_tomorrow_ticket_card,
+    build_ticket_countdown_card,
+    build_pickup_reminder_card,
+    build_show_day_reminder_card,
+)
 
 # =====================
 # 提醒功能
@@ -36,13 +39,22 @@ def check_reminders():
 
     for show in shows:
 
-        show.setdefault("提醒", {
+        reminder_defaults = {
             "前一天": False,
             "30分鐘": False,
             "10分鐘": False,
             "取票": False,
-            "演出日": False
-        })
+            "演出日": False,
+        }
+
+        if not isinstance(show.get("提醒"), dict):
+            show["提醒"] = {}
+
+        for reminder_key, default_value in reminder_defaults.items():
+            show["提醒"].setdefault(
+                reminder_key,
+                default_value,
+            )
 
         print(
             "提醒狀態：",
@@ -83,14 +95,7 @@ def check_reminders():
 
                     config.line_bot_api.push_message(
                         config.GROUP_ID,
-                        TextSendMessage(
-                            text=(
-                                "⏰ 明日搶票提醒\n\n"
-                                f"🎤 {show['演出名稱']}\n"
-                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                                f"🌐 售票平台：{show['售票平台']}"
-                            )
-                        )
+                        build_tomorrow_ticket_card(show)
                     )
 
                 except Exception as e:
@@ -135,14 +140,9 @@ def check_reminders():
 
                     config.line_bot_api.push_message(
                         config.GROUP_ID,
-                        TextSendMessage(
-                            text=(
-                                "⏰ 搶票倒數 30 分鐘\n\n"
-                                f"🎤 {show['演出名稱']}\n"
-                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                                f"🌐 售票平台：{show['售票平台']}\n"
-                                f"📝 備註：{show['備註'] if show['備註'] else '無'}"
-                            )
+                        build_ticket_countdown_card(
+                            show=show,
+                            minutes=30,
                         )
                     )
 
@@ -176,15 +176,9 @@ def check_reminders():
 
                     config.line_bot_api.push_message(
                         config.GROUP_ID,
-                        TextSendMessage(
-                            text=(
-                                "🔐 搶票倒數 10 分鐘\n\n"
-                                f"🎤 {show['演出名稱']}\n"
-                                f"🎟 搶票時間：{format_datetime(show['搶票時間'])}\n"
-                                f"🌐 售票平台：{show['售票平台']}\n"
-                                f"💰 價格張數：{format_price(show['價格張數'])}\n"
-                                f"📝 備註：{show['備註'] if show['備註'] else '無'}"
-                            )
+                        build_ticket_countdown_card(
+                            show=show,
+                            minutes=10,
                         )
                     )
 
@@ -209,48 +203,177 @@ def check_reminders():
             )
 
 
+        # =====================
         # 取票提醒
+        # =====================
+
         if show.get("取票日期"):
 
-            pickup_time = parse_datetime(
-                show["取票日期"] + " 12:00"
+            try:
+
+                pickup_time = parse_datetime(
+                    f"{show['取票日期']} 12:00"
+                )
+
+                if pickup_time is None:
+                    raise ValueError(
+                        f"無法解析取票日期：{show['取票日期']}"
+                    )
+
+                if (
+                    pickup_time
+                    <= now
+                    < pickup_time + timedelta(minutes=1)
+                    and not show["提醒"]["取票"]
+                ):
+
+                    participants = [
+                        name.strip()
+                        for name in str(
+                            show.get("取票人", "")
+                        ).split("、")
+                        if name.strip()
+                    ]
+
+                    try:
+
+                        config.line_bot_api.push_message(
+                            config.GROUP_ID,
+                            build_pickup_reminder_card(show),
+                        )
+
+                        if participants:
+
+                            config.push_mention_message(
+                                config.GROUP_ID,
+                                "👤 可以取票囉～",
+                                participants,
+                            )
+
+                    except Exception as error:
+
+                        print(
+                            "取票提醒推播失敗：",
+                            repr(error),
+                            flush=True,
+                        )
+
+                    else:
+
+                        show["提醒"]["取票"] = True
+                        update_show(show)
+
+            except Exception as error:
+
+                print(
+                    "取票提醒處理錯誤：",
+                    show.get("演出名稱"),
+                    repr(error),
+                    flush=True,
+                )
+
+        # =====================
+        # 演出日提醒
+        # =====================
+
+        try:
+
+            show_dates = show.get(
+                "演出日期",
+                ""
+            )
+
+            if isinstance(
+                show_dates,
+                (list, tuple),
+            ):
+
+                date_values = show_dates
+
+            else:
+
+                show_date_text = (
+                    str(show_dates)
+                    .replace("，", ",")
+                    .replace("\n", ",")
+                )
+
+                date_values = [
+                    value.strip()
+                    for value in show_date_text.split(",")
+                    if value.strip()
+                ]
+
+            is_show_day = False
+
+            for date_value in date_values:
+
+                parsed_show_date = parse_date(
+                    date_value
+                )
+
+                if parsed_show_date is None:
+                    continue
+
+                if hasattr(
+                    parsed_show_date,
+                    "date",
+                ):
+                    parsed_date = (
+                        parsed_show_date.date()
+                    )
+                else:
+                    parsed_date = parsed_show_date
+
+                if parsed_date == now.date():
+
+                    is_show_day = True
+                    break
+
+            show_day_time = now.replace(
+                hour=10,
+                minute=0,
+                second=0,
+                microsecond=0,
             )
 
             if (
-                pickup_time <= now < pickup_time + timedelta(minutes=1)
-                and not show["提醒"]["取票"]
+                is_show_day
+                and show_day_time
+                <= now
+                < show_day_time + timedelta(minutes=1)
+                and not show["提醒"]["演出日"]
             ):
-
-                participants = [
-                    x.strip()
-                    for x in show.get("取票人", "").split("、")
-                    if x.strip()
-                ]
 
                 try:
 
-                    config.push_mention_message(
+                    config.line_bot_api.push_message(
                         config.GROUP_ID,
-                        (
-                            "📦 取票提醒\n\n"
-                            f"🎤 {show['演出名稱']}\n"
-                            "👤 可以取票囉～"
-                        ),
-                        participants
+                        build_show_day_reminder_card(
+                            show
+                        )
                     )
 
                 except Exception as e:
 
                     print(
-                        "取票提醒推播失敗：",
+                        "演出日提醒推播失敗：",
                         repr(e),
                         flush=True,
                     )
 
                 else:
 
-                    show["提醒"]["取票"] = True
+                    show["提醒"]["演出日"] = True
                     update_show(show)
+
+        except Exception as e:
+
+            print(
+                "演出日提醒錯誤：",
+                repr(e),
+                flush=True,
+            )
 
 # =====================
 # 今日重點
