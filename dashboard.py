@@ -1,8 +1,9 @@
+import config
+import random
+
 from datetime import datetime, timedelta
 
 from linebot.models import FlexSendMessage
-
-import config
 
 from show_list import (
     get_all_shows,
@@ -45,7 +46,40 @@ BUTTON_COLOR = "#B99F86"
 WHITE_COLOR = "#FFFFFF"
 HEADER_SUBTEXT_COLOR = "#FFF9F3"
 
-FOOTER_COLOR = "#F4E4D4"
+# =========================================================
+# TicketCat 每日一句
+# =========================================================
+
+CAT_HEADER_MESSAGES = [
+    "🐾 今天也加油搶票！",
+    "🐾 希望今天是神手的一天！",
+    "🐾 搶票模式 ON！",
+    "🐾 祝你今天歐氣滿滿 🍀",
+    "🐾 今天一定有好消息！",
+]
+
+
+def get_cat_header_message():
+    """
+    每天固定顯示一句 TicketCat 訊息。
+
+    使用日期作為亂數種子，
+    同一天內每次開啟 Dashboard 都會顯示同一句。
+    """
+
+    taiwan_now = datetime.now() + timedelta(hours=8)
+
+    date_seed = taiwan_now.strftime(
+        "%Y%m%d"
+    )
+
+    random_generator = random.Random(
+        date_seed
+    )
+
+    return random_generator.choice(
+        CAT_HEADER_MESSAGES
+    )
 
 
 # =========================================================
@@ -244,7 +278,7 @@ def build_header():
                         "contents": [
                             {
                                 "type": "text",
-                                "text": "演唱會小助手",
+                                "text": "🐱 TicketCat",
                                 "size": "xl",
                                 "weight": "bold",
                                 "color": WHITE_COLOR,
@@ -252,7 +286,7 @@ def build_header():
                             },
                             {
                                 "type": "text",
-                                "text": "所有重要行程，一目了然",
+                                "text": "陪你追每一場演出",
                                 "size": "xs",
                                 "color": HEADER_SUBTEXT_COLOR,
                                 "margin": "sm",
@@ -275,7 +309,7 @@ def build_header():
                 "contents": [
                     {
                         "type": "text",
-                        "text": "🐾 今天也加油搶票！",
+                        "text": get_cat_header_message(),
                         "size": "xs",
                         "weight": "bold",
                         "color": TEXT_COLOR,
@@ -284,6 +318,127 @@ def build_header():
                     }
                 ],
             },
+        ],
+    }
+
+# =========================================================
+# 今日待辦貓咪訊息
+# =========================================================
+
+def get_today_cat_message(
+    ticket_count,
+    pickup_count,
+    show_count,
+):
+    """
+    依照今日待辦內容產生搶票貓訊息。
+    """
+
+    total_count = (
+        ticket_count
+        + pickup_count
+        + show_count
+    )
+
+    active_types = sum(
+        [
+            ticket_count > 0,
+            pickup_count > 0,
+            show_count > 0,
+        ]
+    )
+
+    if total_count == 0:
+
+        return (
+            "🐱 今天沒有待辦",
+            "好好休息吧 ☕",
+        )
+
+    if active_types >= 2:
+
+        return (
+            "🐱 今天很忙喔！",
+            "我陪你一起完成 💪",
+        )
+
+    if show_count > 0:
+
+        return (
+            "🐱 今天就是演出日！",
+            "玩得開心 ✨",
+        )
+
+    if ticket_count > 0:
+
+        return (
+            "🐱 今天要搶票！",
+            "祝你順利搶到 🎟",
+        )
+
+    if pickup_count > 0:
+
+        return (
+            "🐱 記得去取票喔",
+            "不要白跑一趟 📦",
+        )
+
+    return (
+        "🐱 今天有待辦喔！",
+        "記得查看一下～",
+    )
+
+
+def build_today_cat_message(
+    ticket_count,
+    pickup_count,
+    show_count,
+):
+    """
+    建立今日待辦底下的貓咪訊息。
+    """
+
+    title, subtitle = get_today_cat_message(
+        ticket_count=ticket_count,
+        pickup_count=pickup_count,
+        show_count=show_count,
+    )
+
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "margin": "md",
+        "paddingTop": "9px",
+        "paddingBottom": "9px",
+        "paddingStart": "10px",
+        "paddingEnd": "10px",
+        "backgroundColor": SECTION_COLOR,
+        "cornerRadius": "10px",
+        "alignItems": "center",
+        "contents": [
+            {
+                "type": "box",
+                "layout": "vertical",
+                "flex": 1,
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "size": "xs",
+                        "weight": "bold",
+                        "color": TEXT_COLOR,
+                        "wrap": True,
+                    },
+                    {
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "xs",
+                        "wrap": True,
+                    },
+                ],
+            }
         ],
     }
 
@@ -300,19 +455,20 @@ def build_summary_card(
     action_text,
 ):
     """
-    建立可點擊的單格摘要。
+    建立精簡版可點擊摘要卡。
     """
 
     return {
         "type": "box",
-        "layout": "vertical",
+        "layout": "horizontal",
         "flex": 1,
         "backgroundColor": background_color,
-        "cornerRadius": "14px",
-        "paddingTop": "13px",
-        "paddingBottom": "13px",
-        "paddingStart": "5px",
-        "paddingEnd": "5px",
+        "cornerRadius": "11px",
+        "paddingTop": "8px",
+        "paddingBottom": "8px",
+        "paddingStart": "7px",
+        "paddingEnd": "7px",
+        "alignItems": "center",
         "action": {
             "type": "message",
             "label": label,
@@ -322,38 +478,36 @@ def build_summary_card(
             {
                 "type": "text",
                 "text": icon,
-                "size": "xl",
-                "align": "center",
+                "size": "lg",
+                "flex": 0,
             },
             {
-                "type": "text",
-                "text": label,
-                "size": "xxs",
-                "weight": "bold",
-                "color": SUBTEXT_COLOR,
-                "align": "center",
+                "type": "box",
+                "layout": "vertical",
                 "margin": "sm",
-                "wrap": False,
-            },
-            {
-                "type": "text",
-                "text": str(count),
-                "size": "xxl",
-                "weight": "bold",
-                "color": TEXT_COLOR,
-                "align": "center",
-                "margin": "xs",
-            },
-            {
-                "type": "text",
-                "text": "項",
-                "size": "xxs",
-                "color": LIGHT_TEXT_COLOR,
-                "align": "center",
+                "flex": 1,
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": str(count),
+                        "size": "lg",
+                        "weight": "bold",
+                        "color": TEXT_COLOR,
+                        "align": "center",
+                    },
+                    {
+                        "type": "text",
+                        "text": label,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "align": "center",
+                        "margin": "xs",
+                        "wrap": False,
+                    },
+                ],
             },
         ],
     }
-
 
 def build_today_summary(
     ticket_count,
@@ -361,7 +515,8 @@ def build_today_summary(
     show_count,
 ):
     """
-    建立今日待辦摘要。
+    建立精簡版今日待辦摘要，
+    並顯示搶票貓訊息。
     """
 
     total_count = (
@@ -374,8 +529,11 @@ def build_today_summary(
         "type": "box",
         "layout": "vertical",
         "backgroundColor": CARD_COLOR,
-        "cornerRadius": "16px",
-        "paddingAll": "14px",
+        "cornerRadius": "14px",
+        "paddingTop": "12px",
+        "paddingBottom": "12px",
+        "paddingStart": "12px",
+        "paddingEnd": "12px",
         "borderWidth": "1px",
         "borderColor": LINE_COLOR,
         "contents": [
@@ -392,7 +550,7 @@ def build_today_summary(
                     {
                         "type": "text",
                         "text": "☀️ 今日待辦",
-                        "size": "lg",
+                        "size": "md",
                         "weight": "bold",
                         "color": TEXT_COLOR,
                         "flex": 1,
@@ -400,8 +558,8 @@ def build_today_summary(
                     },
                     {
                         "type": "text",
-                        "text": f"共 {total_count} 項",
-                        "size": "xs",
+                        "text": f"{total_count} 項",
+                        "size": "xxs",
                         "color": SUBTEXT_COLOR,
                         "align": "end",
                         "wrap": False,
@@ -411,8 +569,8 @@ def build_today_summary(
             {
                 "type": "box",
                 "layout": "horizontal",
-                "spacing": "sm",
-                "margin": "lg",
+                "spacing": "xs",
+                "margin": "md",
                 "contents": [
                     build_summary_card(
                         icon="🎟",
@@ -437,6 +595,11 @@ def build_today_summary(
                     ),
                 ],
             },
+            build_today_cat_message(
+                ticket_count=ticket_count,
+                pickup_count=pickup_count,
+                show_count=show_count,
+            ),
         ],
     }
 
@@ -579,7 +742,7 @@ def build_next_show_card(
                 },
                 {
                     "type": "text",
-                    "text": "新增一場演出，讓搶票貓幫你記住吧！",
+                    "text": "新增一場演出，讓TicketCat幫你記住吧！",
                     "size": "xs",
                     "color": SUBTEXT_COLOR,
                     "align": "center",
@@ -815,7 +978,7 @@ def build_menu_area():
             build_menu_item(
                 icon="➕",
                 title="新增演出",
-                description="新增一筆演出到小助手",
+                description="新增一筆演出資料",
                 action_text="新增演出",
                 icon_background="#F2DDC9",
             ),
@@ -834,74 +997,41 @@ def build_menu_area():
 # Footer
 # =========================================================
 
-def build_footer(
-    total_show_count,
-    total_task_count,
-):
+def build_footer():
     """
-    建立 Dashboard Footer。
+    建立品牌 Footer。
     """
-
-    if total_show_count == 0:
-
-        title = "🐱 尚未新增任何演出"
-        subtitle = "新增第一場演出，讓搶票貓開始工作吧！"
-
-    elif total_task_count == 0:
-
-        title = f"🐱 目前共有 {total_show_count} 場演出"
-        subtitle = "今天沒有待辦，好好休息一下～"
-
-    else:
-
-        title = f"🐱 今天共有 {total_task_count} 項待辦"
-        subtitle = f"目前共管理 {total_show_count} 場演出"
 
     return {
         "type": "box",
-        "layout": "horizontal",
+        "layout": "vertical",
         "margin": "lg",
-        "backgroundColor": FOOTER_COLOR,
-        "cornerRadius": "14px",
-        "paddingTop": "12px",
-        "paddingBottom": "12px",
-        "paddingStart": "14px",
-        "paddingEnd": "14px",
-        "alignItems": "center",
+        "paddingTop": "10px",
+        "paddingBottom": "4px",
         "contents": [
             {
-                "type": "text",
-                "text": "📣",
-                "size": "lg",
-                "flex": 0,
+                "type": "separator",
+                "color": LINE_COLOR,
             },
             {
-                "type": "box",
-                "layout": "vertical",
+                "type": "text",
+                "text": "🐱 TicketCat",
+                "size": "xs",
+                "weight": "bold",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
                 "margin": "md",
-                "flex": 1,
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": title,
-                        "size": "sm",
-                        "weight": "bold",
-                        "color": TEXT_COLOR,
-                        "wrap": True,
-                    },
-                    {
-                        "type": "text",
-                        "text": subtitle,
-                        "size": "xxs",
-                        "color": SUBTEXT_COLOR,
-                        "margin": "xs",
-                        "wrap": True,
-                    },
-                ],
+            },
+            {
+                "type": "text",
+                "text": "陪你追每一場演出",
+                "size": "xxs",
+                "color": LIGHT_TEXT_COLOR,
+                "align": "center",
+                "margin": "xs",
             },
         ],
     }
-
 
 # =========================================================
 # 建立 Dashboard
@@ -938,12 +1068,6 @@ def build_dashboard(today=None):
     pickup_count = len(pickup_shows)
     show_count = len(show_shows)
 
-    total_task_count = (
-        ticket_count
-        + pickup_count
-        + show_count
-    )
-
     next_show_date, next_show = get_next_show(
         all_shows,
         today,
@@ -961,10 +1085,7 @@ def build_dashboard(today=None):
             today=today,
         ),
         build_menu_area(),
-        build_footer(
-            total_show_count=len(all_shows),
-            total_task_count=total_task_count,
-        ),
+        build_footer(),
     ]
 
     bubble = {
@@ -996,7 +1117,7 @@ def build_dashboard(today=None):
     )
 
     return FlexSendMessage(
-        alt_text="🐱 演唱會小助手",
+        alt_text="🐱 TicketCat",
         contents=bubble,
     )
 
