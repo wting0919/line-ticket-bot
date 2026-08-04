@@ -1,6 +1,22 @@
 import config
 
 
+from ui import simple_quick_reply
+
+
+def activity_quick_reply(
+    include_cancel=True,
+):
+    buttons = ACTIVITY_OPTIONS.copy()
+
+    if include_cancel:
+        buttons.append(
+            ("❌ 取消", "取消")
+        )
+
+    return simple_quick_reply(buttons)
+
+
 # =========================================================
 # TicketCat 共用品牌設定
 # =========================================================
@@ -435,15 +451,37 @@ def build_status_tag(
 
 
 ACTIVITY_BADGE = {
-    "演唱會": ("演唱會", "#F3EBE3"),
-    "FM": ("FM", "#F5CDD9"),
-    "FP": ("FP", "#DCCFF7"),
-    "LIVE": ("LIVE", "#CBEAF5"),
-    "SHOWCASE": ("Showcase", "#D6EDCC"),
-    "FESTIVAL": ("Festival", "#F6D8B3"),
-    "拼盤": ("拼盤", "#FFE9BE"),
-    "其他": ("其他", "#E5E5E5"),
+    "演唱會": ("演唱會", "#E7D8C8"),      # 奶茶
+    "FM": ("FAN MEETING", "#DCECF7"),    # 霧藍
+    "FP": ("FAN PARTY", "#F8DDE7"),      # 淡粉
+    "LIVE": ("LIVE", "#DDEEDC"),         # 淡綠
+    "SHOWCASE": ("SHOWCASE", "#EEE3F7"), # 淡紫
+    "拼盤": ("拼盤", "#F3E2D2"),          # 杏桃
+    "FESTIVAL": ("FESTIVAL", "#F8E8C9"), # 淡金
+    "其他": ("其他", "#EAEAEA"),          # 淺灰
 }
+
+# =========================================================
+# Activity Options
+# =========================================================
+
+ACTIVITY_OPTIONS = [
+    ("🎤 演唱會", "演唱會"),
+    ("🤝 FAN MEETING", "FM"),
+    ("🎉 FAN PARTY", "FP"),
+    ("🎵 LIVE", "LIVE"),
+    ("🌟 SHOWCASE", "SHOWCASE"),
+    ("🎭 拼盤", "拼盤"),
+    ("🎪 FESTIVAL", "FESTIVAL"),
+    ("📌 其他", "其他"),
+]
+
+
+ACTIVITY_VALUES = {
+    value
+    for _, value in ACTIVITY_OPTIONS
+}
+
 
 def build_activity_badge(activity):
 

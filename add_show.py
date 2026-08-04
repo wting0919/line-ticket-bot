@@ -90,17 +90,7 @@ def handle_add_show_flow(event, text, user_id):
                 text=(
                     "🎤 請選擇活動類型"
                 ),
-                quick_reply=simple_quick_reply([
-                    ("演唱會", "演唱會"),
-                    ("Fan Meeting", "FM"),
-                    ("Fan Party", "FP"),
-                    ("LIVE", "LIVE"),
-                    ("Showcase", "SHOWCASE"),
-                    ("Festival", "FESTIVAL"),
-                    ("拼盤", "拼盤"),
-                    ("其他", "其他"),
-                    ("❌ 取消", "取消"),
-                ])
+                quick_reply=activity_quick_reply()
             )
         )
 
@@ -375,7 +365,7 @@ def handle_add_show_flow(event, text, user_id):
                 event.reply_token,
                 TextSendMessage(
                     text="請重新輸入藝人",
-                    quick_reply=simple_quick_reply([
+                    
                         ("❌ 取消", "取消")
                     ])
                 )

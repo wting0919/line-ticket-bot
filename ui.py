@@ -169,7 +169,9 @@ def simple_quick_reply(buttons):
 def edit_field_quick_reply():
 
     return simple_quick_reply([
-        ("🎤 演出名稱", "演出名稱"),
+        ("🎤 藝人", "藝人"),
+        ("🏷 活動", "活動"),
+        ("📝 活動名稱", "活動名稱"),
         ("📅 演出日期", "演出日期"),
         ("🎟 搶票時間", "搶票時間"),
         ("💰 價格張數", "價格張數"),

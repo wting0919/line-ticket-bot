@@ -27,10 +27,18 @@ from helpers import (
     clear_state,
 )
 
+from theme import (
+    activity_quick_reply,
+    ACTIVITY_VALUES,
+)
+
 import config
 
+
 ALLOWED_FIELDS = {
-    "演出名稱",
+    "藝人",
+    "活動",
+    "活動名稱",
     "演出日期",
     "搶票時間",
     "價格張數",
@@ -40,7 +48,9 @@ ALLOWED_FIELDS = {
 }
 
 FIELD_HINTS = {
-    "演出名稱": "請輸入新的演出名稱",
+    "藝人": "請輸入新的藝人",
+    "活動": "請選擇新的活動類型",
+    "活動名稱": "請輸入新的活動名稱",
     "演出日期": "請輸入新的演出日期\n例如：10/1",
     "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
     "價格張數": "請輸入新的價格張數\n例如：$3800*2",
@@ -160,6 +170,21 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
+    if text == "活動":
+
+        state["field"] = "活動"
+        state["step"] = "activity"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="🏷 請選擇活動類型",
+                quick_reply=activity_quick_reply()
+            )
+        )
+
+        return True
+
         state["field"] = text
         state["step"] = "value"
 
@@ -175,6 +200,69 @@ def handle_edit_show_flow(event, text, user_id):
             TextSendMessage(
                 text=FIELD_HINTS[text],
                 quick_reply=simple_quick_reply(buttons)
+            )
+        )
+
+        return True
+
+    if state.get("step") == "activity":
+
+        if text == "取消":
+
+            clear_state(user_id)
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="已取消修改演出")
+            )
+
+            return True
+
+        if text not in ACTIVITY_VALUES:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕選擇活動類型",
+                    quick_reply=activity_quick_reply()
+                )
+            )
+
+            return True
+
+        show = next(
+            (
+                item
+                for item in load_data()
+                if item["id"] == state["show_id"]
+            ),
+            None,
+        )
+
+        if show is None:
+            clear_state(user_id)
+            return True
+
+        old_value = show.get("活動") or "其他"
+
+        show["活動"] = text
+
+        update_show(show)
+
+        clear_state(user_id)
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "✅ 修改成功\n"
+                    "──────────\n"
+                    f"🎤 {show['演出名稱']}\n"
+                    "──────────\n"
+                    f"🏷 活動\n"
+                    f"🔸 原本：{old_value}\n"
+                    f"🔹 修改後：{text}"
+                )
             )
         )
 
