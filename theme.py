@@ -475,6 +475,24 @@ def build_activity_badge(activity):
         ],
     }
 
+# =========================================================
+# Activity Badge Row
+# =========================================================
+
+def build_activity_badge_row(
+    activity,
+    margin="none",
+):
+
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "margin": margin,
+        "contents": [
+            build_activity_badge(activity)
+        ],
+    }
+
 
 def build_waiting_tag(text):
     """

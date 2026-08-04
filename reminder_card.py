@@ -426,7 +426,7 @@ def build_tomorrow_ticket_card(show):
             "margin": "lg",
             "contents": [
 
-                build_activity_badge(
+                build_activity_badge_row(
                     safe_text(show.get("活動"))
                 ),
 
@@ -499,7 +499,7 @@ def build_ticket_countdown_card(
             "margin": "lg",
             "contents": [
 
-                build_activity_badge(
+                build_activity_badge_row(
                     safe_text(show.get("活動"))
                 ),
 
@@ -588,7 +588,7 @@ def build_pickup_reminder_card(show):
             "margin": "lg",
             "contents": [
 
-                build_activity_badge(
+                build_activity_badge_row(
                     safe_text(show.get("活動"))
                 ),
 
@@ -681,7 +681,7 @@ def build_show_day_reminder_card(show):
             "margin": "lg",
             "contents": [
 
-                build_activity_badge(
+                build_activity_badge_row(
                     safe_text(show.get("活動"))
                 ),
 

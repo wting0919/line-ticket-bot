@@ -314,7 +314,7 @@ def build_next_show_card(
                 "margin": "sm",
                 "contents": [
 
-                    build_activity_badge(activity),
+                    build_activity_badge_row(activity),
 
                     {
                         "type": "text",

@@ -271,7 +271,7 @@ def build_task_item(
     if activity:
 
         title_contents.append(
-            build_activity_badge(activity)
+            build_activity_badge_row(activity)
         )
 
     title_contents.append(

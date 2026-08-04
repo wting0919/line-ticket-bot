@@ -641,7 +641,7 @@ def build_view_show_card(
 
     body_contents = [
 
-        build_activity_badge(activity),
+        build_activity_badge_row(activity),
 
         {
             "type": "box",
