@@ -41,29 +41,36 @@ def handle_delete_show(
 
     try:
 
-        index = int(
+        show_id = int(
             text.replace(
-                "刪除",
+                "刪除ID",
                 ""
             ).strip()
-        ) - 1
+        )
 
     except ValueError:
 
         reply = (
             "請輸入格式：\n"
-            "刪除 1"
+            "刪除ID 1"
         )
 
     else:
 
-        if index < 0 or index >= len(target_list):
+        target = next(
+            (
+                item
+                for item in target_list
+                if item.get("id") == show_id
+            ),
+            None
+        )
+
+        if target is None:
 
             reply = "❌ 找不到這筆演出"
 
         else:
-
-            target = target_list[index]
 
             try:
 

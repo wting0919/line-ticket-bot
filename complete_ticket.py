@@ -47,23 +47,30 @@ def handle_complete_ticket(event, text, user_id):
 
     try:
 
-        index = int(
-            text.replace("完成搶票", "").strip()
-        ) - 1
+        show_id = int(
+            text.replace("完成搶票ID", "").strip()
+        )
 
     except Exception:
 
         return TextSendMessage(
-            text="請輸入：\n完成搶票 1"
+            text="請輸入：\n完成搶票ID 1"
         )
 
-    if index < 0 or index >= len(shows):
+    show = next(
+        (
+            item
+            for item in shows
+            if item.get("id") == show_id
+        ),
+        None,
+    )
+
+    if show is None:
 
         return TextSendMessage(
-            text="❌ 操作已失效，請重新執行「完成搶票」"
+            text="❌ 找不到這筆演出"
         )
-
-    show = shows[index]
 
     if show.get("搶票狀態") == "已搶票":
 
@@ -357,23 +364,30 @@ def handle_ticket_failed(event, text, user_id):
         shows = get_all_shows()
 
     try:
-        index = int(
-            text.replace("未搶到", "").strip()
-        ) - 1
+        show_id = int(
+            text.replace("未搶到ID", "").strip()
+        )
 
     except Exception:
 
         return TextSendMessage(
-            text="請輸入：\n未搶到 1"
+            text="請輸入：\n未搶到ID 1"
         )
 
-    if index < 0 or index >= len(shows):
+    show = next(
+        (
+            item
+            for item in shows
+            if item.get("id") == show_id
+        ),
+        None,
+    )
+
+    if show is None:
 
         return TextSendMessage(
-            text="❌ 操作已失效，請重新執行「完成搶票」"
+            text="❌ 找不到這筆演出"
         )
-
-    show = shows[index]
 
     if show.get("搶票狀態") == "已搶票":
 

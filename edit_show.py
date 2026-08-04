@@ -63,22 +63,31 @@ def start_edit_show(event, text, user_id):
         shows = get_all_shows()
 
     try:
-        index = int(
-            text.replace("修改", "").strip()
-        ) - 1
+        show_id = int(
+            text.replace("修改ID", "").strip()
+        )
 
     except ValueError:
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text="請輸入格式：\n修改 1"
+                text="請輸入格式：\n修改ID 5"
             )
         )
 
         return True
 
-    if index < 0 or index >= len(shows):
+    show = next(
+        (
+            item
+            for item in shows
+            if item.get("id") == show_id
+        ),
+        None
+    )
+
+    if show is None:
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -89,7 +98,6 @@ def start_edit_show(event, text, user_id):
 
         return True
 
-    show = shows[index]
 
     set_state(
         user_id,

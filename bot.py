@@ -400,7 +400,7 @@ def handle_message(event):
     # 查看功能
     # =====================
 
-    elif text.startswith("查看"):
+    elif text.startswith("查看ID"):
 
         handle_view_show(
             event,
@@ -429,7 +429,7 @@ def handle_message(event):
     # 修改功能
     # =====================
 
-    elif text.startswith("修改"):
+    elif text.startswith("修改ID"):
 
         start_edit_show(
             event,
@@ -443,7 +443,7 @@ def handle_message(event):
     # 複製功能
     # =====================
 
-    elif text.startswith("複製"):
+    elif text.startswith("複製ID"):
 
         handle_copy_show(event, text, user_id)
 
@@ -453,7 +453,7 @@ def handle_message(event):
     # 完成搶票
     # =====================
 
-    elif text.startswith("完成搶票"):
+    elif text.startswith("完成搶票ID"):
 
         message = handle_complete_ticket(
             event,
@@ -472,7 +472,7 @@ def handle_message(event):
     # 未搶到
     # =====================
 
-    elif text.startswith("未搶到"):
+    elif text.startswith("未搶到ID"):
 
         message = handle_ticket_failed(
             event,
@@ -505,7 +505,7 @@ def handle_message(event):
     # 完成取票
     # =====================
 
-    elif text.startswith("完成取票"):
+    elif text.startswith("完成取票ID"):
 
         handle_complete_pickup(
             event,
@@ -520,7 +520,7 @@ def handle_message(event):
     # 刪除功能
     # =====================
 
-    elif text.startswith("刪除"):
+    elif text.startswith("刪除ID"):
 
         handle_delete_show(
             event,
@@ -543,11 +543,12 @@ def handle_message(event):
             "📦 取票列表\n"
             "📋 演出列表\n"
             "🔍 搜尋 關鍵字\n\n"
-            "✏️ 修改 1\n"
-            "📄 複製 1\n"
-            "🗑 刪除 1\n"
-            "✅ 完成搶票 1\n"
-            "👤 完成取票 1\n\n"
+            "✏️ 修改ID 1\n"
+            "📄 複製ID 1\n"
+            "🗑 刪除ID 1\n"
+            "❌ 未搶到ID 1\n"
+            "✅ 完成搶票ID 1\n"
+            "📦 完成取票ID 1\n\n"
             "💡 點選列表中的演出即可查看詳細資料。\n"
             "💡 輸入「選單」即可開啟首頁 Dashboard。"
         )

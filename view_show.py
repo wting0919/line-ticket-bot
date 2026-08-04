@@ -492,7 +492,7 @@ def build_action_button(
 
 
 def build_action_area(
-    index,
+    show,
     status,
     pickup_status,
 ):
@@ -503,15 +503,15 @@ def build_action_area(
     main_buttons = [
         build_action_button(
             label="✏️ 修改",
-            action_text=f"修改 {index}",
+            action_text=f"修改ID {show['id']}",
         ),
         build_action_button(
             label="📄 複製",
-            action_text=f"複製 {index}",
+            action_text=f"複製ID {show['id']}",
         ),
         build_action_button(
             label="🗑️ 刪除",
-            action_text=f"刪除 {index}",
+            action_text=f"刪除ID {show['id']}",
         ),
     ]
 
@@ -539,11 +539,11 @@ def build_action_area(
                 "contents": [
                     build_action_button(
                         label="✅ 完成搶票",
-                        action_text=f"完成搶票 {index}",
+                        action_text=f"完成搶票ID {show['id']}",
                     ),
                     build_action_button(
                         label="❌ 未搶到",
-                        action_text=f"未搶到 {index}",
+                        action_text=f"未搶到ID {show['id']}",
                     ),
                 ],
             }
@@ -562,7 +562,7 @@ def build_action_area(
                 "contents": [
                     build_action_button(
                         label="✅ 完成取票",
-                        action_text=f"完成取票 {index}",
+                        action_text=f"完成取票ID {show['id']}",
                     )
                 ],
             }
@@ -778,7 +778,7 @@ def build_view_show_card(
 
     body_contents.extend(
         build_action_area(
-            index=index,
+            show=show,
             status=status,
             pickup_status=pickup_status,
         )
@@ -844,8 +844,7 @@ def handle_view_show(
     """
     支援：
 
-    查看 1
-    查看ID Supabase-ID
+    查看ID 1
     """
 
     state = get_state(
@@ -974,7 +973,7 @@ def handle_view_show(
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text="請輸入格式：\n查看 1"
+                text="請輸入格式：\n查看ID 1"
             )
         )
 

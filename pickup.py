@@ -38,29 +38,36 @@ def handle_complete_pickup(
 
     try:
 
-        index = int(
+        show_id = int(
             text.replace(
-                "完成取票",
+                "完成取票ID",
                 ""
             ).strip()
-        ) - 1
+        )
 
     except ValueError:
 
         reply = (
             "請輸入格式：\n"
-            "完成取票 1"
+            "完成取票ID 1"
         )
 
     else:
 
-        if index < 0 or index >= len(pickup_list):
+        target = next(
+            (
+                item
+                for item in pickup_list
+                if item.get("id") == show_id
+            ),
+            None,
+        )
+
+        if target is None:
 
             reply = "❌ 找不到這筆取票資料"
 
         else:
-
-            target = pickup_list[index]
 
             shows = load_data()
 
@@ -68,7 +75,7 @@ def handle_complete_pickup(
                 (
                     item
                     for item in shows
-                    if item["id"] == target["id"]
+                    if item["id"] == show_id
                 ),
                 None,
             )

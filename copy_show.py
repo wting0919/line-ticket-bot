@@ -32,21 +32,30 @@ def handle_copy_show(event, text, user_id):
         shows = get_all_shows()
 
     try:
-        index = int(
-            text.replace("複製", "").strip()
-        ) - 1
+        show_id = int(
+            text.replace("複製ID", "").strip()
+        )
 
     except ValueError:
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text="請輸入格式：\n複製 1"
+                text="請輸入格式：\n複製ID 1"
             )
         )
         return True
 
-    if index < 0 or index >= len(shows):
+    source_show = next(
+        (
+            item
+            for item in shows
+            if item.get("id") == show_id
+        ),
+        None,
+    )
+
+    if source_show is None:
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -54,9 +63,10 @@ def handle_copy_show(event, text, user_id):
                 text="❌ 找不到這筆演出"
             )
         )
+
         return True
 
-    new_show = deepcopy(shows[index])
+    new_show = deepcopy(source_show)
 
     new_show.pop("id", None)
     new_show.pop("created_at", None)
