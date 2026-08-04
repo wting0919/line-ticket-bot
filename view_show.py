@@ -45,6 +45,7 @@ from theme import (
     build_separator,
     build_status_tag,
     build_brand_footer,
+    build_activity_badge,
 )
 
 import config
@@ -667,12 +668,7 @@ def build_view_show_card(
             ],
         },
 
-        build_info_row(
-            icon="🎤",
-            label="活動",
-            value=activity,
-            margin="sm",
-        ),
+        build_activity_badge(activity),
 
         build_status_area(
             status=status,

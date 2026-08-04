@@ -433,6 +433,47 @@ def build_status_tag(
     }
 
 
+ACTIVITY_BADGE = {
+    "演唱會": ("🎤", "#C9B29B"),
+    "FM": ("🩷", "#F3B6C6"),
+    "FP": ("💜", "#CDBAF6"),
+    "LIVE": ("🩵", "#A9D9E8"),
+    "SHOWCASE": ("💚", "#BFDDB9"),
+    "FESTIVAL": ("🧡", "#E8C39A"),
+    "拼盤": ("🌟", "#F6C58F"),
+    "其他": ("⚪", "#D6D6D6"),
+}
+
+
+def build_activity_badge(activity):
+    icon, color = ACTIVITY_BADGE.get(
+        activity,
+        ("⚪", "#D6D6D6"),
+    )
+
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "backgroundColor": color,
+        "cornerRadius": "999px",
+        "paddingTop": "3px",
+        "paddingBottom": "3px",
+        "paddingStart": "8px",
+        "paddingEnd": "8px",
+        "flex": 0,
+        "contents": [
+            {
+                "type": "text",
+                "text": f"{icon} {activity}",
+                "size": "10px",
+                "weight": "bold",
+                "color": "#5C5148",
+                "wrap": False,
+            }
+        ],
+    }
+
+
 def build_waiting_tag(text):
     """
     黃色等待狀態。
