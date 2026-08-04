@@ -40,9 +40,9 @@ from theme import (
     LINE_COLOR,
     BUTTON_COLOR,
     build_brand_header,
-    build_brand_footer,
     safe_text,
     remove_none_elements,
+    build_activity_badge,
 )
 
 # =========================================================
@@ -311,14 +311,19 @@ def build_next_show_card(
                 "layout": "vertical",
                 "margin": "sm",
                 "contents": [
+
+                    build_activity_badge(activity),
+
                     {
                         "type": "text",
                         "text": artist,
                         "size": "sm",
                         "weight": "bold",
                         "color": TEXT_COLOR,
+                        "margin": "sm",
                         "wrap": True,
                     },
+
                     *(
                         [{
                             "type": "text",
@@ -562,7 +567,6 @@ def build_dashboard(today=None):
             today=today,
         ),
         build_menu_area(),
-        build_brand_footer(),
     ]
 
     bubble = {

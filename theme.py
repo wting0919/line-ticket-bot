@@ -435,7 +435,7 @@ def build_status_tag(
 
 
 ACTIVITY_BADGE = {
-    "演唱會": ("演唱會", "#E8DED2"),
+    "演唱會": ("演唱會", "#EFE5DB"),
     "FM": ("FM", "#F5CDD9"),
     "FP": ("FP", "#DCCFF7"),
     "LIVE": ("LIVE", "#CBEAF5"),
@@ -444,7 +444,6 @@ ACTIVITY_BADGE = {
     "拼盤": ("拼盤", "#FFE9BE"),
     "其他": ("其他", "#E5E5E5"),
 }
-
 
 def build_activity_badge(activity):
 
@@ -458,10 +457,10 @@ def build_activity_badge(activity):
         "layout": "vertical",
         "backgroundColor": color,
         "cornerRadius": "999px",
-        "paddingTop": "4px",
-        "paddingBottom": "4px",
-        "paddingStart": "10px",
-        "paddingEnd": "10px",
+        "paddingTop": "3px",
+        "paddingBottom": "3px",
+        "paddingStart": "9px",
+        "paddingEnd": "9px",
         "flex": 0,
         "contents": [
             {

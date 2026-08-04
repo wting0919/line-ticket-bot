@@ -21,6 +21,7 @@ from theme import (
     build_brand_header,
     safe_text,
     remove_none_elements,
+    build_activity_badge,
 )
 
 from utils import (
@@ -530,26 +531,26 @@ def build_show_list_item(
                     ],
                 },
                 {
-                    "type": "text",
-                    "text": "🎤",
-                    "size": "xs",
-                    "margin": "sm",
-                    "flex": 0,
-                },
-                {
                     "type": "box",
                     "layout": "vertical",
                     "margin": "xs",
                     "flex": 1,
                     "contents": [
+
+                        build_activity_badge(
+                            safe_text(show.get("活動"))
+                        ),
+
                         {
                             "type": "text",
                             "text": artist,
                             "size": "sm",
                             "weight": "bold",
                             "color": TEXT_COLOR,
+                            "margin": "sm",
                             "wrap": True,
                         },
+
                         *(
                             [{
                                 "type": "text",

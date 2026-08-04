@@ -22,6 +22,7 @@ from theme import (
     build_success_tag,
     safe_text,
     remove_none_elements,
+    build_activity_badge,
 )
 
 
@@ -204,7 +205,7 @@ def build_note(note):
             {
                 "type": "text",
                 "text": safe_text(note, "無"),
-                "size": "sm",
+                "size": "xxs",
                 "color": TEXT_COLOR,
                 "margin": "sm",
                 "wrap": True,
@@ -424,14 +425,21 @@ def build_tomorrow_ticket_card(show):
             "layout": "vertical",
             "margin": "lg",
             "contents": [
+
+                build_activity_badge(
+                    safe_text(show.get("活動"))
+                ),
+
                 {
                     "type": "text",
                     "text": title,
                     "size": "md",
                     "weight": "bold",
                     "color": TEXT_COLOR,
+                    "margin": "sm",
                     "wrap": True,
                 },
+
                 *(
                     [{
                         "type": "text",
@@ -490,14 +498,21 @@ def build_ticket_countdown_card(
             "layout": "vertical",
             "margin": "lg",
             "contents": [
+
+                build_activity_badge(
+                    safe_text(show.get("活動"))
+                ),
+
                 {
                     "type": "text",
                     "text": title,
                     "size": "md",
                     "weight": "bold",
                     "color": TEXT_COLOR,
+                    "margin": "sm",
                     "wrap": True,
                 },
+
                 *(
                     [{
                         "type": "text",
@@ -572,14 +587,21 @@ def build_pickup_reminder_card(show):
             "layout": "vertical",
             "margin": "lg",
             "contents": [
+
+                build_activity_badge(
+                    safe_text(show.get("活動"))
+                ),
+
                 {
                     "type": "text",
                     "text": title,
                     "size": "md",
                     "weight": "bold",
                     "color": TEXT_COLOR,
+                    "margin": "sm",
                     "wrap": True,
                 },
+
                 *(
                     [{
                         "type": "text",
@@ -658,14 +680,21 @@ def build_show_day_reminder_card(show):
             "layout": "vertical",
             "margin": "lg",
             "contents": [
+
+                build_activity_badge(
+                    safe_text(show.get("活動"))
+                ),
+
                 {
                     "type": "text",
                     "text": title,
                     "size": "md",
                     "weight": "bold",
                     "color": TEXT_COLOR,
+                    "margin": "sm",
                     "wrap": True,
                 },
+
                 *(
                     [{
                         "type": "text",

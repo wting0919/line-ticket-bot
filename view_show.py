@@ -44,7 +44,6 @@ from theme import (
     remove_none_elements,
     build_separator,
     build_status_tag,
-    build_brand_footer,
     build_activity_badge,
 )
 
@@ -438,7 +437,7 @@ def build_note_section(note):
                             note,
                             "無",
                         ),
-                        "size": "sm",
+                        "size": "xxs",
                         "color": TEXT_COLOR,
                         "wrap": True,
                     }
@@ -641,6 +640,9 @@ def build_view_show_card(
     note = show.get("備註")
 
     body_contents = [
+
+        build_activity_badge(activity),
+
         {
             "type": "box",
             "layout": "vertical",
@@ -667,8 +669,6 @@ def build_view_show_card(
                 ),
             ],
         },
-
-        build_activity_badge(activity),
 
         build_status_area(
             status=status,
@@ -784,17 +784,6 @@ def build_view_show_card(
         )
     )
 
-    body_contents.extend(
-        [
-            build_separator(
-                margin="md",
-            ),
-            build_brand_footer(
-                margin="md",
-                show_separator=False,
-            ),
-        ]
-    )
 
     bubble = {
         "type": "bubble",

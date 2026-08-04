@@ -28,9 +28,9 @@ from theme import (
     LINE_COLOR,
     BUTTON_COLOR,
     build_brand_header,
-    build_brand_footer,
     safe_text,
     remove_none_elements,
+    build_activity_badge,
 )
 
 from header_message import (
@@ -252,9 +252,11 @@ def build_task_item(
     title,
     subtitle=None,
     info_rows=None,
+    activity=None,
     badge_text=None,
     action_text=None,
 ):
+
     """
     建立單筆今日待辦項目。
 
@@ -265,6 +267,12 @@ def build_task_item(
     info_rows = info_rows or []
 
     title_contents = []
+
+    if activity:
+
+        title_contents.append(
+            build_activity_badge(activity)
+        )
 
     title_contents.append(
         {
@@ -885,6 +893,7 @@ def build_ticket_item(
         title=title,
         subtitle=subtitle,
         info_rows=info_rows,
+        activity=safe_text(show.get("活動")),
         badge_text="待搶票",
         action_text=get_show_detail_action(
             show,
@@ -956,6 +965,7 @@ def build_pickup_item(
         title=title,
         subtitle=subtitle,
         info_rows=info_rows,
+        activity=safe_text(show.get("活動")),
         badge_text="未取票",
         action_text=get_show_detail_action(
             show,
@@ -1018,6 +1028,7 @@ def build_show_item(
         title=title,
         subtitle=subtitle,
         info_rows=info_rows,
+        activity=safe_text(show.get("活動")),
         badge_text="演出日",
         action_text=get_show_detail_action(
             show,
@@ -1093,13 +1104,6 @@ def build_today_card(today=None):
                 empty_text="今天沒有舉行中的演出",
             )
         )
-
-    body_contents.append(
-        build_brand_footer(
-            margin="md",
-            show_separator=True,
-        )
-    )
 
     bubble = {
         "type": "bubble",
