@@ -11,6 +11,7 @@ from utils import (
     normalize_ticket_time,
     normalize_pickup_date,
     format_show_dates,
+    format_datetime,
 )
 
 from ui import (
@@ -30,7 +31,7 @@ def start_add_show(event, user_id):
         user_id,
         {
             "mode": "新增演出",
-            "step": "name",
+            "step": "artist",
             "data": {}
         }
     )
@@ -40,8 +41,8 @@ def start_add_show(event, user_id):
         TextSendMessage(
             text=(
                 "➕ 新增演出\n\n"
-                "請輸入演出名稱\n\n"
-                "例如：五月天演唱會"
+                "請輸入藝人\n\n"
+                "例如：SEVENTEEN"
             ),
             quick_reply=simple_quick_reply([
                 ("❌ 取消", "取消")
@@ -78,9 +79,59 @@ def handle_add_show_flow(event, text, user_id):
     data = state.setdefault("data", {})
     step = state.get("step")
 
-    if step == "name":
+    if step == "artist":
 
-        data["演出名稱"] = text
+        data["藝人"] = text
+        state["step"] = "activity"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🎤 請選擇活動類型"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("演唱會", "演唱會"),
+                    ("FM", "FM"),
+                    ("FP", "FP"),
+                    ("LIVE", "LIVE"),
+                    ("SHOWCASE", "SHOWCASE"),
+                    ("拼盤", "拼盤"),
+                    ("其他", "其他"),
+                    ("❌ 取消", "取消"),
+                ])
+            )
+        )
+
+        return True
+
+
+    if step == "activity":
+
+        data["活動"] = text
+        state["step"] = "activity_name"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🏷️ 請輸入活動名稱\n\n"
+                    "例如：BE THE SUN\n\n"
+                    "沒有可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消"),
+                ])
+            )
+        )
+
+        return True
+
+
+    if step == "activity_name":
+
+        data["活動名稱"] = "" if text == "略過" else text
         state["step"] = "show_date"
 
         config.line_bot_api.reply_message(
@@ -98,6 +149,7 @@ def handle_add_show_flow(event, text, user_id):
         )
 
         return True
+
 
     if step == "show_date":
 
@@ -281,7 +333,14 @@ def handle_add_show_flow(event, text, user_id):
         reply = (
             "📋 請確認新增資料\n"
             "──────────\n"
-            f"🎤 {data['演出名稱']}\n"
+            f"🎤 {data['藝人']}\n"
+            f"🏷️ {data['活動']}\n"
+        )
+
+        if data.get("活動名稱"):
+            reply += f"✨ {data['活動名稱']}\n"
+
+        reply += (
             f"📅 {format_show_dates(data['演出日期'])}\n"
             f"🎟 {data['搶票時間']}\n"
             f"💰 {data['價格張數']}\n"
@@ -308,13 +367,13 @@ def handle_add_show_flow(event, text, user_id):
 
         if text == "重新填寫":
 
-            state["step"] = "name"
+            state["step"] = "artist"
             state["data"] = {}
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="請重新輸入演出名稱",
+                    text="請重新輸入藝人",
                     quick_reply=simple_quick_reply([
                         ("❌ 取消", "取消")
                     ])
@@ -340,7 +399,20 @@ def handle_add_show_flow(event, text, user_id):
             return True
 
         show = {
-            "演出名稱": data.get("演出名稱", ""),
+            "藝人": data.get("藝人", ""),
+            "活動": data.get("活動", ""),
+            "活動名稱": data.get("活動名稱", ""),
+
+            # 先保留舊欄位
+            "演出名稱": (
+                data.get("藝人", "")
+                + (
+                    f" {data.get('活動名稱', '')}"
+                    if data.get("活動名稱")
+                    else ""
+                )
+            ).strip(),
+
             "演出日期": data.get("演出日期", ""),
             "搶票時間": data.get("搶票時間", ""),
             "價格張數": data.get("價格張數", ""),
@@ -356,8 +428,8 @@ def handle_add_show_flow(event, text, user_id):
                 "30分鐘": False,
                 "10分鐘": False,
                 "取票": False,
-                "演出日": False
-            }
+                "演出日": False,
+            },
         }
 
         try:
@@ -381,13 +453,25 @@ def handle_add_show_flow(event, text, user_id):
 
         config.line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(
-                text=(
-                    "✅ 已新增演出\n"
-                    "──────────\n"
-                    f"🎤 {show['演出名稱']}\n"
-                    f"📅 {format_show_dates(show['演出日期'])}\n"
-                    f"🎟 {format_datetime(show['搶票時間'])}"
+            success = (
+                "✅ 已新增演出\n"
+                "──────────\n"
+                f"🎤 {show['藝人']}\n"
+                f"🏷️ {show['活動']}\n"
+            )
+
+            if show.get("活動名稱"):
+                success += f"✨ {show['活動名稱']}\n"
+
+            success += (
+                f"📅 {format_show_dates(show['演出日期'])}\n"
+                f"🎟 {format_datetime(show['搶票時間'])}"
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=success
                 )
             )
         )
