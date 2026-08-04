@@ -44,7 +44,7 @@ from theme import (
     remove_none_elements,
     build_separator,
     build_status_tag,
-    build_activity_badge,
+    build_activity_badge_row,
 )
 
 import config

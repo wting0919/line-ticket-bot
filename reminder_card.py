@@ -22,7 +22,7 @@ from theme import (
     build_success_tag,
     safe_text,
     remove_none_elements,
-    build_activity_badge,
+    build_activity_badge_row,
 )
 
 

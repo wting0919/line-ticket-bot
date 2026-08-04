@@ -42,7 +42,7 @@ from theme import (
     build_brand_header,
     safe_text,
     remove_none_elements,
-    build_activity_badge,
+    build_activity_badge_row,
 )
 
 # =========================================================
