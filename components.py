@@ -166,6 +166,7 @@ def build_today_summary(
     ticket_count,
     pickup_count,
     show_count,
+    date_text=None,
 ):
     """
     Dashboard 與 Today Card 共用的今日待辦區塊。
@@ -196,8 +197,7 @@ def build_today_summary(
         "contents": [
             {
                 "type": "box",
-                "layout": "horizontal",
-                "alignItems": "center",
+                "layout": "vertical",
                 "action": {
                     "type": "message",
                     "label": "今日待辦",
@@ -210,17 +210,40 @@ def build_today_summary(
                         "size": "md",
                         "weight": "bold",
                         "color": TEXT_COLOR,
-                        "flex": 1,
                         "wrap": True,
                     },
-                    {
-                        "type": "text",
-                        "text": f"共 {total_count} 項",
-                        "size": "xxs",
-                        "color": SUBTEXT_COLOR,
-                        "align": "end",
-                        "wrap": False,
-                    },
+                    *(
+                        [{
+                            "type": "box",
+                            "layout": "horizontal",
+                            "margin": "xs",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": date_text,
+                                    "size": "xxs",
+                                    "color": SUBTEXT_COLOR,
+                                    "flex": 1,
+                                    "wrap": True,
+                                },
+                                {
+                                    "type": "text",
+                                    "text": f"共 {total_count} 項",
+                                    "size": "xxs",
+                                    "color": SUBTEXT_COLOR,
+                                    "align": "end",
+                                    "flex": 0,
+                                    "wrap": False,
+                                },
+                            ],
+                        }] if date_text else [{
+                            "type": "text",
+                            "text": f"共 {total_count} 項",
+                            "size": "xxs",
+                            "color": SUBTEXT_COLOR,
+                            "align": "end",
+                        }]
+                    ),
                 ],
             },
             {

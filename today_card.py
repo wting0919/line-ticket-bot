@@ -33,6 +33,10 @@ from theme import (
     remove_none_elements,
 )
 
+from dashboard import (
+    get_cat_header_message,
+)
+
 
 # =========================================================
 # Today Card V4
@@ -144,10 +148,7 @@ def build_header(today):
 
     return build_brand_header(
         subtitle=None,
-        message=(
-            "☀️ 今日待辦・"
-            f"{format_today_date(today)}"
-        ),
+        message=get_cat_header_message(),
         logo_size=44,
         compact=True,
     )
@@ -1002,6 +1003,7 @@ def build_today_card(today=None):
             ticket_count=len(ticket_shows),
             pickup_count=len(pickup_shows),
             show_count=len(show_shows),
+            date_text=format_today_date(today),
         )
     ]
 
