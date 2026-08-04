@@ -365,7 +365,7 @@ def handle_add_show_flow(event, text, user_id):
                 event.reply_token,
                 TextSendMessage(
                     text="請重新輸入藝人",
-                    
+                    quick_reply=simple_quick_reply([
                         ("❌ 取消", "取消")
                     ])
                 )
