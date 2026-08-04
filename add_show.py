@@ -90,7 +90,7 @@ def handle_add_show_flow(event, text, user_id):
                 text=(
                     "🎤 請選擇活動類型"
                 ),
-                simple_quick_reply([
+                quick_reply=simple_quick_reply([
                     ("演唱會", "演唱會"),
                     ("Fan Meeting", "FM"),
                     ("Fan Party", "FP"),
