@@ -234,11 +234,13 @@ def build_next_show_card(
     ).days
 
     if days_left == 0:
-        countdown_text = "就是今天"
+        countdown_text = "🎉 就是今天"
+
     elif days_left == 1:
-        countdown_text = "還有 1 天"
+        countdown_text = "⏰ 明天"
+
     else:
-        countdown_text = f"還有 {days_left} 天"
+        countdown_text = f"⏳ 還有 {days_left} 天"
 
     show_id = safe_text(
         show.get("id"),
@@ -286,7 +288,7 @@ def build_next_show_card(
                 "contents": [
                     {
                         "type": "text",
-                        "text": "📅 下一場演出",
+                        "text": "✨ 最近演出",
                         "size": "xs",
                         "weight": "bold",
                         "color": SUBTEXT_COLOR,
@@ -339,39 +341,53 @@ def build_next_show_card(
                 ],
             },
             {
-                "type": "box",
-                "layout": "horizontal",
+                "type": "separator",
                 "margin": "md",
+                "color": LINE_COLOR,
+            },
+            {
+                "type": "text",
+                "text": "⏳ 倒數",
+                "size": "xxs",
+                "color": SUBTEXT_COLOR,
+                "align": "center",
+                "margin": "md",
+            },
+            {
+                "type": "box",
+                "layout": "baseline",
+                "justifyContent": "center",
+                "margin": "xs",
                 "contents": [
                     {
-                        "type": "box",
-                        "layout": "vertical",
-                        "backgroundColor": TICKET_CARD_COLOR,
-                        "cornerRadius": "12px",
-                        "paddingTop": "5px",
-                        "paddingBottom": "5px",
-                        "paddingStart": "14px",
-                        "paddingEnd": "14px",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": countdown_text,
-                                "size": "xs",
-                                "weight": "bold",
-                                "color": TEXT_COLOR,
-                                "align": "center",
-                            }
-                        ],
-                    },
-                    {
                         "type": "text",
-                        "text": "›",
-                        "size": "xl",
+                        "text": (
+                            "今天"
+                            if days_left == 0
+                            else "明天"
+                            if days_left == 1
+                            else str(days_left)
+                        ),
+                        "size": "3xl",
                         "weight": "bold",
                         "color": BUTTON_COLOR,
-                        "align": "end",
-                        "flex": 1,
+                        "flex": 0,
                     },
+                    *(
+                        []
+                        if days_left <= 1
+                        else [
+                            {
+                                "type": "text",
+                                "text": "天",
+                                "size": "md",
+                                "weight": "bold",
+                                "color": SUBTEXT_COLOR,
+                                "margin": "sm",
+                                "flex": 0,
+                            }
+                        ]
+                    ),
                 ],
             },
         ],
