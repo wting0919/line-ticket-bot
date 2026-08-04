@@ -407,6 +407,11 @@ def handle_add_show_flow(event, text, user_id):
             "演出名稱": (
                 data.get("藝人", "")
                 + (
+                    f" {data.get('活動', '')}"
+                    if data.get("活動")
+                    else ""
+                )
+                + (
                     f" {data.get('活動名稱', '')}"
                     if data.get("活動名稱")
                     else ""
@@ -451,28 +456,25 @@ def handle_add_show_flow(event, text, user_id):
 
         clear_state(user_id)
 
+        success = (
+            "✅ 已新增演出\n"
+            "──────────\n"
+            f"🎤 {show['藝人']}\n"
+            f"🏷️ {show['活動']}\n"
+        )
+
+        if show.get("活動名稱"):
+            success += f"✨ {show['活動名稱']}\n"
+
+        success += (
+            f"📅 {format_show_dates(show['演出日期'])}\n"
+            f"🎟 {format_datetime(show['搶票時間'])}"
+        )
+
         config.line_bot_api.reply_message(
             event.reply_token,
-            success = (
-                "✅ 已新增演出\n"
-                "──────────\n"
-                f"🎤 {show['藝人']}\n"
-                f"🏷️ {show['活動']}\n"
-            )
-
-            if show.get("活動名稱"):
-                success += f"✨ {show['活動名稱']}\n"
-
-            success += (
-                f"📅 {format_show_dates(show['演出日期'])}\n"
-                f"🎟 {format_datetime(show['搶票時間'])}"
-            )
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text=success
-                )
+            TextSendMessage(
+                text=success
             )
         )
 
