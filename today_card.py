@@ -222,9 +222,35 @@ def build_info_row(
         ],
     }
 
+def get_show_title(show):
+    """
+    回傳今日待辦顯示的標題。
+    """
+
+    artist = safe_text(
+        show.get("藝人"),
+        show.get("演出名稱"),
+    )
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return (
+            artist,
+            activity_name,
+        )
+
+    return (
+        artist,
+        None,
+    )
+
 
 def build_task_item(
     title,
+    subtitle=None,
     info_rows=None,
     badge_text=None,
     action_text=None,
@@ -238,20 +264,40 @@ def build_task_item(
 
     info_rows = info_rows or []
 
-    title_contents = [
+    title_contents = []
+
+    title_contents.append(
         {
-            "type": "text",
-            "text": safe_text(
-                title,
-                "未命名演出",
-            ),
-            "size": "md",
-            "weight": "bold",
-            "color": TEXT_COLOR,
-            "wrap": True,
+            "type": "box",
+            "layout": "vertical",
             "flex": 1,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": safe_text(
+                        title,
+                        "未命名演出",
+                    ),
+                    "size": "md",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "wrap": True,
+                },
+                *(
+                    [{
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "2px",
+                        "wrap": True,
+                    }]
+                    if subtitle
+                    else []
+                ),
+            ],
         }
-    ]
+    )
 
     if badge_text:
 
@@ -834,8 +880,10 @@ def build_ticket_item(
             )
         )
 
+    title, subtitle = get_show_title(show)
     return build_task_item(
-        title=show.get("演出名稱"),
+        title=title,
+        subtitle=subtitle,
         info_rows=info_rows,
         badge_text="待搶票",
         action_text=get_show_detail_action(
@@ -903,8 +951,10 @@ def build_pickup_item(
             )
         )
 
+    title, subtitle = get_show_title(show)
     return build_task_item(
-        title=show.get("演出名稱"),
+        title=title,
+        subtitle=subtitle,
         info_rows=info_rows,
         badge_text="未取票",
         action_text=get_show_detail_action(
@@ -963,8 +1013,10 @@ def build_show_item(
             )
         )
 
+    title, subtitle = get_show_title(show)
     return build_task_item(
-        title=show.get("演出名稱"),
+        title=title,
+        subtitle=subtitle,
         info_rows=info_rows,
         badge_text="演出日",
         action_text=get_show_detail_action(

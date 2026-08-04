@@ -488,10 +488,14 @@ def build_show_list_item(
     建立可點擊的單筆演出資料。
     """
 
-    show_name = safe_text(
+    artist = safe_text(
+        show.get("藝人"),
         show.get("演出名稱"),
-        "未命名演出",
     )
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
 
     action_text = get_show_action_text(
         show=show,
@@ -533,14 +537,32 @@ def build_show_list_item(
                     "flex": 0,
                 },
                 {
-                    "type": "text",
-                    "text": show_name,
-                    "size": "sm",
-                    "weight": "bold",
-                    "color": TEXT_COLOR,
+                    "type": "box",
+                    "layout": "vertical",
                     "margin": "xs",
                     "flex": 1,
-                    "wrap": True,
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": artist,
+                            "size": "sm",
+                            "weight": "bold",
+                            "color": TEXT_COLOR,
+                            "wrap": True,
+                        },
+                        *(
+                            [{
+                                "type": "text",
+                                "text": activity_name,
+                                "size": "xxs",
+                                "color": SUBTEXT_COLOR,
+                                "margin": "2px",
+                                "wrap": True,
+                            }]
+                            if activity_name
+                            else []
+                        ),
+                    ],
                 },
                 {
                     "type": "text",

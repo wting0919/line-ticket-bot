@@ -583,10 +583,18 @@ def build_view_show_card(
     建立完整演出詳細卡片。
     """
 
-    show_name = safe_text(
+    artist = safe_text(
+        show.get("藝人"),
         show.get("演出名稱"),
-        "未命名演出",
     )
+
+    activity = safe_text(
+        show.get("活動"),
+    )
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
 
     status = show.get(
         "搶票狀態",
@@ -634,28 +642,37 @@ def build_view_show_card(
     body_contents = [
         {
             "type": "box",
-            "layout": "horizontal",
-            "alignItems": "center",
+            "layout": "vertical",
             "contents": [
                 {
                     "type": "text",
-                    "text": "🎤",
-                    "size": "xs",
-                    "flex": 0,
-                },
-                {
-                    "type": "text",
-                    "text": show_name,
-                    "size": "md",
+                    "text": artist,
+                    "size": "lg",
                     "weight": "bold",
                     "color": TEXT_COLOR,
-                    "margin": "xs",
-                    "flex": 1,
                     "wrap": True,
-                    "maxLines": 2,
                 },
+                *(
+                    [{
+                        "type": "text",
+                        "text": activity_name,
+                        "size": "sm",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "xs",
+                        "wrap": True,
+                    }]
+                    if activity_name
+                    else []
+                ),
             ],
         },
+
+        build_info_row(
+            icon="🎤",
+            label="活動",
+            value=activity,
+            margin="sm",
+        ),
 
         build_status_area(
             status=status,
@@ -789,7 +806,7 @@ def build_view_show_card(
 
         "header": build_brand_header(
             subtitle=None,
-            message="🎤 演出詳細",
+            message="演出詳細",
             logo_size=44,
             compact=True,
         ),
@@ -821,7 +838,7 @@ def build_view_show_card(
 
     return FlexSendMessage(
         alt_text=(
-            f"🎤 {show_name}"
+            f"🎤 {artist}"
             "｜演出詳細"
         ),
         contents=bubble,
@@ -951,7 +968,7 @@ def handle_view_show(
 
         print(
             "[view_show] 準備送出 Flex：",
-            show.get("演出名稱"),
+            show.get("藝人", show.get("演出名稱")),
             flush=True,
         )
 

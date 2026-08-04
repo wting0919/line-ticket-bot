@@ -271,6 +271,30 @@ def build_milk_tea_divider():
         ],
     }
 
+def get_show_title(show):
+    """
+    Reminder 共用標題。
+    """
+
+    artist = safe_text(
+        show.get("藝人"),
+        show.get("演出名稱"),
+    )
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return (
+            artist,
+            activity_name,
+        )
+
+    return (
+        artist,
+        None,
+    )
 
 # =========================================================
 # 查看這一筆詳細資料
@@ -388,21 +412,39 @@ def build_reminder_bubble(
 # =========================================================
 
 def build_tomorrow_ticket_card(show):
+
+    title, subtitle = get_show_title(show)
+
     body_contents = [
         build_status_area([
             build_waiting_tag("待搶票")
         ]),
         {
-            "type": "text",
-            "text": (
-                f"🎤 "
-                f"{safe_text(show.get('演出名稱'), '未命名演出')}"
-            ),
-            "size": "md",
-            "weight": "bold",
-            "color": TEXT_COLOR,
+            "type": "box",
+            "layout": "vertical",
             "margin": "lg",
-            "wrap": True,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": title,
+                    "size": "md",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "wrap": True,
+                },
+                *(
+                    [{
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "2px",
+                        "wrap": True,
+                    }]
+                    if subtitle
+                    else []
+                ),
+            ],
         },
         build_info_row(
             icon="🕒",
@@ -434,6 +476,9 @@ def build_ticket_countdown_card(
     show,
     minutes,
 ):
+
+    title, subtitle = get_show_title(show)
+
     urgent = minutes == 10
 
     body_contents = [
@@ -441,16 +486,31 @@ def build_ticket_countdown_card(
             build_waiting_tag("待搶票")
         ]),
         {
-            "type": "text",
-            "text": (
-                f"🎤 "
-                f"{safe_text(show.get('演出名稱'), '未命名演出')}"
-            ),
-            "size": "md",
-            "weight": "bold",
-            "color": TEXT_COLOR,
+            "type": "box",
+            "layout": "vertical",
             "margin": "lg",
-            "wrap": True,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": title,
+                    "size": "md",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "wrap": True,
+                },
+                *(
+                    [{
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "2px",
+                        "wrap": True,
+                    }]
+                    if subtitle
+                    else []
+                ),
+            ],
         },
         build_time_focus(
             ticket_time=show.get("搶票時間"),
@@ -500,21 +560,39 @@ def build_ticket_countdown_card(
 # =========================================================
 
 def build_pickup_reminder_card(show):
+
+    title, subtitle = get_show_title(show)
+
     body_contents = [
         build_status_area([
             build_waiting_tag("未取票")
         ]),
         {
-            "type": "text",
-            "text": (
-                f"🎤 "
-                f"{safe_text(show.get('演出名稱'), '未命名演出')}"
-            ),
-            "size": "md",
-            "weight": "bold",
-            "color": TEXT_COLOR,
+            "type": "box",
+            "layout": "vertical",
             "margin": "lg",
-            "wrap": True,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": title,
+                    "size": "md",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "wrap": True,
+                },
+                *(
+                    [{
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "2px",
+                        "wrap": True,
+                    }]
+                    if subtitle
+                    else []
+                ),
+            ],
         },
         build_info_row(
             icon="📅",
@@ -552,6 +630,9 @@ def build_pickup_reminder_card(show):
 # =========================================================
 
 def build_show_day_reminder_card(show):
+
+    title, subtitle = get_show_title(show)
+
     pickup_status = show.get(
         "取票狀態",
         "未取票",
@@ -573,16 +654,31 @@ def build_show_day_reminder_card(show):
     body_contents = [
         build_status_area(status_tags),
         {
-            "type": "text",
-            "text": (
-                f"🎤 "
-                f"{safe_text(show.get('演出名稱'), '未命名演出')}"
-            ),
-            "size": "lg",
-            "weight": "bold",
-            "color": TEXT_COLOR,
+            "type": "box",
+            "layout": "vertical",
             "margin": "lg",
-            "wrap": True,
+            "contents": [
+                {
+                    "type": "text",
+                    "text": title,
+                    "size": "md",
+                    "weight": "bold",
+                    "color": TEXT_COLOR,
+                    "wrap": True,
+                },
+                *(
+                    [{
+                        "type": "text",
+                        "text": subtitle,
+                        "size": "xxs",
+                        "color": SUBTEXT_COLOR,
+                        "margin": "2px",
+                        "wrap": True,
+                    }]
+                    if subtitle
+                    else []
+                ),
+            ],
         },
         build_info_row(
             icon="📅",

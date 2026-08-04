@@ -245,6 +245,19 @@ def build_next_show_card(
         "",
     )
 
+    artist = safe_text(
+        show.get("藝人"),
+        show.get("演出名稱"),
+    )
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    activity = safe_text(
+        show.get("活動")
+    )
+
     if show_id:
         action_text = f"查看ID {show_id}"
     else:
@@ -294,16 +307,31 @@ def build_next_show_card(
                 ],
             },
             {
-                "type": "text",
-                "text": (
-                    f"🎤 "
-                    f"{safe_text(show.get('演出名稱'), '未命名演出')}"
-                ),
-                "size": "sm",
-                "weight": "bold",
-                "color": TEXT_COLOR,
+                "type": "box",
+                "layout": "vertical",
                 "margin": "sm",
-                "wrap": True,
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": artist,
+                        "size": "sm",
+                        "weight": "bold",
+                        "color": TEXT_COLOR,
+                        "wrap": True,
+                    },
+                    *(
+                        [{
+                            "type": "text",
+                            "text": activity_name,
+                            "size": "xxs",
+                            "color": SUBTEXT_COLOR,
+                            "margin": "2px",
+                            "wrap": True,
+                        }]
+                        if activity_name
+                        else []
+                    ),
+                ],
             },
             {
                 "type": "box",
