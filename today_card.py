@@ -33,10 +33,9 @@ from theme import (
     remove_none_elements,
 )
 
-from dashboard import (
+from header_message import (
     get_cat_header_message,
 )
-
 
 # =========================================================
 # Today Card V4
