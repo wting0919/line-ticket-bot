@@ -292,7 +292,7 @@ def build_brand_header(
                 "layout": "vertical",
                 "margin": "sm",
                 "backgroundColor": "#FFF7EC",
-                "cornerRadius": "10px",
+                "cornerRadius": "8px",
                 "paddingTop": "6px",
                 "paddingBottom": "6px",
                 "paddingStart": "10px",
@@ -336,6 +336,7 @@ def build_brand_header(
         "paddingEnd": "16px",
         "contents": contents,
     }
+
 
 # =========================================================
 # TicketCat 品牌 Footer
@@ -434,40 +435,42 @@ def build_status_tag(
 
 
 ACTIVITY_BADGE = {
-    "演唱會": ("🎤", "#C9B29B"),
-    "FM": ("🩷", "#F3B6C6"),
-    "FP": ("💜", "#CDBAF6"),
-    "LIVE": ("🩵", "#A9D9E8"),
-    "SHOWCASE": ("💚", "#BFDDB9"),
-    "FESTIVAL": ("🧡", "#E8C39A"),
-    "拼盤": ("🌟", "#F6C58F"),
-    "其他": ("⚪", "#D6D6D6"),
+    "演唱會": ("演唱會", "#E8DED2"),
+    "FM": ("FM", "#F5CDD9"),
+    "FP": ("FP", "#DCCFF7"),
+    "LIVE": ("LIVE", "#CBEAF5"),
+    "SHOWCASE": ("Showcase", "#D6EDCC"),
+    "FESTIVAL": ("Festival", "#F6D8B3"),
+    "拼盤": ("拼盤", "#FFE9BE"),
+    "其他": ("其他", "#E5E5E5"),
 }
 
 
 def build_activity_badge(activity):
-    icon, color = ACTIVITY_BADGE.get(
+
+    text, color = ACTIVITY_BADGE.get(
         activity,
-        ("⚪", "#D6D6D6"),
+        ("其他", "#E5E5E5"),
     )
 
     return {
         "type": "box",
-        "layout": "horizontal",
+        "layout": "vertical",
         "backgroundColor": color,
         "cornerRadius": "999px",
-        "paddingTop": "3px",
-        "paddingBottom": "3px",
-        "paddingStart": "8px",
-        "paddingEnd": "8px",
+        "paddingTop": "4px",
+        "paddingBottom": "4px",
+        "paddingStart": "10px",
+        "paddingEnd": "10px",
         "flex": 0,
         "contents": [
             {
                 "type": "text",
-                "text": f"{icon} {activity}",
+                "text": text,
                 "size": "10px",
                 "weight": "bold",
-                "color": "#5C5148",
+                "color": TEXT_COLOR,
+                "align": "center",
                 "wrap": False,
             }
         ],
