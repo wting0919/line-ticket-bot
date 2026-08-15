@@ -739,8 +739,7 @@ def build_show_day_reminder_card(show):
 
     return build_reminder_bubble(
         show=show,
-        header_title="🎤 今天就是演出日！",
-        header_subtitle="好好享受今天的演出 ✨",
+        header_title="🎤 今天就是演出日！好好享受今天的演出 ✨",
         body_contents=body_contents,
         alt_text="🎤 演出日提醒",
     )
