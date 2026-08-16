@@ -160,7 +160,7 @@ def build_info_row(
                 "text": safe_text(
                     icon,
                     "",
-                )
+                ),
                 "size": "sm",
                 "flex": 0,
             },
