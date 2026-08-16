@@ -509,8 +509,7 @@ def build_tomorrow_ticket_card(show):
 
     return build_reminder_bubble(
         show=show,
-        header_title="🎟 明日搶票",
-        header_subtitle="明天記得準時搶票！",
+        header_title="🎟 明天記得準時搶票！",
         body_contents=body_contents,
         alt_text="🎟 明日搶票提醒",
     )
@@ -702,8 +701,7 @@ def build_pickup_reminder_card(show):
 
     return build_reminder_bubble(
         show=show,
-        header_title="📦 今天記得取票",
-        header_subtitle="可以取票囉！",
+        header_title="📦 可以取票囉！",
         body_contents=body_contents,
         alt_text="📦 取票提醒",
     )
@@ -801,7 +799,7 @@ def build_show_day_reminder_card(show):
 
     return build_reminder_bubble(
         show=show,
-        header_title="🎤 今天就是演出日！好好享受今天的演出 ✨",
+        header_title="🎤 好好享受今天的演出 ✨",
         body_contents=body_contents,
         alt_text="🎤 演出日提醒",
     )
