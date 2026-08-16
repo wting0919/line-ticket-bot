@@ -99,8 +99,23 @@ def handle_add_show_flow(event, text, user_id):
 
     if step == "activity":
 
+
+        if text not in ACTIVITY_VALUES:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕選擇活動類型",
+                    quick_reply=activity_quick_reply()
+                )
+            )
+
+            return True
+
+
         data["活動"] = text
         state["step"] = "activity_name"
+
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -272,24 +287,174 @@ def handle_add_show_flow(event, text, user_id):
 
         data["會員資訊"] = "" if text == "略過" else text
 
-        state["step"] = "pickup_date"
+        state["step"] = "reminder"
+
+        state["selected_reminders"] = []
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text=(
-                    "🎫 請輸入取票日期\n\n"
-                    "例如：5天前\n"
-                    "或：9/25\n\n"
-                    "沒有取票提醒可按略過"
+                text=reminder_message([]),
+                quick_reply=reminder_quick_reply(),
+            )
+        )
+
+        return True
+
+    if step == "reminder":
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        if text == "略過":
+
+            data["提醒事項"] = ""
+
+            state.pop(
+                "selected_reminders",
+                None,
+            )
+
+            state["step"] = "pickup_date"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "🎫 請輸入取票日期\n\n"
+                        "例如：5天前\n"
+                        "或：9/25\n\n"
+                        "沒有取票提醒可按略過"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("3天前", "3天前"),
+                        ("5天前", "5天前"),
+                        ("7天前", "7天前"),
+                        ("➖ 略過", "略過"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        if text == "完成提醒":
+
+            if not selected:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="請至少選擇一項，或按「略過」",
+                        quick_reply=reminder_quick_reply(),
+                    )
+                )
+
+                return True
+
+            data["提醒事項"] = "\n".join(
+                selected
+            )
+
+            state.pop(
+                "selected_reminders",
+                None,
+            )
+
+            state["step"] = "pickup_date"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "🎫 請輸入取票日期\n\n"
+                        "例如：5天前\n"
+                        "或：9/25\n\n"
+                        "沒有取票提醒可按略過"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("3天前", "3天前"),
+                        ("5天前", "5天前"),
+                        ("7天前", "7天前"),
+                        ("➖ 略過", "略過"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        if text == "自訂提醒":
+
+            state["step"] = "custom_reminder"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請輸入提醒事項",
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        if text in REMINDER_OPTIONS:
+
+            if text not in selected:
+
+                selected.append(text)
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=reminder_message(
+                        selected
+                    ),
+                    quick_reply=reminder_quick_reply(),
+                )
+            )
+
+            return True
+
+    if step == "custom_reminder":
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+
+        text = text.strip()
+
+        if not text:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="提醒事項不可空白"
+                )
+            )
+
+            return True
+
+        if text not in selected:
+
+            selected.append(text)
+
+
+        state["step"] = "reminder"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=reminder_message(
+                    selected
                 ),
-                quick_reply=simple_quick_reply([
-                    ("3天前", "3天前"),
-                    ("5天前", "5天前"),
-                    ("7天前", "7天前"),
-                    ("➖ 略過", "略過"),
-                    ("❌ 取消", "取消"),
-                ])
+                quick_reply=reminder_quick_reply(),
             )
         )
 
@@ -366,6 +531,17 @@ def handle_add_show_flow(event, text, user_id):
         if data.get("會員資訊"):
             reply += f"🪪 {data['會員資訊']}\n"
 
+        if data.get("提醒事項"):
+
+            reply += (
+                "📝 提醒事項\n"
+                + "\n".join(
+                    f"• {item}"
+                    for item in data["提醒事項"].splitlines()
+                )
+                + "\n"
+            )
+
         reply += (
             f"📦 {data.get('取票日期') or '未設定'}\n"
             f"📝 {data.get('備註') or '無'}"
@@ -391,6 +567,11 @@ def handle_add_show_flow(event, text, user_id):
 
             state["step"] = "artist"
             state["data"] = {}
+
+            state.pop(
+                "selected_reminders",
+                None,
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -445,9 +626,13 @@ def handle_add_show_flow(event, text, user_id):
             "價格張數": data.get("價格張數", ""),
             "售票平台": data.get("售票平台", ""),
             "會員資訊": data.get("會員資訊", ""),
+            "提醒事項": data.get(
+                "提醒事項",
+                "",
+            ),
             "取票日期": data.get("取票日期", ""),
             "備註": data.get("備註", ""),
-            "搶票狀態": "等待搶票",
+            "搶票狀態": "待搶票",
             "取票狀態": "未取票",
             "搶票大師": "",
             "取票人": "",

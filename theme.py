@@ -16,6 +16,62 @@ def activity_quick_reply(
 
     return simple_quick_reply(buttons)
 
+def reminder_quick_reply(
+    include_cancel=True,
+):
+
+    buttons = [
+        (item, item)
+        for item in REMINDER_OPTIONS
+    ]
+
+    buttons.extend(
+        [
+            ("✏️ 自訂", "自訂提醒"),
+            ("✅ 完成", "完成提醒"),
+            ("➖ 略過", "略過"),
+        ]
+    )
+
+    if include_cancel:
+
+        buttons.append(
+            ("❌ 取消", "取消")
+        )
+
+    return simple_quick_reply(
+        buttons
+    )
+
+
+def reminder_message(
+    selected,
+):
+
+    if selected:
+
+        selected_text = "\n".join(
+            f"• {item}"
+            for item in selected
+        )
+
+    else:
+
+        selected_text = "（尚未選擇）"
+
+    return (
+        "📝 提醒事項\n\n"
+        "請選擇提醒事項\n\n"
+        f"{selected_text}"
+    )
+
+
+REMINDER_OPTIONS = [
+    "實名制",
+    "本人帳號",
+    "會員預售",
+    "卡友優先",
+]
 
 # =========================================================
 # TicketCat 共用品牌設定
