@@ -170,20 +170,20 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-    if text == "活動":
+        if text == "活動":
 
-        state["field"] = "活動"
-        state["step"] = "activity"
+            state["field"] = "活動"
+            state["step"] = "activity"
 
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text="🏷 請選擇活動類型",
-                quick_reply=activity_quick_reply()
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="🏷 請選擇活動類型",
+                    quick_reply=activity_quick_reply()
+                )
             )
-        )
 
-        return True
+            return True
 
         state["field"] = text
         state["step"] = "value"
