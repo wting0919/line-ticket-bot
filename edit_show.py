@@ -217,12 +217,17 @@ def handle_edit_show_flow(event, text, user_id):
                 else []
             )
 
-        TextSendMessage(
-            text=reminder_message(
-                state["selected_reminders"]
-            ),
-            quick_reply=reminder_quick_reply(),
-        )
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=reminder_message(
+                        state["selected_reminders"]
+                    ),
+                    quick_reply=reminder_quick_reply(),
+                )
+            )
+
+            return True
 
         state["field"] = text
         state["step"] = "value"
