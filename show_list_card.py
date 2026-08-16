@@ -210,7 +210,7 @@ def build_ticket_status_tag(show):
 
     status = safe_text(
         show.get("搶票狀態"),
-        "等待搶票",
+        "待搶票",
     )
 
     if status == "已搶票":
@@ -331,7 +331,7 @@ def build_status_area(
 
         ticket_status = safe_text(
             show.get("搶票狀態"),
-            "等待搶票",
+            "待搶票",
         )
 
         if ticket_status == "已搶票":
@@ -347,6 +347,43 @@ def build_status_area(
         "contents": tags,
     }
 
+def append_row(
+    rows,
+    icon,
+    value,
+    formatter=None,
+):
+    """
+    有值才加入資訊列。
+    """
+
+    if not value:
+        return
+
+    if formatter:
+        value = formatter(value)
+
+    rows.append(
+        build_compact_info_row(
+            icon=icon,
+            value=value,
+        )
+    )
+
+def format_reminders(reminder):
+    """
+    將提醒事項格式化為項目符號。
+    """
+
+    if not reminder:
+        return ""
+
+    return "\n".join(
+        f"• {line.strip()}"
+        for line in reminder.splitlines()
+        if line.strip()
+    )
+
 
 # =========================================================
 # 各類列表內容
@@ -357,7 +394,7 @@ def build_all_show_rows(show):
     演出列表顯示欄位。
     """
 
-    return [
+    rows = [
         build_compact_info_row(
             icon="📅",
             value=format_show_dates_inline(
@@ -366,6 +403,24 @@ def build_all_show_rows(show):
             margin="sm",
         ),
     ]
+
+    append_row(
+        rows,
+        "🪪",
+        show.get("會員資訊"),
+    )
+
+    reminder = format_reminders(
+        show.get("提醒事項")
+    )
+
+    append_row(
+        rows,
+        "🔔",
+        reminder,
+    )
+
+    return rows
 
 
 def build_ticket_show_rows(show):
@@ -382,41 +437,43 @@ def build_ticket_show_rows(show):
             margin="sm",
         ),
         build_compact_info_row(
-            icon="🏢",
+            icon="🌐",
             value=safe_text(
                 show.get("售票平台")
             ),
         ),
     ]
 
-    price_quantity = show.get(
-        "價格張數"
+    append_row(
+        rows,
+        "💰",
+        show.get("價格張數"),
+        format_price,
     )
 
-    if price_quantity:
+    append_row(
+        rows,
+        "🪪",
+        show.get("會員資訊"),
+    )
 
-        rows.append(
-            build_compact_info_row(
-                icon="💰",
-                value=format_price(
-                    price_quantity
-                ),
-            )
-        )
+    reminder = format_reminders(
+        show.get("提醒事項")
+    )
 
-    note = show.get("備註")
+    append_row(
+        rows,
+        "🔔",
+        reminder,
+    )
 
-    if note:
-
-        rows.append(
-            build_compact_info_row(
-                icon="📝",
-                value=note,
-            )
-        )
+    append_row(
+        rows,
+        "📝",
+        show.get("備註"),
+    )
 
     return rows
-
 
 def build_pickup_show_rows(show):
     """
@@ -440,21 +497,16 @@ def build_pickup_show_rows(show):
         ),
     ]
 
-    ticket_master = show.get(
-        "搶票大師"
-    )
-
-    if ticket_master:
-
-        rows.append(
-            build_compact_info_row(
-                icon="🎯",
-                value=(
-                    "搶票大師："
-                    f"{safe_text(ticket_master)}"
-                ),
-            )
+    append_row(
+        rows,
+        "🎯",
+        (
+            f"搶票大師："
+            f"{safe_text(show.get('搶票大師'))}"
         )
+        if show.get("搶票大師")
+        else "",
+    )
 
     return rows
 
