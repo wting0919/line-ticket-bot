@@ -510,7 +510,7 @@ def build_note_section(note):
                 "contents": [
                     {
                         "type": "text",
-                        "text": safe_text(note)
+                        "text": safe_text(note),
                         "size": "xxs",
                         "color": TEXT_COLOR,
                         "wrap": True,
