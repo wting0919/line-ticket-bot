@@ -510,10 +510,7 @@ def build_note_section(note):
                 "contents": [
                     {
                         "type": "text",
-                        "text": safe_text(
-                            note,
-                            "無",
-                        ),
+                        "text": safe_text(note)
                         "size": "xxs",
                         "color": TEXT_COLOR,
                         "wrap": True,
@@ -697,13 +694,17 @@ def build_view_show_card(
         show.get("售票平台")
     )
 
+    price_quantity = format_price(
+        show.get("價格張數")
+    )
+
     member = safe_text(
         show.get("會員資訊")
     )
 
-    price_quantity = format_price(
-        show.get("價格張數")
-    )
+    reminders = (
+        show.get("提醒事項") or ""
+    ).strip()
 
     pickup_date = format_date_with_weekday(
         show.get("取票日期")
@@ -719,9 +720,6 @@ def build_view_show_card(
 
     note = show.get("備註")
 
-    reminders = (
-        show.get("提醒事項") or ""
-    ).strip()
 
     body_contents = [
 
@@ -790,6 +788,11 @@ def build_view_show_card(
                     "售票平台",
                     platform,
                 ),
+                (
+                    "💰",
+                    "價格張數",
+                    price_quantity,
+                ),
                 *(
                     [
                         (
@@ -801,15 +804,25 @@ def build_view_show_card(
                     if member
                     else []
                 ),
-                (
-                    "💰",
-                    "價格張數",
-                    price_quantity,
-                ),
             ],
             margin="md",
         ),
     ]
+
+
+    if reminders:
+
+        body_contents.extend(
+            [
+                build_separator(
+                    margin="md",
+                ),
+                build_reminder_section(
+                    reminders
+                ),
+            ]
+        )
+
 
     if status == "已搶票":
 
@@ -832,46 +845,22 @@ def build_view_show_card(
                             "取票人員",
                             pickup_person,
                         ),
-                    ],
-                    margin="md",
-                ),
-                {
-                    "type": "box",
-                    "layout": "horizontal",
-                    "margin": "md",
-                    "contents": [
-                        {
-                            "type": "box",
-                            "layout": "vertical",
-                            "width": "140px",
-                            "height": "2px",
-                            "backgroundColor": BUTTON_COLOR,
-                            "cornerRadius": "2px",
-                            "contents": [],
-                        }
-                    ],
-                },
-                build_info_row(
-                    icon="🎯",
-                    label="搶票大師",
-                    value=ticket_master,
-                    margin="md",
+                        *(
+                            [
+                                (
+                                    "🎯",
+                                    "搶票大師",
+                                    ticket_master,
+                                )
+                            ]
+                            if ticket_master
+                            else []
+                        ),
+                    ]
                 ),
             ]
         )
 
-    if reminders:
-
-        body_contents.extend(
-            [
-                build_separator(
-                    margin="md",
-                ),
-                build_reminder_section(
-                    reminders
-                ),
-            ]
-        )
 
     if note:
 
@@ -1058,20 +1047,9 @@ def handle_view_show(
             index=index + 1,
         )
 
-        print(
-            "[view_show] 準備送出 Flex：",
-            show.get("藝人"),
-            flush=True,
-        )
-
         config.line_bot_api.reply_message(
             event.reply_token,
             message,
-        )
-
-        print(
-            "[view_show] Flex 送出成功",
-            flush=True,
         )
 
         return True
