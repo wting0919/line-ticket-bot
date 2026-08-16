@@ -183,8 +183,12 @@ def build_info_row(
     }
 
 
-def build_note(note):
-    if not note:
+def build_text_section(
+    title,
+    text,
+):
+
+    if not text:
         return None
 
     return {
@@ -197,14 +201,14 @@ def build_note(note):
         "contents": [
             {
                 "type": "text",
-                "text": "📝 備註",
+                "text": title,
                 "size": "xs",
                 "weight": "bold",
                 "color": SUBTEXT_COLOR,
             },
             {
                 "type": "text",
-                "text": safe_text(note, "無"),
+                "text": safe_text(text, "無"),
                 "size": "xxs",
                 "color": TEXT_COLOR,
                 "margin": "sm",
@@ -212,6 +216,19 @@ def build_note(note):
             },
         ],
     }
+
+def format_reminders(
+    reminders,
+):
+
+    if not reminders:
+        return ""
+
+    return "\n".join(
+        f"• {item.strip()}"
+        for item in reminders.splitlines()
+        if item.strip()
+    )
 
 
 def build_time_focus(
@@ -476,8 +493,17 @@ def build_tomorrow_ticket_card(show):
             if show.get("會員資訊")
             else []
         ),
-        build_note(
-            show.get("備註")
+
+        build_text_section(
+            "📝 提醒事項",
+            format_reminders(
+                show.get("提醒事項")
+            ),
+        ),
+
+        build_text_section(
+            "📝 備註",
+            show.get("備註"),
         ),
     ]
 
@@ -572,9 +598,18 @@ def build_ticket_countdown_card(
                 show.get("價格張數")
             ),
         ),
-        build_note(
-            show.get("備註")
+
+        build_text_section(
+            "📝 提醒事項",
+            format_reminders(
+                show.get("提醒事項")
+            ),
         ),
+
+        build_text_section(
+            "📝 備註",
+            show.get("備註"),
+        )
     ]
 
     return build_reminder_bubble(

@@ -375,6 +375,83 @@ def build_detail_section(
         "contents": contents,
     }
 
+# =========================================================
+# 提醒事項區塊
+# =========================================================
+
+def build_reminder_section(
+    reminders,
+):
+    """
+    建立提醒事項區塊。
+    """
+
+    if not reminders:
+        return None
+
+    reminder_text = "\n".join(
+        f"• {item.strip()}"
+        for item in reminders.splitlines()
+        if item.strip()
+    )
+
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "md",
+        "contents": [
+            {
+                "type": "box",
+                "layout": "horizontal",
+                "alignItems": "center",
+                "contents": [
+                    {
+                        "type": "box",
+                        "layout": "vertical",
+                        "width": "30px",
+                        "height": "30px",
+                        "backgroundColor": SECTION_COLOR,
+                        "cornerRadius": "15px",
+                        "justifyContent": "center",
+                        "alignItems": "center",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "📝",
+                                "size": "sm",
+                                "align": "center",
+                            }
+                        ],
+                    },
+                    {
+                        "type": "text",
+                        "text": "提醒事項",
+                        "size": "md",
+                        "weight": "bold",
+                        "color": TEXT_COLOR,
+                        "margin": "sm",
+                    },
+                ],
+            },
+            {
+                "type": "box",
+                "layout": "vertical",
+                "margin": "sm",
+                "paddingAll": "10px",
+                "backgroundColor": SECTION_COLOR,
+                "cornerRadius": "10px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": reminder_text,
+                        "size": "xxs",
+                        "color": TEXT_COLOR,
+                        "wrap": True,
+                    }
+                ],
+            },
+        ],
+    }
 
 # =========================================================
 # 備註區塊
@@ -642,6 +719,10 @@ def build_view_show_card(
 
     note = show.get("備註")
 
+    reminders = (
+        show.get("提醒事項") or ""
+    ).strip()
+
     body_contents = [
 
         build_activity_badge_row(activity),
@@ -775,6 +856,19 @@ def build_view_show_card(
                     label="搶票大師",
                     value=ticket_master,
                     margin="md",
+                ),
+            ]
+        )
+
+    if reminders:
+
+        body_contents.extend(
+            [
+                build_separator(
+                    margin="md",
+                ),
+                build_reminder_section(
+                    reminders
                 ),
             ]
         )
