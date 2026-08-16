@@ -157,13 +157,19 @@ def build_info_row(
         "contents": [
             {
                 "type": "text",
-                "text": icon,
+                "text": safe_text(
+                    icon,
+                    "",
+                )
                 "size": "sm",
                 "flex": 0,
             },
             {
                 "type": "text",
-                "text": label,
+                "text": safe_text(
+                    label,
+                    "",
+                ),
                 "size": "xs",
                 "weight": "bold",
                 "color": SUBTEXT_COLOR,
@@ -208,7 +214,7 @@ def build_text_section(
             },
             {
                 "type": "text",
-                "text": safe_text(text, "無"),
+                "text": safe_text(text),
                 "size": "xxs",
                 "color": TEXT_COLOR,
                 "margin": "sm",
@@ -572,10 +578,18 @@ def build_ticket_countdown_card(
         ),
         build_separator(),
         build_info_row(
-            icon="🏢",
+            icon="🌐",
             label="售票平台",
             value=show.get("售票平台"),
             margin="lg",
+        ),
+
+        build_info_row(
+            icon="💰",
+            label="價格張數",
+            value=format_price(
+                show.get("價格張數")
+            ),
         ),
 
         *(
@@ -590,13 +604,6 @@ def build_ticket_countdown_card(
             else []
         ),
 
-        build_info_row(
-            icon="💰",
-            label="價格張數",
-            value=format_price(
-                show.get("價格張數")
-            ),
-        ),
 
         build_text_section(
             "🔔 提醒事項",
