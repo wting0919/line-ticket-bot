@@ -16,16 +16,16 @@ def get_waiting_shows():
 
     shows = sort_shows(load_data())
 
-    waiting = []
+    waiting_shows = []
 
     for show in shows:
 
         show.setdefault(
             "搶票狀態",
-            "等待搶票"
+            "待搶票"
         )
 
-        if show["搶票狀態"] == "等待搶票":
+        if show["搶票狀態"] == "待搶票":
 
             waiting.append(show)
 
@@ -36,7 +36,7 @@ def get_pickup_shows():
 
     shows = sort_by_pickup_date(load_data())
 
-    pickup = []
+    pickup_shows = []
 
     for show in shows:
 
@@ -47,7 +47,7 @@ def get_pickup_shows():
 
         show.setdefault(
             "搶票狀態",
-            "等待搶票"
+            "待搶票"
         )
 
         if (
@@ -64,7 +64,5 @@ def get_pickup_shows():
 def get_all_shows():
 
     shows = sort_by_show_date(load_data())
-
-    print("演出列表讀取：", shows)
 
     return shows
