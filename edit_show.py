@@ -43,6 +43,7 @@ ALLOWED_FIELDS = {
     "搶票時間",
     "價格張數",
     "售票平台",
+    "會員資訊",
     "取票日期",
     "備註",
 }
@@ -55,6 +56,7 @@ FIELD_HINTS = {
     "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
     "價格張數": "請輸入新的價格張數\n例如：$3800*2",
     "售票平台": "請輸入新的售票平台",
+    "會員資訊": "請輸入新的會員資訊\n也可按「清除」",
     "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
     "備註": "請輸入新的備註\n也可按「清除」",
 }
@@ -123,8 +125,13 @@ def start_edit_show(event, text, user_id):
         TextSendMessage(
             text=(
                 "✏️ 修改演出\n\n"
-                f"🎤 {show.get('演出名稱', '')}\n\n"
-                "請選擇要修改的欄位"
+                f"🎤 {show.get('藝人', '')}\n"
+                + (
+                    f"✨ {show.get('活動名稱')}\n\n"
+                    if show.get("活動名稱")
+                    else "\n"
+                )
+                + "請選擇要修改的欄位"
             ),
             quick_reply=edit_field_quick_reply()
         )
@@ -190,7 +197,11 @@ def handle_edit_show_flow(event, text, user_id):
 
         buttons = []
 
-        if text in {"取票日期", "備註"}:
+        if text in {
+            "會員資訊",
+            "取票日期",
+            "備註",
+        }:
             buttons.append(("🗑 清除", "清除"))
 
         buttons.append(("❌ 取消", "取消"))
@@ -251,17 +262,26 @@ def handle_edit_show_flow(event, text, user_id):
 
         clear_state(user_id)
 
+        header = (
+            "✅ 修改成功\n"
+            "──────────\n"
+            f"🎤 {show.get('藝人', '')}\n"
+            f"🏷️ {show.get('活動', '')}\n"
+        )
+
+        if show.get("活動名稱"):
+            header += f"✨ {show['活動名稱']}\n"
+
+        header += "──────────\n"
+
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "✅ 修改成功\n"
-                    "──────────\n"
-                    f"🎤 {show['演出名稱']}\n"
-                    "──────────\n"
-                    f"🏷 活動\n"
-                    f"🔸 原本：{old_value}\n"
-                    f"🔹 修改後：{text}"
+                    header
+                    + "✏️ 活動\n"
+                    + f"🔸 原本：{old_value}\n"
+                    + f"🔹 修改後：{text}"
                 )
             )
         )
@@ -313,6 +333,13 @@ def handle_edit_show_flow(event, text, user_id):
                         text,
                         show.get("演出日期", "")
                     )
+
+            elif field == "會員資訊":
+
+                if text == "清除":
+                    new_value = ""
+                else:
+                    new_value = text
 
             elif field == "備註":
 
@@ -372,17 +399,26 @@ def handle_edit_show_flow(event, text, user_id):
             old_value = old_value or "無"
             display_value = new_value or "無"
 
+        header = (
+            "✅ 修改成功\n"
+            "──────────\n"
+            f"🎤 {show.get('藝人', '')}\n"
+            f"🏷️ {show.get('活動', '')}\n"
+        )
+
+        if show.get("活動名稱"):
+            header += f"✨ {show['活動名稱']}\n"
+
+        header += "──────────\n"
+
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "✅ 修改成功\n"
-                    "──────────\n"
-                    f"🎤 {show.get('演出名稱', '')}\n"
-                    "──────────\n"
-                    f"✏️ {field}\n"
-                    f"🔸 原本：{old_value}\n"
-                    f"🔹 修改後：{display_value}"
+                    header
+                    + f"✏️ {field}\n"
+                    + f"🔸 原本：{old_value}\n"
+                    + f"🔹 修改後：{display_value}"
                 )
             )
         )

@@ -528,7 +528,7 @@ def build_action_area(
         },
     ]
 
-    if status == "等待搶票":
+    if status == "待搶票":
 
         contents.append(
             {
@@ -585,7 +585,6 @@ def build_view_show_card(
 
     artist = safe_text(
         show.get("藝人"),
-        show.get("演出名稱"),
     )
 
     activity = safe_text(
@@ -619,6 +618,10 @@ def build_view_show_card(
 
     platform = safe_text(
         show.get("售票平台")
+    )
+
+    member = safe_text(
+        show.get("會員資訊")
     )
 
     price_quantity = format_price(
@@ -705,6 +708,17 @@ def build_view_show_card(
                     "🏢",
                     "售票平台",
                     platform,
+                ),
+                *(
+                    [
+                        (
+                            "🪪",
+                            "會員資訊",
+                            member,
+                        )
+                    ]
+                    if member
+                    else []
                 ),
                 (
                     "💰",
@@ -952,7 +966,7 @@ def handle_view_show(
 
         print(
             "[view_show] 準備送出 Flex：",
-            show.get("藝人", show.get("演出名稱")),
+            show.get("藝人"),
             flush=True,
         )
 

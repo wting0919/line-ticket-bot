@@ -247,6 +247,31 @@ def handle_add_show_flow(event, text, user_id):
     if step == "platform":
 
         data["售票平台"] = text
+        state["step"] = "member"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🪪 請輸入會員資訊\n\n"
+                    "例如：\n"
+                    "BRxxxxxxxxx\n"
+                    "ACE會員\n"
+                    "沒有可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消"),
+                ])
+            )
+        )
+
+        return True
+
+    if step == "member":
+
+        data["會員資訊"] = "" if text == "略過" else text
+
         state["step"] = "pickup_date"
 
         config.line_bot_api.reply_message(
@@ -263,7 +288,7 @@ def handle_add_show_flow(event, text, user_id):
                     ("5天前", "5天前"),
                     ("7天前", "7天前"),
                     ("➖ 略過", "略過"),
-                    ("❌ 取消", "取消")
+                    ("❌ 取消", "取消"),
                 ])
             )
         )
@@ -336,6 +361,12 @@ def handle_add_show_flow(event, text, user_id):
             f"🎟 {data['搶票時間']}\n"
             f"💰 {data['價格張數']}\n"
             f"🌐 {data['售票平台']}\n"
+        )
+
+        if data.get("會員資訊"):
+            reply += f"🪪 {data['會員資訊']}\n"
+
+        reply += (
             f"📦 {data.get('取票日期') or '未設定'}\n"
             f"📝 {data.get('備註') or '無'}"
         )
@@ -413,6 +444,7 @@ def handle_add_show_flow(event, text, user_id):
             "搶票時間": data.get("搶票時間", ""),
             "價格張數": data.get("價格張數", ""),
             "售票平台": data.get("售票平台", ""),
+            "會員資訊": data.get("會員資訊", ""),
             "取票日期": data.get("取票日期", ""),
             "備註": data.get("備註", ""),
             "搶票狀態": "等待搶票",

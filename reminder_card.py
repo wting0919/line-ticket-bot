@@ -279,7 +279,6 @@ def get_show_title(show):
 
     artist = safe_text(
         show.get("藝人"),
-        show.get("演出名稱"),
     )
 
     activity_name = (
@@ -462,6 +461,21 @@ def build_tomorrow_ticket_card(show):
             ),
             margin="lg",
         ),
+
+
+        *(
+            [
+                build_info_row(
+                    icon="🪪",
+                    label="會員資訊",
+                    value=safe_text(
+                        show.get("會員資訊")
+                    ),
+                )
+            ]
+            if show.get("會員資訊")
+            else []
+        ),
         build_note(
             show.get("備註")
         ),
@@ -538,6 +552,19 @@ def build_ticket_countdown_card(
             value=show.get("售票平台"),
             margin="lg",
         ),
+
+        *(
+            [
+                build_info_row(
+                    icon="🪪",
+                    label="會員資訊",
+                    value=show.get("會員資訊"),
+                )
+            ]
+            if show.get("會員資訊")
+            else []
+        ),
+
         build_info_row(
             icon="💰",
             label="價格張數",

@@ -80,7 +80,7 @@ def handle_copy_show(event, text, user_id):
         "演出日": False,
     }
 
-    new_show["搶票狀態"] = "等待搶票"
+    new_show["搶票狀態"] = "待搶票"
     new_show["取票狀態"] = "未取票"
 
     new_show["搶票大師"] = ""
@@ -108,16 +108,22 @@ def handle_copy_show(event, text, user_id):
         }
     )
 
+    message = (
+        "✅ 已建立複製演出\n"
+        "──────────\n"
+        f"🎤 {new_show.get('藝人', '')}\n"
+        f"🏷️ {new_show.get('活動', '')}\n"
+    )
+
+    if new_show.get("活動名稱"):
+        message += f"✨ {new_show['活動名稱']}\n"
+
+    message += "──────────\n請選擇要修改的欄位"
+
     config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
-            text=(
-                "✅ 已建立複製演出\n"
-                "──────────\n"
-                f"🎤 {new_show['演出名稱']}\n"
-                "──────────\n"
-                "請選擇要修改的欄位"
-            ),
+            text=message,
             quick_reply=edit_field_quick_reply()
         )
     )
