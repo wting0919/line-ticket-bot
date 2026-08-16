@@ -495,7 +495,7 @@ def build_tomorrow_ticket_card(show):
         ),
 
         build_text_section(
-            "📝 提醒事項",
+            "🔔 提醒事項",
             format_reminders(
                 show.get("提醒事項")
             ),
@@ -600,7 +600,7 @@ def build_ticket_countdown_card(
         ),
 
         build_text_section(
-            "📝 提醒事項",
+            "🔔 提醒事項",
             format_reminders(
                 show.get("提醒事項")
             ),
