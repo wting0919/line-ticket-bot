@@ -27,9 +27,9 @@ def get_waiting_shows():
 
         if show["搶票狀態"] == "待搶票":
 
-            waiting.append(show)
+            waiting_shows.append(show)
 
-    return waiting
+    return waiting_shows
 
 
 def get_pickup_shows():
@@ -56,9 +56,9 @@ def get_pickup_shows():
             and show.get("搶票狀態") == "已搶票"
         ):
 
-            pickup.append(show)
+            pickup_shows.append(show)
 
-    return pickup
+    return pickup_shows
 
 
 def get_all_shows():
