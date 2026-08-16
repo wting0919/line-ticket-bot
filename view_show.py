@@ -417,7 +417,7 @@ def build_reminder_section(
                         "contents": [
                             {
                                 "type": "text",
-                                "text": "📝",
+                                "text": "🔔",
                                 "size": "sm",
                                 "align": "center",
                             }
@@ -674,7 +674,7 @@ def build_view_show_card(
 
     status = show.get(
         "搶票狀態",
-        "等待搶票",
+        "待搶票",
     )
 
     pickup_status = show.get(
@@ -777,7 +777,7 @@ def build_view_show_card(
         ),
 
         build_detail_section(
-            icon="🎟",
+            icon="🎟️",
             title="搶票資訊",
             rows=[
                 (
@@ -786,7 +786,7 @@ def build_view_show_card(
                     ticket_time,
                 ),
                 (
-                    "🏢",
+                    "🌐",
                     "售票平台",
                     platform,
                 ),
