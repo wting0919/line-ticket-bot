@@ -29,7 +29,10 @@ from helpers import (
 
 from theme import (
     activity_quick_reply,
+    reminder_quick_reply,
+    reminder_message,
     ACTIVITY_VALUES,
+    REMINDER_OPTIONS,
 )
 
 import config
@@ -44,6 +47,7 @@ ALLOWED_FIELDS = {
     "價格張數",
     "售票平台",
     "會員資訊",
+    "提醒事項",
     "取票日期",
     "備註",
 }
@@ -57,6 +61,7 @@ FIELD_HINTS = {
     "價格張數": "請輸入新的價格張數\n例如：$3800*2",
     "售票平台": "請輸入新的售票平台",
     "會員資訊": "請輸入新的會員資訊\n也可按「清除」",
+    "提醒事項": "請選擇新的提醒事項",
     "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
     "備註": "請輸入新的備註\n也可按「清除」",
 }
@@ -192,6 +197,33 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
+        if text == "提醒事項":
+
+            state["field"] = "提醒事項"
+            state["step"] = "reminder"
+
+            show = next(
+                (
+                    item
+                    for item in load_data()
+                    if item["id"] == state["show_id"]
+                ),
+                None,
+            )
+
+            state["selected_reminders"] = (
+                show.get("提醒事項", "").splitlines()
+                if show and show.get("提醒事項")
+                else []
+            )
+
+        TextSendMessage(
+            text=reminder_message(
+                state["selected_reminders"]
+            ),
+            quick_reply=reminder_quick_reply(),
+        )
+
         state["field"] = text
         state["step"] = "value"
 
@@ -283,6 +315,186 @@ def handle_edit_show_flow(event, text, user_id):
                     + f"🔸 原本：{old_value}\n"
                     + f"🔹 修改後：{text}"
                 )
+            )
+        )
+
+        return True
+
+    if state.get("step") == "reminder":
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        if text == "略過":
+
+            show = next(
+                (
+                    item
+                    for item in load_data()
+                    if item["id"] == state["show_id"]
+                ),
+                None,
+            )
+
+            if show is None:
+                clear_state(user_id)
+                return True
+
+            old_value = show.get("提醒事項") or ""
+
+            show["提醒事項"] = ""
+
+            update_show(show)
+
+            clear_state(user_id)
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "✅ 修改成功\n"
+                        "──────────\n"
+                        f"🎤 {show.get('藝人', '')}\n"
+                        f"🏷️ {show.get('活動', '')}\n"
+                        + (
+                            f"✨ {show.get('活動名稱')}\n"
+                            if show.get("活動名稱")
+                            else ""
+                        )
+                        + "──────────\n"
+                        "✏️ 提醒事項\n"
+                        f"🔸 原本：{old_value or '無'}\n"
+                        "🔹 修改後：無"
+                    )
+                )
+            )
+
+            return True
+
+        if text == "完成提醒":
+
+            if not selected:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="請至少選擇一項，或按「略過」",
+                        quick_reply=reminder_quick_reply(),
+                    )
+                )
+
+                return True
+
+            show = next(
+                (
+                    item
+                    for item in load_data()
+                    if item["id"] == state["show_id"]
+                ),
+                None,
+            )
+
+            if show is None:
+                clear_state(user_id)
+                return True
+
+            old_value = show.get("提醒事項") or ""
+
+            new_value = "\n".join(selected)
+
+            show["提醒事項"] = new_value
+
+            update_show(show)
+
+            clear_state(user_id)
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "✅ 修改成功\n"
+                        "──────────\n"
+                        f"🎤 {show.get('藝人', '')}\n"
+                        f"🏷️ {show.get('活動', '')}\n"
+                        + (
+                            f"✨ {show.get('活動名稱')}\n"
+                            if show.get("活動名稱")
+                            else ""
+                        )
+                        + "──────────\n"
+                        "✏️ 提醒事項\n"
+                        f"🔸 原本：{old_value or '無'}\n"
+                        f"🔹 修改後：{new_value}"
+                    )
+                )
+            )
+
+            return True
+
+        if text == "自訂提醒":
+
+            state["step"] = "custom_reminder"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請輸入提醒事項"
+                )
+            )
+
+            return True
+
+        if text in REMINDER_OPTIONS:
+
+            if text not in selected:
+
+                selected.append(text)
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=reminder_message(selected),
+                    quick_reply=reminder_quick_reply(),
+                )
+            )
+
+            return True
+
+    if state.get("step") == "custom_reminder":
+
+        text = text.strip()
+
+        if not text:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="提醒事項不可空白"
+                )
+            )
+
+            return True
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        if text not in selected:
+
+            selected.append(text)
+
+        state["step"] = "reminder"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=reminder_message(
+                    selected
+                ),
+                quick_reply=reminder_quick_reply(),
             )
         )
 
