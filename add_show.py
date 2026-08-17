@@ -186,7 +186,7 @@ def handle_add_show_flow(event, text, user_id):
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "🎟 請輸入搶票時間\n\n"
+                    "🕒 請輸入搶票時間\n\n"
                     "例如：9/1 12:00\n"
                     "或：2026/9/1 12:00"
                 ),
@@ -323,7 +323,7 @@ def handle_add_show_flow(event, text, user_id):
                 event.reply_token,
                 TextSendMessage(
                     text=(
-                        "🎫 請輸入取票日期\n\n"
+                        "📦 請輸入取票日期\n\n"
                         "例如：5天前\n"
                         "或：9/25\n\n"
                         "沒有取票提醒可按略過"
@@ -369,7 +369,7 @@ def handle_add_show_flow(event, text, user_id):
                 event.reply_token,
                 TextSendMessage(
                     text=(
-                        "🎫 請輸入取票日期\n\n"
+                        "📦 請輸入取票日期\n\n"
                         "例如：5天前\n"
                         "或：9/25\n\n"
                         "沒有取票提醒可按略過"
@@ -523,7 +523,7 @@ def handle_add_show_flow(event, text, user_id):
 
         reply += (
             f"📅 {format_show_dates(data['演出日期'])}\n"
-            f"🎟 {data['搶票時間']}\n"
+            f"🕒 {data['搶票時間']}\n"
             f"💰 {data['價格張數']}\n"
             f"🌐 {data['售票平台']}\n"
         )
@@ -534,7 +534,7 @@ def handle_add_show_flow(event, text, user_id):
         if data.get("提醒事項"):
 
             reply += (
-                "📝 提醒事項\n"
+                "🔔 提醒事項\n"
                 + "\n".join(
                     f"• {item}"
                     for item in data["提醒事項"].splitlines()
@@ -606,25 +606,10 @@ def handle_add_show_flow(event, text, user_id):
             "活動": data.get("活動", ""),
             "活動名稱": data.get("活動名稱", ""),
 
-            # 先保留舊欄位
-            "演出名稱": (
-                data.get("藝人", "")
-                + (
-                    f" {data.get('活動', '')}"
-                    if data.get("活動")
-                    else ""
-                )
-                + (
-                    f" {data.get('活動名稱', '')}"
-                    if data.get("活動名稱")
-                    else ""
-                )
-            ).strip(),
-
             "演出日期": data.get("演出日期", ""),
             "搶票時間": data.get("搶票時間", ""),
-            "價格張數": data.get("價格張數", ""),
             "售票平台": data.get("售票平台", ""),
+            "價格張數": data.get("價格張數", ""),
             "會員資訊": data.get("會員資訊", ""),
             "提醒事項": data.get(
                 "提醒事項",
@@ -676,7 +661,7 @@ def handle_add_show_flow(event, text, user_id):
 
         success += (
             f"📅 {format_show_dates(show['演出日期'])}\n"
-            f"🎟 {format_datetime(show['搶票時間'])}"
+            f"🕒 {format_datetime(show['搶票時間'])}"
         )
 
         config.line_bot_api.reply_message(
