@@ -21,6 +21,7 @@ from today_card import (
 from utils import (
     parse_date,
     format_show_dates_inline,
+    split_show_dates,
 )
 
 from components import (
@@ -84,38 +85,6 @@ def build_header():
 # =========================================================
 # 下一場演出
 # =========================================================
-
-def split_show_dates(show_dates):
-    """
-    將演出日期整理成日期列表。
-    """
-
-    if not show_dates:
-        return []
-
-    if isinstance(
-        show_dates,
-        (list, tuple),
-    ):
-
-        return [
-            str(value).strip()
-            for value in show_dates
-            if str(value).strip()
-        ]
-
-    text = (
-        str(show_dates)
-        .replace("，", ",")
-        .replace("\n", ",")
-    )
-
-    return [
-        value.strip()
-        for value in text.split(",")
-        if value.strip()
-    ]
-
 
 def get_first_future_show_date(
     show,
@@ -249,7 +218,6 @@ def build_next_show_card(
 
     artist = safe_text(
         show.get("藝人"),
-        show.get("演出名稱"),
     )
 
     activity_name = (
