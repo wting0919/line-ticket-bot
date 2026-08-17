@@ -60,7 +60,7 @@ def reminder_message(
         selected_text = "（尚未選擇）"
 
     return (
-        "📝 提醒事項\n\n"
+        "🔔 提醒事項\n\n"
         "請選擇提醒事項\n\n"
         f"{selected_text}"
     )
