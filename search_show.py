@@ -194,21 +194,22 @@ def handle_search_show(event, text, user_id):
             show.get("搶票狀態", "待搶票")
         )
 
+        artist = show.get("藝人", "")
+        activity = show.get("活動", "")
+        activity_name = show.get("活動名稱", "")
+
+        title = "｜".join(
+            part
+            for part in [
+                artist,
+                activity,
+                activity_name,
+            ]
+            if part
+        )
+
         reply += (
             "\n──────────\n"
-            artist = show.get("藝人", "")
-            activity = show.get("活動", "")
-            activity_name = show.get("活動名稱", "")
-
-            title = "｜".join(
-                part for part in [
-                    artist,
-                    activity,
-                    activity_name,
-                ]
-                if part
-            )
-
             f"{i}. 🎤 {title or '未命名演出'}\n"
             f"📅 {format_show_dates(show.get('演出日期', ''))}\n"
             f"{ticket_status}"
