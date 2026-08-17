@@ -12,6 +12,7 @@ from utils import (
     parse_date,
     parse_datetime,
     get_last_show_date,
+    split_show_dates,
 )
 
 from today_card import build_today_card
@@ -290,26 +291,7 @@ def check_reminders():
                 ""
             )
 
-            if isinstance(
-                show_dates,
-                (list, tuple),
-            ):
-
-                date_values = show_dates
-
-            else:
-
-                show_date_text = (
-                    str(show_dates)
-                    .replace("，", ",")
-                    .replace("\n", ",")
-                )
-
-                date_values = [
-                    value.strip()
-                    for value in show_date_text.split(",")
-                    if value.strip()
-                ]
+            date_values = split_show_dates(show_dates)
 
             is_show_day = False
 
