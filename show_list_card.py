@@ -779,6 +779,7 @@ def build_pagination(
     mode,
     page,
     total_pages,
+    command=None,
 ):
     """
     建立列表翻頁區。
@@ -786,12 +787,14 @@ def build_pagination(
 
     config = get_list_config(mode)
 
+    base_command = command or config["command"]
+
     previous_command = (
-        f"{config['command']} 第{page - 1}頁"
+        f"{base_command} 第{page-1}頁"
     )
 
     next_command = (
-        f"{config['command']} 第{page + 1}頁"
+        f"{base_command} 第{page+1}頁"
     )
 
     return {
@@ -836,6 +839,7 @@ def build_show_list_card(
     shows,
     mode="all",
     page=1,
+    command=None,
 ):
     """
     建立 TicketCat 共用列表卡。
@@ -895,6 +899,7 @@ def build_show_list_card(
                 mode=mode,
                 page=page,
                 total_pages=total_pages,
+                command=command,
             )
         )
 

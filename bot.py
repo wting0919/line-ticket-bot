@@ -25,6 +25,9 @@ from reminder import (
     check_reminders,
     clean_finished_shows,
     send_today_summary,
+    get_today_ticket_shows,
+    get_today_pickup_shows,
+    get_today_show_shows,
 )
 
 from show_list import (
@@ -264,6 +267,85 @@ def handle_message(event):
 
         return
 
+
+    # =====================
+    # 今日搶票
+    # =====================
+
+    elif text == "今日搶票":
+
+        shows = get_today_ticket_shows() or []
+
+        set_show_list(
+            user_id,
+            "今日搶票",
+            shows,
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=shows,
+                mode="ticket",
+                page=1,
+                command="今日搶票",
+            )
+        )
+
+        return
+
+    # =====================
+    # 今日取票
+    # =====================
+
+    elif text == "今日取票":
+
+        shows = get_today_pickup_shows() or []
+
+        set_show_list(
+            user_id,
+            "今日取票",
+            shows,
+            command="今日取票",
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=shows,
+                mode="pickup",
+                page=1,
+            )
+        )
+
+        return
+
+    # =====================
+    # 今日演出
+    # =====================
+
+    elif text == "今日演出":
+
+        shows = get_today_show_shows() or []
+
+        set_show_list(
+            user_id,
+            "今日演出",
+            shows,
+            command="今日演出",
+
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            build_show_list_card(
+                shows=shows,
+                mode="all",
+                page=1,
+            )
+        )
+
+        return
 
 
     # =====================
