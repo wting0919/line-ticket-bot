@@ -223,8 +223,8 @@ def format_datetime(value):
 
     dt = parse_datetime(value)
 
-    if dt == datetime.max:
-        return value
+    if dt is None:
+        return str(value)
 
     return dt.strftime("%Y/%m/%d %H:%M")
 
@@ -233,7 +233,7 @@ def format_date(value):
 
     dt = parse_date(value)
 
-    if dt == datetime.max:
+    if dt is None:
         return str(value).replace("-", "/")
 
     return dt.strftime("%Y/%m/%d")
@@ -292,11 +292,12 @@ def sort_shows(shows):
 
     return sorted(
         shows,
-        key=lambda x: parse_datetime(
-            x.get("搶票時間")
+        key=lambda x: (
+            parse_datetime(
+                x.get("搶票時間")
+            ) or datetime.max
         )
     )
-
 
 
 def sort_by_show_date(shows):
@@ -304,8 +305,10 @@ def sort_by_show_date(shows):
 
     return sorted(
         shows,
-        key=lambda show: parse_date(
-            get_first_show_date(show)
+        key=lambda show: (
+            parse_date(
+                get_first_show_date(show)
+            ) or datetime.max
         )
     )
 
@@ -316,8 +319,14 @@ def sort_by_pickup_date(shows):
     return sorted(
         shows,
         key=lambda x: (
-            parse_date(x.get("取票日期")),
-            parse_datetime(x.get("搶票時間")),
+            parse_date(
+                x.get("取票日期")
+            ) or datetime.max,
+
+            parse_datetime(
+                x.get("搶票時間")
+            ) or datetime.max,
+
             str(x.get("id", ""))
         )
     )
