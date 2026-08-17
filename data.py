@@ -67,14 +67,26 @@ def update_show(show):
 
 def insert_show(show):
 
-    response = (
-        supabase
-        .table("shows")
-        .insert(show)
-        .execute()
-    )
+    try:
 
-    return response.data[0]
+        response = (
+            supabase
+            .table("shows")
+            .insert(show)
+            .execute()
+        )
+
+        return response.data[0]
+
+    except Exception as e:
+
+        print(
+            "新增 show 錯誤：",
+            repr(e),
+            flush=True,
+        )
+
+        raise
 
 def get_user_id(name):
     result = (
@@ -126,6 +138,8 @@ def load_members():
             repr(e),
             flush=True,
         )
+
+        return {}
 
 def get_member_user_id(name):
 
