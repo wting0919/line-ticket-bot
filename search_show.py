@@ -36,8 +36,8 @@ KEYWORD_ALIAS = {
     "kk": "kktix",
 
     # 狀態
-    "待搶": "等待",
-    "等待搶票": "等待",
+    "待搶": "待搶票",
+    "等待搶票": "待搶票",
     "已搶": "已搶票",
     "未搶": "未搶到",
     "未取": "未取票",
@@ -65,9 +65,10 @@ def handle_search_show(event, text, user_id):
                     "請輸入搜尋條件\n\n"
                     "例如：\n"
                     "搜尋 BIGBANG\n"
+                    "搜尋 演唱會\n"
                     "搜尋 拓元\n"
                     "搜尋 10月\n"
-                    "搜尋 已搶票"
+                    "搜尋 待搶票"
                 )
             )
         )
@@ -81,7 +82,11 @@ def handle_search_show(event, text, user_id):
 
     for show in shows:
 
-        name = str(show.get("演出名稱", ""))
+        name = " ".join([
+            str(show.get("藝人", "")),
+            str(show.get("活動", "")),
+            str(show.get("活動名稱", "")),
+        ])
         date = str(show.get("演出日期", ""))
         platform = str(show.get("售票平台", ""))
         ticket = str(show.get("搶票狀態", ""))
@@ -115,12 +120,12 @@ def handle_search_show(event, text, user_id):
 
         # ===== 狀態 =====
         elif keyword in (
-            "等待",
             "待搶",
+            "待搶票",
             "等待搶票",
         ):
 
-            matched = ticket == "等待搶票"
+            matched = ticket == "待搶票"
 
         elif keyword in (
             "已搶",
@@ -159,6 +164,7 @@ def handle_search_show(event, text, user_id):
                 platform,
                 ticket,
                 pickup,
+                member,
                 note,
             ]).lower()
 
@@ -185,12 +191,25 @@ def handle_search_show(event, text, user_id):
     for i, show in enumerate(results, start=1):
 
         ticket_status = format_ticket_status(
-            show.get("搶票狀態", "等待搶票")
+            show.get("搶票狀態", "待搶票")
         )
 
         reply += (
             "\n──────────\n"
-            f"{i}. 🎤 {show.get('演出名稱', '未命名演出')}\n"
+            artist = show.get("藝人", "")
+            activity = show.get("活動", "")
+            activity_name = show.get("活動名稱", "")
+
+            title = "｜".join(
+                part for part in [
+                    artist,
+                    activity,
+                    activity_name,
+                ]
+                if part
+            )
+
+            f"{i}. 🎤 {title or '未命名演出'}\n"
             f"📅 {format_show_dates(show.get('演出日期', ''))}\n"
             f"{ticket_status}"
         )

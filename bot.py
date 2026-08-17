@@ -25,6 +25,9 @@ from reminder import (
     check_reminders,
     clean_finished_shows,
     send_today_summary,
+)
+
+from today_card import (
     get_today_ticket_shows,
     get_today_pickup_shows,
     get_today_show_shows,
