@@ -229,7 +229,6 @@ def get_show_title(show):
 
     artist = safe_text(
         show.get("藝人"),
-        show.get("演出名稱"),
     )
 
     activity_name = (
@@ -858,7 +857,7 @@ def build_ticket_item(
         show.get("售票平台")
     )
 
-    price_quantity = safe_text(
+    price_quantity = format_price(
         show.get("價格張數")
     )
 
@@ -1069,41 +1068,35 @@ def build_today_card(today=None):
         )
     ]
 
-    if ticket_shows:
-
-        body_contents.append(
-            build_section(
-                icon="🎟",
-                title="今日搶票",
-                items=ticket_shows,
-                item_builder=build_ticket_item,
-                empty_text="今天沒有需要搶票的演出",
-            )
+    body_contents.append(
+        build_section(
+            icon="🎟",
+            title="今日搶票",
+            items=ticket_shows,
+            item_builder=build_ticket_item,
+            empty_text="今天沒有需要搶票的演出",
         )
+    )
 
-    if pickup_shows:
-
-        body_contents.append(
-            build_section(
-                icon="📦",
-                title="今日取票",
-                items=pickup_shows,
-                item_builder=build_pickup_item,
-                empty_text="今天沒有需要取票的演出",
-            )
+    body_contents.append(
+        build_section(
+            icon="📦",
+            title="今日取票",
+            items=pickup_shows,
+            item_builder=build_pickup_item,
+            empty_text="今天沒有需要取票的演出",
         )
+    )
 
-    if show_shows:
-
-        body_contents.append(
-            build_section(
-                icon="🎤",
-                title="今日演出",
-                items=show_shows,
-                item_builder=build_show_item,
-                empty_text="今天沒有舉行中的演出",
-            )
+    body_contents.append(
+        build_section(
+            icon="🎤",
+            title="今日演出",
+            items=show_shows,
+            item_builder=build_show_item,
+            empty_text="今天沒有舉行中的演出",
         )
+    )
 
     bubble = {
         "type": "bubble",

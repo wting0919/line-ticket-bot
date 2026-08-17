@@ -37,7 +37,7 @@ WEEKDAY = ["一", "二", "三", "四", "五", "六", "日"]
 def parse_date(value):
 
     if not value:
-        return datetime.max
+        return None
 
     try:
 
@@ -69,7 +69,7 @@ def parse_date(value):
             flush=True,
         )
 
-        return datetime.max
+        return None
 
 
 def split_show_dates(value):
@@ -184,7 +184,7 @@ def format_show_dates_inline(value):
 def parse_datetime(value):
 
     if not value:
-        return datetime.max
+        return None
 
     try:
 
@@ -216,7 +216,7 @@ def parse_datetime(value):
             flush=True,
         )
 
-        return datetime.max
+        return None
 
 
 def format_datetime(value):
@@ -325,12 +325,12 @@ def sort_by_pickup_date(shows):
 def format_ticket_status(status):
 
     return {
-        "等待搶票": "🟡 等待搶票",
+        "待搶票": "🟡 待搶票",
         "已搶票": "✅ 已搶票",
         "未搶到": "❌ 未搶到",
     }.get(
         status,
-        "🟡 等待搶票"
+        "🟡 待搶票"
     )
 
 def format_pickup_status(show):
