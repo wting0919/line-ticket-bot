@@ -108,11 +108,21 @@ def handle_complete_pickup(
 
                 else:
 
+                    title = "｜".join(
+                        part
+                        for part in [
+                            show.get("藝人", ""),
+                            show.get("活動", ""),
+                            show.get("活動名稱", ""),
+                        ]
+                        if part
+                    )
+
                     reply = (
                         "✅ 已完成取票\n"
                         "──────────\n"
-                        f"🎤 {show['演出名稱']}\n"
-                        f"🎫 取票人：{show.get('取票人') or '未設定'}\n"
+                        f"🎤 {title}\n"
+                        f"👤 取票人員：{show.get('取票人') or '未設定'}\n"
                         "──────────\n"
                         "✅ 已取票"
                     )
