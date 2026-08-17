@@ -35,8 +35,6 @@ def check_reminders():
 
     shows = load_data()
 
-    print("目前演出資料：", shows)
-
     for show in shows:
 
         reminder_defaults = {
@@ -58,12 +56,14 @@ def check_reminders():
 
         print(
             "提醒狀態：",
-            show["演出名稱"],
-            show["提醒"]
+            f"{show.get('藝人', '')}｜"
+            f"{show.get('活動', '')}｜"
+            f"{show.get('活動名稱', '')}",
+            show["提醒"],
         )
 
 
-        show.setdefault("搶票狀態", "等待搶票")
+        show.setdefault("搶票狀態", "待搶票")
         show.setdefault("取票狀態", "未取票")
 
 
@@ -116,7 +116,12 @@ def check_reminders():
 
             print("=" * 50)
             print("現在時間：", now)
-            print("演出：", show["演出名稱"])
+            print(
+                "演出：",
+                f"{show.get('藝人', '')}｜"
+                f"{show.get('活動', '')}｜"
+                f"{show.get('活動名稱', '')}",
+            )
             print("搶票時間：", ticket_time)
             print("剩餘：", diff)
             print("30分鐘：", show["提醒"]["30分鐘"])
@@ -267,7 +272,9 @@ def check_reminders():
 
                 print(
                     "取票提醒處理錯誤：",
-                    show.get("演出名稱"),
+                    f"{show.get('藝人', '')}｜"
+                    f"{show.get('活動', '')}｜"
+                    f"{show.get('活動名稱', '')}",
                     repr(error),
                     flush=True,
                 )
@@ -428,7 +435,10 @@ def clean_finished_shows():
             else:
 
                 print(
-                    f"🗑️ 已自動清除：{show['演出名稱']}"
+                    "🗑️ 已自動清除：",
+                    f"{show.get('藝人', '')}｜"
+                    f"{show.get('活動', '')}｜"
+                    f"{show.get('活動名稱', '')}",
                 )
 
 
