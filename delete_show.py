@@ -94,10 +94,20 @@ def handle_delete_show(
 
             else:
 
+                title = "｜".join(
+                    part
+                    for part in [
+                        target.get("藝人", ""),
+                        target.get("活動", ""),
+                        target.get("活動名稱", ""),
+                    ]
+                    if part
+                )
+
                 reply = (
                     "✅ 已刪除演出\n"
                     "──────────\n"
-                    f"🎤 {target['演出名稱']}\n"
+                    f"🎤 {title}\n"
                     f"📅 {format_show_dates(target['演出日期'])}"
                 )
 
