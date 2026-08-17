@@ -17,20 +17,7 @@ from linebot.models import (
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Modules
-import add_show
-import complete_ticket
-import delete_show
-import edit_show
-import member
 import mention
-import pickup
-import reminder
-import serial
-import view_show
-import copy_show
-import search_show
-import next_show
-import prev_show
 import config
 
 # Data
@@ -177,8 +164,6 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-
-    print(event.source)
 
     text = event.message.text.strip()
 
