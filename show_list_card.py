@@ -404,21 +404,6 @@ def build_all_show_rows(show):
         ),
     ]
 
-    append_row(
-        rows,
-        "🪪",
-        show.get("會員資訊"),
-    )
-
-    reminder = format_reminders(
-        show.get("提醒事項")
-    )
-
-    append_row(
-        rows,
-        "🔔",
-        reminder,
-    )
 
     return rows
 
