@@ -94,14 +94,24 @@ def handle_serial_number(
 
                 else:
 
+                    title = "｜".join(
+                        part
+                        for part in [
+                            show.get("藝人", ""),
+                            show.get("活動", ""),
+                            show.get("活動名稱", ""),
+                        ]
+                        if part
+                    )
+
                     notify_message = (
                         "🎫 取票序號通知\n"
                         "──────────\n"
-                        f"🎤 {show['演出名稱']}\n"
+                        f"🎤 {title}\n"
                         f"🎟 序號：{show['取票序號']}\n"
                         "──────────\n"
                         f"🎯 搶票大師：{show.get('搶票大師') or '未設定'}\n"
-                        f"🎫 取票人：{show.get('取票人') or '未設定'}\n"
+                        f"👤 取票人員：{show.get('取票人') or '未設定'}\n"
                         "──────────\n"
                         "請確認取票資訊～"
                     )
@@ -147,7 +157,9 @@ def handle_serial_number(
 
                     else:
 
-                        reply = "✅ 已發送序號提醒"
+                        reply = (
+                            "✅ 已發送取票序號提醒"
+                        )
 
     config.line_bot_api.reply_message(
         event.reply_token,
