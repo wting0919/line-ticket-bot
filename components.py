@@ -167,6 +167,14 @@ def build_today_summary(
     pickup_count,
     show_count,
     date_text=None,
+    title="☀️ 今日待辦",
+    header_action="今日待辦",
+    ticket_label="待搶票",
+    pickup_label="待取票",
+    show_label="待演出",
+    ticket_action="今日搶票",
+    pickup_action="今日取票",
+    show_action="今日演出",
 ):
     """
     Dashboard 與 Today Card 共用的今日待辦區塊。
@@ -200,13 +208,13 @@ def build_today_summary(
                 "layout": "vertical",
                 "action": {
                     "type": "message",
-                    "label": "今日待辦",
-                    "text": "今日待辦",
+                    "label": header_action,
+                    "text": header_action,
                 },
                 "contents": [
                     {
                         "type": "text",
-                        "text": "☀️ 今日待辦",
+                        "text": title,
                         "size": "md",
                         "weight": "bold",
                         "color": TEXT_COLOR,
@@ -254,24 +262,24 @@ def build_today_summary(
                 "contents": [
                     build_summary_card(
                         icon="🎟",
-                        label="待搶票",
+                        label=ticket_label,
                         count=ticket_count,
                         background_color=TICKET_CARD_COLOR,
-                        action_text="今日搶票",
+                        action_text=ticket_action,
                     ),
                     build_summary_card(
                         icon="📦",
-                        label="待取票",
+                        label=pickup_label,
                         count=pickup_count,
                         background_color=PICKUP_CARD_COLOR,
-                        action_text="今日取票",
+                        action_text=pickup_action,
                     ),
                     build_summary_card(
-                        icon="📋",
-                        label="演出表",
+                        icon="🎤",
+                        label=show_label,
                         count=show_count,
                         background_color=SHOW_CARD_COLOR,
-                        action_text="今日演出",
+                        action_text=show_action,
                     ),
                 ],
             },
