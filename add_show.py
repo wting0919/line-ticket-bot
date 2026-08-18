@@ -121,7 +121,7 @@ def handle_add_show_flow(event, text, user_id):
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "🏷️ 請輸入活動名稱\n\n"
+                    "✨ 請輸入活動名稱\n\n"
                     "例如：BE THE SUN\n\n"
                     "沒有可按略過"
                 ),
@@ -268,7 +268,7 @@ def handle_add_show_flow(event, text, user_id):
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "🪪 請輸入會員資訊\n\n"
+                    "🔑 請輸入會員資訊\n\n"
                     "例如：\n"
                     "BRxxxxxxxxx\n"
                     "ACE會員\n"
@@ -310,29 +310,23 @@ def handle_add_show_flow(event, text, user_id):
 
         if text == "略過":
 
-            data["提醒事項"] = ""
+            data["注意事項"] = ""
 
             state.pop(
                 "selected_reminders",
                 None,
             )
 
-            state["step"] = "pickup_date"
+            state["step"] = "sale_stage"
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text=(
-                        "📦 請輸入取票日期\n\n"
-                        "例如：5天前\n"
-                        "或：9/25\n\n"
-                        "沒有取票提醒可按略過"
-                    ),
+                    text="🚩 請選擇售票階段",
                     quick_reply=simple_quick_reply([
-                        ("3天前", "3天前"),
-                        ("5天前", "5天前"),
-                        ("7天前", "7天前"),
-                        ("➖ 略過", "略過"),
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
                         ("❌ 取消", "取消"),
                     ])
                 )
@@ -354,7 +348,7 @@ def handle_add_show_flow(event, text, user_id):
 
                 return True
 
-            data["提醒事項"] = "\n".join(
+            data["注意事項"] = "\n".join(
                 selected
             )
 
@@ -363,22 +357,16 @@ def handle_add_show_flow(event, text, user_id):
                 None,
             )
 
-            state["step"] = "pickup_date"
+            state["step"] = "sale_stage"
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text=(
-                        "📦 請輸入取票日期\n\n"
-                        "例如：5天前\n"
-                        "或：9/25\n\n"
-                        "沒有取票提醒可按略過"
-                    ),
+                    text="🚩 請選擇售票階段",
                     quick_reply=simple_quick_reply([
-                        ("3天前", "3天前"),
-                        ("5天前", "5天前"),
-                        ("7天前", "7天前"),
-                        ("➖ 略過", "略過"),
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
                         ("❌ 取消", "取消"),
                     ])
                 )
@@ -393,7 +381,7 @@ def handle_add_show_flow(event, text, user_id):
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="請輸入提醒事項",
+                    text="請輸入注意事項",
                     quick_reply=simple_quick_reply([
                         ("❌ 取消", "取消"),
                     ])
@@ -435,7 +423,7 @@ def handle_add_show_flow(event, text, user_id):
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="提醒事項不可空白"
+                    text="注意事項不可空白"
                 )
             )
 
@@ -455,6 +443,54 @@ def handle_add_show_flow(event, text, user_id):
                     selected
                 ),
                 quick_reply=reminder_quick_reply(),
+            )
+        )
+
+        return True
+
+    if step == "sale_stage":
+
+        if text not in [
+            "會員預售",
+            "卡友優先",
+            "公售",
+        ]:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕選擇售票階段",
+                    quick_reply=simple_quick_reply([
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        data["售票階段"] = text
+
+        state["step"] = "pickup_date"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "📦 請輸入取票日期\n\n"
+                    "例如：5天前\n"
+                    "或：9/25\n\n"
+                    "沒有取票提醒可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("3天前", "3天前"),
+                    ("5天前", "5天前"),
+                    ("7天前", "7天前"),
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消"),
+                ])
             )
         )
 
@@ -494,7 +530,10 @@ def handle_add_show_flow(event, text, user_id):
             TextSendMessage(
                 text=(
                     "📝 請輸入備註\n\n"
-                    "例如：會員預售or卡友優先or公售\n\n"
+                    "例如：\n"
+                    "帳號xxxxxxx\n"
+                    "密碼xxxxxxx\n"
+                    "實名制資料\n\n"
                     "沒有備註可按略過"
                 ),
                 quick_reply=simple_quick_reply([
@@ -523,21 +562,23 @@ def handle_add_show_flow(event, text, user_id):
 
         reply += (
             f"📅 {format_show_dates(data['演出日期'])}\n"
-            f"🕒 {data['搶票時間']}\n"
-            f"💰 {data['價格張數']}\n"
+            f"🕒 {format_datetime(data['搶票時間'])}\n"
             f"🌐 {data['售票平台']}\n"
+            f"💰 {data['價格張數']}\n"
         )
 
+        if data.get("售票階段"):
+            reply += f"🚩 {data['售票階段']}\n"
+
         if data.get("會員資訊"):
-            reply += f"🪪 {data['會員資訊']}\n"
+            reply += f"🔑 {data['會員資訊']}\n"
 
-        if data.get("提醒事項"):
-
+        if data.get("注意事項"):
             reply += (
-                "🔔 提醒事項\n"
+                "🔔 注意事項\n"
                 + "\n".join(
                     f"• {item}"
-                    for item in data["提醒事項"].splitlines()
+                    for item in data["注意事項"].splitlines()
                 )
                 + "\n"
             )
@@ -611,10 +652,8 @@ def handle_add_show_flow(event, text, user_id):
             "售票平台": data.get("售票平台", ""),
             "價格張數": data.get("價格張數", ""),
             "會員資訊": data.get("會員資訊", ""),
-            "提醒事項": data.get(
-                "提醒事項",
-                "",
-            ),
+            "注意事項": data.get("注意事項", ""),
+            "售票階段": data.get("售票階段", ""),
             "取票日期": data.get("取票日期", ""),
             "備註": data.get("備註", ""),
             "搶票狀態": "待搶票",
