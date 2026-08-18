@@ -218,7 +218,7 @@ def check_reminders():
             try:
 
                 pickup_time = parse_datetime(
-                    f"{show['取票日期']} 12:00"
+                    f"{show['取票日期']} 13:00"
                 )
 
                 if pickup_time is None:
@@ -231,16 +231,10 @@ def check_reminders():
                     <= now
                     < pickup_time + timedelta(minutes=1)
                     and not show["提醒"]["取票"]
+                    and show.get("搶票狀態") == "已搶票"
                 ):
 
-                    participants = [
-                        name.strip()
-                        for name in str(
-                            show.get("取票人", "")
-                        ).split("、")
-                        if name.strip()
-                    ]
-
+                   
                     try:
 
                         config.line_bot_api.push_message(
@@ -248,13 +242,32 @@ def check_reminders():
                             build_pickup_reminder_card(show),
                         )
 
-                        if participants:
+                        ticket_master = show.get("搶票大師", "").strip()
+                        pickup_person = show.get("取票人", "").strip()
 
-                            config.push_mention_message(
-                                config.GROUP_ID,
-                                "👤 可以取票囉～",
-                                participants,
-                            )
+                        if pickup_person:
+
+                            if ticket_master and ticket_master != pickup_person:
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "🎯 取票序號出來囉～ 🐱",
+                                    [ticket_master],
+                                )
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "👤 記得去取票～",
+                                    [pickup_person],
+                                )
+
+                            else:
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "👤 記得去取票～",
+                                    [pickup_person],
+                                )
 
                     except Exception as error:
 
@@ -338,10 +351,44 @@ def check_reminders():
 
                     config.line_bot_api.push_message(
                         config.GROUP_ID,
-                        build_show_day_reminder_card(
-                            show
-                        )
+                        build_show_day_reminder_card(show)
                     )
+
+                    show["提醒"]["演出日"] = True
+                    update_show(show)
+
+
+                    if (
+                        show.get("搶票狀態") == "已搶票"
+                        and show.get("取票狀態") != "已取票"
+                    ):
+
+                        ticket_master = show.get("搶票大師", "").strip()
+                        pickup_person = show.get("取票人", "").strip()
+
+                        if pickup_person:
+
+                            if ticket_master and ticket_master != pickup_person:
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "🎯 如果還沒提供取票序號，記得提供唷～ 🐱",
+                                    [ticket_master],
+                                )
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "👤 如果還沒取票，記得去取票唷～",
+                                    [pickup_person],
+                                )
+
+                            else:
+
+                                config.push_mention_message(
+                                    config.GROUP_ID,
+                                    "👤 如果還沒取票，記得去取票唷～",
+                                    [pickup_person],
+                                )
 
                 except Exception as e:
 
@@ -351,10 +398,6 @@ def check_reminders():
                         flush=True,
                     )
 
-                else:
-
-                    show["提醒"]["演出日"] = True
-                    update_show(show)
 
         except Exception as e:
 
