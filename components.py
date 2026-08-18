@@ -18,6 +18,7 @@ def get_today_cat_message(
     ticket_count,
     pickup_count,
     show_count,
+    is_today=True,
 ):
     """
     依照今日待辦內容，產生單行 TicketCat 問候語。
@@ -34,6 +35,33 @@ def get_today_cat_message(
         pickup_count > 0,
         show_count > 0,
     ])
+
+    # =====================
+    # 演出總覽（選單首頁）
+    # =====================
+
+    if not is_today:
+
+        if total_count == 0:
+            return "🐱 目前沒有待辦，好好休息吧 ☕"
+
+        if active_types >= 2:
+            return "🐱 還有不少事情等著你，一起完成吧 💪"
+
+        if show_count > 0:
+            return "🐱 演出快到了，期待那一天 ✨"
+
+        if ticket_count > 0:
+            return "🐱 記得準時搶票，祝你順利 🎟"
+
+        if pickup_count > 0:
+            return "🐱 記得安排時間取票喔 📦"
+
+        return "🐱 一起把待辦完成吧！"
+
+    # =====================
+    # 今日待辦（每日提醒）
+    # =====================
 
     if total_count == 0:
         return "🐱 今天沒有待辦，好好休息吧 ☕"
@@ -57,6 +85,7 @@ def build_today_cat_message(
     ticket_count,
     pickup_count,
     show_count,
+    is_today=True,
 ):
     """
     建立單行 TicketCat 問候區。
@@ -66,6 +95,7 @@ def build_today_cat_message(
         ticket_count=ticket_count,
         pickup_count=pickup_count,
         show_count=show_count,
+        is_today=is_today,
     )
 
     return {
@@ -175,6 +205,7 @@ def build_today_summary(
     ticket_action="今日搶票",
     pickup_action="今日取票",
     show_action="今日演出",
+    is_today=True,
 ):
     """
     Dashboard 與 Today Card 共用的今日待辦區塊。
@@ -287,6 +318,7 @@ def build_today_summary(
                 ticket_count=ticket_count,
                 pickup_count=pickup_count,
                 show_count=show_count,
+                is_today=is_today,
             ),
         ],
     }

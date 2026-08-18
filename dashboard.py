@@ -551,6 +551,7 @@ def build_dashboard(today=None):
             ticket_action="搶票列表",
             pickup_action="取票列表",
             show_action="演出列表",
+            is_today=False,
         ),
         build_next_show_card(
             show=next_show,
