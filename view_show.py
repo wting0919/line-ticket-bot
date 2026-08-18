@@ -819,8 +819,10 @@ def build_view_show_card(
                 if member
                 else []
             ),
-            margin="md",
-        ),
+        ],
+        margin="md",
+    ),
+
     ]
 
 
