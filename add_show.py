@@ -18,6 +18,14 @@ from ui import (
     simple_quick_reply,
 )
 
+from theme import (
+    activity_quick_reply,
+    reminder_message,
+    reminder_quick_reply,
+    REMINDER_OPTIONS,
+    ACTIVITY_VALUES,
+)
+
 from helpers import (
     get_state,
     set_state,

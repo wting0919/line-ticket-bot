@@ -507,6 +507,7 @@ def build_status_tag(
 ACTIVITY_BADGE = {
     "演唱會": ("演唱會", "#E7D8C8"),      # 奶茶
     "FM": ("FAN MEETING", "#DCECF7"),    # 霧藍
+    "FANCON": ("FANCON", "#F4E1F7"),
     "FP": ("FAN PARTY", "#F8DDE7"),      # 淡粉
     "LIVE": ("LIVE", "#DDEEDC"),         # 淡綠
     "SHOWCASE": ("SHOWCASE", "#EEE3F7"), # 淡紫
@@ -522,6 +523,7 @@ ACTIVITY_BADGE = {
 ACTIVITY_OPTIONS = [
     ("🎤 演唱會", "演唱會"),
     ("🤝 FAN MEETING", "FM"),
+    ("🎊 FANCON", "FANCON"),
     ("🎉 FAN PARTY", "FP"),
     ("🎵 LIVE", "LIVE"),
     ("🌟 SHOWCASE", "SHOWCASE"),
@@ -529,7 +531,6 @@ ACTIVITY_OPTIONS = [
     ("🎪 FESTIVAL", "FESTIVAL"),
     ("📌 其他", "其他"),
 ]
-
 
 ACTIVITY_VALUES = {
     value
