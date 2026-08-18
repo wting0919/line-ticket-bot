@@ -1065,38 +1065,9 @@ def build_today_card(today=None):
             pickup_count=len(pickup_shows),
             show_count=len(show_shows),
             date_text=format_today_date(today),
+            is_today=True,
         )
     ]
-
-    body_contents.append(
-        build_section(
-            icon="🎟",
-            title="今日搶票",
-            items=ticket_shows,
-            item_builder=build_ticket_item,
-            empty_text="今天沒有需要搶票的演出",
-        )
-    )
-
-    body_contents.append(
-        build_section(
-            icon="📦",
-            title="今日取票",
-            items=pickup_shows,
-            item_builder=build_pickup_item,
-            empty_text="今天沒有需要取票的演出",
-        )
-    )
-
-    body_contents.append(
-        build_section(
-            icon="🎤",
-            title="今日演出",
-            items=show_shows,
-            item_builder=build_show_item,
-            empty_text="今天沒有舉行中的演出",
-        )
-    )
 
     bubble = {
         "type": "bubble",
