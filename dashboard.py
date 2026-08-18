@@ -10,6 +10,8 @@ from linebot.models import FlexSendMessage
 
 from show_list import (
     get_all_shows,
+    get_waiting_shows,
+    get_pickup_shows,
 )
 
 from today_card import (
@@ -462,11 +464,11 @@ def build_menu_area():
         "margin": "lg",
         "contents": [
             build_menu_item(
-                icon="📋",
-                title="演出列表",
-                description="查看所有演出資料",
-                action_text="演出列表",
-                icon_background="#F4E6D7",
+                icon="➕",
+                title="新增演出",
+                description="新增一筆演出資料",
+                action_text="新增演出",
+                icon_background="#F2DDC9",
             ),
             build_menu_item(
                 icon="🎟",
@@ -483,11 +485,11 @@ def build_menu_area():
                 icon_background=PICKUP_CARD_COLOR,
             ),
             build_menu_item(
-                icon="➕",
-                title="新增演出",
-                description="新增一筆演出資料",
-                action_text="新增演出",
-                icon_background="#F2DDC9",
+                icon="📋",
+                title="演出列表",
+                description="查看所有演出資料",
+                action_text="演出列表",
+                icon_background="#F4E6D7",
             ),
             build_menu_item(
                 icon="❓",
@@ -496,7 +498,7 @@ def build_menu_area():
                 action_text="幫助",
                 icon_background="#EEE1D5",
             ),
-        ],
+        ]
     }
 
 # =========================================================
@@ -515,24 +517,21 @@ def build_dashboard(today=None):
         or []
     )
 
-    ticket_shows = (
-        get_today_ticket_shows(today)
-        or []
-    )
+    ticket_shows = get_waiting_shows() or []
 
-    pickup_shows = (
-        get_today_pickup_shows(today)
-        or []
-    )
+    pickup_shows = get_pickup_shows() or []
 
-    show_shows = (
-        get_today_show_shows(today)
-        or []
-    )
+    show_shows = get_all_shows() or []
 
     ticket_count = len(ticket_shows)
+
     pickup_count = len(pickup_shows)
-    show_count = len(show_shows)
+
+    show_count = len([
+        show
+        for show in show_shows
+        if get_first_future_show_date(show, today)
+    ])
 
     next_show_date, next_show = get_next_show(
         all_shows,
@@ -544,6 +543,14 @@ def build_dashboard(today=None):
             ticket_count=ticket_count,
             pickup_count=pickup_count,
             show_count=show_count,
+            title="📋 演出總覽",
+            header_action="演出總覽",
+            ticket_label="待搶票",
+            pickup_label="待取票",
+            show_label="待演出",
+            ticket_action="搶票列表",
+            pickup_action="取票列表",
+            show_action="演出列表",
         ),
         build_next_show_card(
             show=next_show,
