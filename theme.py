@@ -27,8 +27,8 @@ def reminder_quick_reply(
 
     buttons.extend(
         [
-            ("✏️ 自訂", "自訂提醒"),
-            ("✅ 完成", "完成提醒"),
+            ("✏️ 自訂", "自訂"),
+            ("✅ 完成", "完成"),
             ("➖ 略過", "略過"),
         ]
     )
@@ -60,8 +60,8 @@ def reminder_message(
         selected_text = "（尚未選擇）"
 
     return (
-        "🔔 提醒事項\n\n"
-        "請選擇提醒事項\n\n"
+        "🔔 注意事項\n\n"
+        "請選擇注意事項\n\n"
         f"{selected_text}"
     )
 
@@ -69,8 +69,6 @@ def reminder_message(
 REMINDER_OPTIONS = [
     "實名制",
     "本人帳號",
-    "會員預售",
-    "卡友優先",
 ]
 
 # =========================================================

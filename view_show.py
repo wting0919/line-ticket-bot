@@ -425,7 +425,7 @@ def build_reminder_section(
                     },
                     {
                         "type": "text",
-                        "text": "提醒事項",
+                        "text": "注意事項",
                         "size": "md",
                         "weight": "bold",
                         "color": TEXT_COLOR,
@@ -702,8 +702,12 @@ def build_view_show_card(
         show.get("會員資訊")
     )
 
+    sale_stage = safe_text(
+        show.get("售票階段")
+    )
+
     reminders = (
-        show.get("提醒事項") or ""
+        show.get("注意事項") or ""
     ).strip()
 
     pickup_date = format_date_with_weekday(
@@ -778,33 +782,43 @@ def build_view_show_card(
             icon="🎟️",
             title="搶票資訊",
             rows=[
-                (
-                    "🕒",
-                    "搶票時間",
-                    ticket_time,
-                ),
-                (
-                    "🌐",
-                    "售票平台",
-                    platform,
-                ),
-                (
-                    "💰",
-                    "價格張數",
-                    price_quantity,
-                ),
-                *(
-                    [
-                        (
-                            "🪪",
-                            "會員資訊",
-                            member,
-                        )
-                    ]
-                    if member
-                    else []
-                ),
-            ],
+            (
+                "🕒",
+                "搶票時間",
+                ticket_time,
+            ),
+            (
+                "🌐",
+                "售票平台",
+                platform,
+            ),
+            (
+                "💰",
+                "價格張數",
+                price_quantity,
+            ),
+            *(
+                [
+                    (
+                        "🚩",
+                        "售票階段",
+                        sale_stage,
+                    )
+                ]
+                if sale_stage
+                else []
+            ),
+            *(
+                [
+                    (
+                        "🔑",
+                        "會員資訊",
+                        member,
+                    )
+                ]
+                if member
+                else []
+            ),
             margin="md",
         ),
     ]
@@ -835,16 +849,30 @@ def build_view_show_card(
                     icon="📦",
                     title="取票資訊",
                     rows=[
-                        (
-                            "📅",
-                            "取票日期",
-                            pickup_date,
+                        *(
+                            [
+                                (
+                                    "📅",
+                                    "取票日期",
+                                    pickup_date,
+                                )
+                            ]
+                            if show.get("取票日期")
+                            else []
                         ),
-                        (
-                            "👤",
-                            "取票人員",
-                            pickup_person,
+
+                        *(
+                            [
+                                (
+                                    "👤",
+                                    "取票人員",
+                                    pickup_person,
+                                )
+                            ]
+                            if pickup_person
+                            else []
                         ),
+
                         *(
                             [
                                 (

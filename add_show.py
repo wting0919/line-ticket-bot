@@ -334,7 +334,7 @@ def handle_add_show_flow(event, text, user_id):
 
             return True
 
-        if text == "完成提醒":
+        if text == "完成":
 
             if not selected:
 

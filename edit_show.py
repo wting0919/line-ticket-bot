@@ -47,7 +47,8 @@ ALLOWED_FIELDS = {
     "價格張數",
     "售票平台",
     "會員資訊",
-    "提醒事項",
+    "注意事項",
+    "售票階段",
     "取票日期",
     "備註",
 }
@@ -61,7 +62,8 @@ FIELD_HINTS = {
     "價格張數": "請輸入新的價格張數\n例如：$3800*2",
     "售票平台": "請輸入新的售票平台",
     "會員資訊": "請輸入新的會員資訊\n也可按「清除」",
-    "提醒事項": "請選擇新的提醒事項",
+    "注意事項": "請選擇新的注意事項",
+    "售票階段": "請選擇新的售票階段",
     "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
     "備註": "請輸入新的備註\n也可按「清除」",
 }
@@ -197,9 +199,29 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        if text == "提醒事項":
+        if text == "售票階段":
 
-            state["field"] = "提醒事項"
+            state["field"] = "售票階段"
+            state["step"] = "sale_stage"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="🚩 請選擇新的售票階段",
+                    quick_reply=simple_quick_reply([
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        if text == "注意事項":
+
+            state["field"] = "注意事項"
             state["step"] = "reminder"
 
             show = next(
@@ -212,8 +234,8 @@ def handle_edit_show_flow(event, text, user_id):
             )
 
             state["selected_reminders"] = (
-                show.get("提醒事項", "").splitlines()
-                if show and show.get("提醒事項")
+                show.get("注意事項", "").splitlines()
+                if show and show.get("注意事項")
                 else []
             )
 
@@ -347,9 +369,9 @@ def handle_edit_show_flow(event, text, user_id):
                 clear_state(user_id)
                 return True
 
-            old_value = show.get("提醒事項") or ""
+            old_value = show.get("注意事項") or ""
 
-            show["提醒事項"] = ""
+            show["注意事項"] = ""
 
             update_show(show)
 
@@ -369,7 +391,7 @@ def handle_edit_show_flow(event, text, user_id):
                             else ""
                         )
                         + "──────────\n"
-                        "✏️ 提醒事項\n"
+                        "✏️ 注意事項\n"
                         f"🔸 原本：{old_value or '無'}\n"
                         "🔹 修改後：無"
                     )
@@ -378,7 +400,7 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        if text == "完成提醒":
+        if text == "完成":
 
             if not selected:
 
@@ -405,11 +427,11 @@ def handle_edit_show_flow(event, text, user_id):
                 clear_state(user_id)
                 return True
 
-            old_value = show.get("提醒事項") or ""
+            old_value = show.get("注意事項") or ""
 
             new_value = "\n".join(selected)
 
-            show["提醒事項"] = new_value
+            show["注意事項"] = new_value
 
             update_show(show)
 
@@ -429,7 +451,7 @@ def handle_edit_show_flow(event, text, user_id):
                             else ""
                         )
                         + "──────────\n"
-                        "✏️ 提醒事項\n"
+                        "✏️ 注意事項\n"
                         f"🔸 原本：{old_value or '無'}\n"
                         f"🔹 修改後：{new_value}"
                     )
@@ -445,7 +467,7 @@ def handle_edit_show_flow(event, text, user_id):
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="請輸入提醒事項"
+                    text="請輸入注意事項"
                 )
             )
 
@@ -476,7 +498,7 @@ def handle_edit_show_flow(event, text, user_id):
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="提醒事項不可空白"
+                    text="注意事項不可空白"
                 )
             )
 
@@ -500,6 +522,73 @@ def handle_edit_show_flow(event, text, user_id):
                     selected
                 ),
                 quick_reply=reminder_quick_reply(),
+            )
+        )
+
+        return True
+
+    if state.get("step") == "sale_stage":
+
+        if text not in [
+            "會員預售",
+            "卡友優先",
+            "公售",
+        ]:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="請使用下方按鈕選擇售票階段",
+                    quick_reply=simple_quick_reply([
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+        show = next(
+            (
+                item
+                for item in load_data()
+                if item["id"] == state["show_id"]
+            ),
+            None,
+        )
+
+        if show is None:
+            clear_state(user_id)
+            return True
+
+        old_value = show.get("售票階段") or ""
+
+        show["售票階段"] = text
+
+        update_show(show)
+
+        clear_state(user_id)
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "✅ 修改成功\n"
+                    "──────────\n"
+                    f"🎤 {show.get('藝人','')}\n"
+                    f"🏷️ {show.get('活動','')}\n"
+                    + (
+                        f"✨ {show.get('活動名稱')}\n"
+                        if show.get("活動名稱")
+                        else ""
+                    )
+                    + "──────────\n"
+                    "✏️ 售票階段\n"
+                    f"🔸 原本：{old_value or '無'}\n"
+                    f"🔹 修改後：{text}"
+                )
             )
         )
 

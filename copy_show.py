@@ -83,8 +83,12 @@ def handle_copy_show(event, text, user_id):
     new_show["搶票狀態"] = "待搶票"
     new_show["取票狀態"] = "未取票"
 
+    new_show["搶票時間"] = ""
+    new_show["售票階段"] = ""
+
     new_show["搶票大師"] = ""
     new_show["取票人"] = ""
+
 
     try:
         new_show = insert_show(new_show)
@@ -118,7 +122,11 @@ def handle_copy_show(event, text, user_id):
     if new_show.get("活動名稱"):
         message += f"✨ {new_show['活動名稱']}\n"
 
-    message += "──────────\n請選擇要修改的欄位"
+    message += (
+        "──────────\n"
+        "已清除：🕒 搶票時間、🚩 售票階段\n"
+        "請選擇要修改的欄位"
+    )
 
     config.line_bot_api.reply_message(
         event.reply_token,
