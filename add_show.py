@@ -20,10 +20,10 @@ from ui import (
 
 from theme import (
     activity_quick_reply,
+    ACTIVITY_VALUES,
     reminder_message,
     reminder_quick_reply,
     REMINDER_OPTIONS,
-    ACTIVITY_VALUES,
 )
 
 from helpers import (
@@ -228,26 +228,6 @@ def handle_add_show_flow(event, text, user_id):
 
             return True
 
-        state["step"] = "price"
-
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=(
-                    "💰 請輸入價格與張數\n\n"
-                    "例如：$3800*2"
-                ),
-                quick_reply=simple_quick_reply([
-                    ("❌ 取消", "取消")
-                ])
-            )
-        )
-
-        return True
-
-    if step == "price":
-
-        data["價格張數"] = text
         state["step"] = "platform"
 
         config.line_bot_api.reply_message(
@@ -267,24 +247,40 @@ def handle_add_show_flow(event, text, user_id):
 
         return True
 
+    if step == "price":
+
+        data["價格張數"] = text
+        state["step"] = "sale_stage"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="🚩 請選擇售票階段",
+                quick_reply=simple_quick_reply([
+                    ("會員預售", "會員預售"),
+                    ("卡友優先", "卡友優先"),
+                    ("公售", "公售"),
+                    ("❌ 取消", "取消"),
+                ])
+            )
+        )
+
+        return True
+
     if step == "platform":
 
         data["售票平台"] = text
-        state["step"] = "member"
+        state["step"] = "price"
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "🔑 請輸入會員資訊\n\n"
-                    "例如：\n"
-                    "BRxxxxxxxxx\n"
-                    "ACE會員\n"
-                    "沒有可按略過"
+                    "💰 請輸入價格與張數\n\n"
+                    "例如：$3800*2"
                 ),
                 quick_reply=simple_quick_reply([
-                    ("➖ 略過", "略過"),
-                    ("❌ 取消", "取消"),
+                    ("❌ 取消", "取消")
                 ])
             )
         )
@@ -325,16 +321,22 @@ def handle_add_show_flow(event, text, user_id):
                 None,
             )
 
-            state["step"] = "sale_stage"
+            state["step"] = "pickup_date"
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="🚩 請選擇售票階段",
+                    text=(
+                        "📦 請輸入取票日期\n\n"
+                        "例如：5天前\n"
+                        "或：9/25\n\n"
+                        "沒有取票提醒可按略過"
+                    ),
                     quick_reply=simple_quick_reply([
-                        ("會員預售", "會員預售"),
-                        ("卡友優先", "卡友優先"),
-                        ("公售", "公售"),
+                        ("3天前", "3天前"),
+                        ("5天前", "5天前"),
+                        ("7天前", "7天前"),
+                        ("➖ 略過", "略過"),
                         ("❌ 取消", "取消"),
                     ])
                 )
@@ -365,16 +367,22 @@ def handle_add_show_flow(event, text, user_id):
                 None,
             )
 
-            state["step"] = "sale_stage"
+            state["step"] = "pickup_date"
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text="🚩 請選擇售票階段",
+                    text=(
+                        "📦 請輸入取票日期\n\n"
+                        "例如：5天前\n"
+                        "或：9/25\n\n"
+                        "沒有取票提醒可按略過"
+                    ),
                     quick_reply=simple_quick_reply([
-                        ("會員預售", "會員預售"),
-                        ("卡友優先", "卡友優先"),
-                        ("公售", "公售"),
+                        ("3天前", "3天前"),
+                        ("5天前", "5天前"),
+                        ("7天前", "7天前"),
+                        ("➖ 略過", "略過"),
                         ("❌ 取消", "取消"),
                     ])
                 )
@@ -481,21 +489,19 @@ def handle_add_show_flow(event, text, user_id):
 
         data["售票階段"] = text
 
-        state["step"] = "pickup_date"
+        state["step"] = "member"
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=(
-                    "📦 請輸入取票日期\n\n"
-                    "例如：5天前\n"
-                    "或：9/25\n\n"
-                    "沒有取票提醒可按略過"
+                    "🔑 請輸入會員資訊\n\n"
+                    "例如：\n"
+                    "BRxxxxxxxxx\n"
+                    "ACE會員\n"
+                    "沒有可按略過"
                 ),
                 quick_reply=simple_quick_reply([
-                    ("3天前", "3天前"),
-                    ("5天前", "5天前"),
-                    ("7天前", "7天前"),
                     ("➖ 略過", "略過"),
                     ("❌ 取消", "取消"),
                 ])
