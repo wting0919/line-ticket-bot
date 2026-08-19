@@ -698,9 +698,9 @@ def build_view_show_card(
         show.get("價格張數")
     )
 
-    member = safe_text(
-        show.get("會員資訊")
-    )
+    member = (
+        show.get("會員資訊") or ""
+    ).strip()
 
     sale_stage = safe_text(
         show.get("售票階段")
