@@ -676,7 +676,18 @@ def handle_edit_show_flow(event, text, user_id):
 
         show[field] = new_value
 
-        try:
+        if field in {"演出日期", "搶票時間"}:
+
+            show["提醒"]["前一天"] = False
+            show["提醒"]["30分鐘"] = False
+            show["提醒"]["10分鐘"] = False
+
+        if field == "演出日期":
+
+            show["提醒"]["演出日"] = False
+
+            if show.get("取票日期"):
+                show["提醒"]["取票"] = False
 
             update_show(show)
 
