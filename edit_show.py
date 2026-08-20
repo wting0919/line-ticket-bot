@@ -689,9 +689,8 @@ def handle_edit_show_flow(event, text, user_id):
             if show.get("取票日期"):
                 show["提醒"]["取票"] = False
 
-            update_show(show)
+        update_show(show)
 
-        try:
 
         except Exception as e:
 
