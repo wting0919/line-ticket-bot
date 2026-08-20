@@ -691,6 +691,8 @@ def handle_edit_show_flow(event, text, user_id):
 
             update_show(show)
 
+        try:
+
         except Exception as e:
 
             print("修改演出失敗：", repr(e), flush=True)
