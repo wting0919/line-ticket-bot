@@ -699,11 +699,13 @@ def is_show_date_today(
 # 今日資料篩選
 # =========================================================
 
-def get_today_ticket_shows(today):
-    today = normalize_today(today)
+def get_today_ticket_shows(today=None):
     """
     取得今天需要搶票的演出。
     """
+
+    today = normalize_today(today)
+
 
     waiting_shows = (
         get_waiting_shows()
@@ -720,11 +722,13 @@ def get_today_ticket_shows(today):
     ]
 
 
-def get_today_pickup_shows(today):
-    today = normalize_today(today)
+def get_today_pickup_shows(today=None):
     """
     取得今天需要取票的演出。
     """
+
+    today = normalize_today(today)
+
 
     pickup_shows = (
         get_pickup_shows()
@@ -741,11 +745,13 @@ def get_today_pickup_shows(today):
     ]
 
 
-def get_today_show_shows(today):
-    today = normalize_today(today)
+def get_today_show_shows(today=None):
     """
     取得今天舉行的演出。
     """
+
+    today = normalize_today(today)
+
 
     all_shows = (
         get_all_shows()
