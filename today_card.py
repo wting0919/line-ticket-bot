@@ -700,6 +700,7 @@ def is_show_date_today(
 # =========================================================
 
 def get_today_ticket_shows(today):
+    today = normalize_today(today)
     """
     取得今天需要搶票的演出。
     """
@@ -720,6 +721,7 @@ def get_today_ticket_shows(today):
 
 
 def get_today_pickup_shows(today):
+    today = normalize_today(today)
     """
     取得今天需要取票的演出。
     """
@@ -740,6 +742,7 @@ def get_today_pickup_shows(today):
 
 
 def get_today_show_shows(today):
+    today = normalize_today(today)
     """
     取得今天舉行的演出。
     """
