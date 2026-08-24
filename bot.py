@@ -309,7 +309,6 @@ def handle_message(event):
             user_id,
             "今日取票",
             shows,
-            command="今日取票",
         )
 
         line_bot_api.reply_message(
@@ -318,6 +317,7 @@ def handle_message(event):
                 shows=shows,
                 mode="pickup",
                 page=1,
+                command="今日取票",
             )
         )
 
@@ -335,8 +335,6 @@ def handle_message(event):
             user_id,
             "今日演出",
             shows,
-            command="今日演出",
-
         )
 
         line_bot_api.reply_message(
@@ -345,6 +343,7 @@ def handle_message(event):
                 shows=shows,
                 mode="all",
                 page=1,
+                command="今日演出",
             )
         )
 
