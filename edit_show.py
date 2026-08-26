@@ -126,6 +126,7 @@ def start_edit_show(event, text, user_id):
             "mode": "修改演出",
             "step": "field",
             "show_id": show["id"],
+            "field_page": 1,
         }
     )
 
@@ -142,7 +143,7 @@ def start_edit_show(event, text, user_id):
                 )
                 + "請選擇要修改的欄位"
             ),
-            quick_reply=edit_field_quick_reply()
+            quick_reply=edit_field_quick_reply(1)
         )
     )
 
@@ -173,6 +174,50 @@ def handle_edit_show_flow(event, text, user_id):
         return True
 
     if state.get("step") == "field":
+
+        if text == "修改下一頁":
+
+            state["field_page"] = 2
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="✏️ 請選擇要修改的欄位",
+                    quick_reply=edit_field_quick_reply(2)
+                )
+            )
+
+            return True
+
+
+         if text == "修改上一頁":
+
+             state["field_page"] = 1
+
+             config.line_bot_api.reply_message(
+                 event.reply_token,
+                 TextSendMessage(
+                     text="✏️ 請選擇要修改的欄位",
+                     quick_reply=edit_field_quick_reply(1)
+                 )
+            )
+
+            return True
+
+
+    if text not in ALLOWED_FIELDS:
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="請使用下方按鈕選擇欄位",
+                quick_reply=edit_field_quick_reply(
+                    state.get("field_page", 1)
+                )
+            )
+        )
+
+        return True
 
         if text not in ALLOWED_FIELDS:
 
