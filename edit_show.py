@@ -175,6 +175,10 @@ def handle_edit_show_flow(event, text, user_id):
 
     if state.get("step") == "field":
 
+        # =====================
+        # 修改欄位翻頁
+        # =====================
+
         if text == "修改下一頁":
 
             state["field_page"] = 2
@@ -190,34 +194,24 @@ def handle_edit_show_flow(event, text, user_id):
             return True
 
 
-         if text == "修改上一頁":
+        if text == "修改上一頁":
 
-             state["field_page"] = 1
+            state["field_page"] = 1
 
-             config.line_bot_api.reply_message(
-                 event.reply_token,
-                 TextSendMessage(
-                     text="✏️ 請選擇要修改的欄位",
-                     quick_reply=edit_field_quick_reply(1)
-                 )
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="✏️ 請選擇要修改的欄位",
+                    quick_reply=edit_field_quick_reply(1)
+                )
             )
 
             return True
 
 
-    if text not in ALLOWED_FIELDS:
-
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text="請使用下方按鈕選擇欄位",
-                quick_reply=edit_field_quick_reply(
-                    state.get("field_page", 1)
-                )
-            )
-        )
-
-        return True
+        # =====================
+        # 防止輸入非欄位文字
+        # =====================
 
         if text not in ALLOWED_FIELDS:
 
@@ -225,11 +219,130 @@ def handle_edit_show_flow(event, text, user_id):
                 event.reply_token,
                 TextSendMessage(
                     text="請使用下方按鈕選擇欄位",
-                    quick_reply=edit_field_quick_reply()
+                    quick_reply=edit_field_quick_reply(
+                        state.get("field_page", 1)
+                    )
                 )
             )
 
             return True
+
+
+        # =====================
+        # 修改活動
+        # =====================
+
+        if text == "活動":
+
+            state["field"] = "活動"
+            state["step"] = "activity"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="🏷 請選擇活動類型",
+                    quick_reply=activity_quick_reply()
+                )
+            )
+
+            return True
+
+
+        # =====================
+        # 修改售票階段
+        # =====================
+
+        if text == "售票階段":
+
+            state["field"] = "售票階段"
+            state["step"] = "sale_stage"
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="🚩 請選擇新的售票階段",
+                    quick_reply=simple_quick_reply([
+                        ("會員預售", "會員預售"),
+                        ("卡友優先", "卡友優先"),
+                        ("公售", "公售"),
+                        ("❌ 取消", "取消"),
+                    ])
+                )
+            )
+
+            return True
+
+
+        # =====================
+        # 修改注意事項
+        # =====================
+
+        if text == "注意事項":
+
+            state["field"] = "注意事項"
+            state["step"] = "reminder"
+
+            show = next(
+                (
+                    item
+                    for item in load_data()
+                    if item["id"] == state["show_id"]
+                ),
+                None,
+            )
+
+            state["selected_reminders"] = (
+                show.get("注意事項", "").splitlines()
+                if show and show.get("注意事項")
+                else []
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=reminder_message(
+                        state["selected_reminders"]
+                    ),
+                    quick_reply=reminder_quick_reply(),
+                )
+            )
+
+            return True
+
+
+        # =====================
+        # 一般文字欄位
+        # =====================
+
+        state["field"] = text
+        state["step"] = "value"
+
+        buttons = []
+
+        if text in {
+            "會員資訊",
+            "售票網址",
+            "取票日期",
+            "備註",
+        }:
+
+            buttons.append(
+                ("🗑 清除", "清除")
+            )
+
+        buttons.append(
+            ("❌ 取消", "取消")
+        )
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=FIELD_HINTS[text],
+                quick_reply=simple_quick_reply(buttons)
+            )
+        )
+
+        return True
 
         if text == "活動":
 
