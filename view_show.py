@@ -850,7 +850,7 @@ def build_view_show_card(
                     "contents": [
                         {
                             "type": "text",
-                            "text": "🎟️ 前往售票網站",
+                            "text": "🔗 前往售票網站",
                             "size": "sm",
                             "weight": "bold",
                             "color": WHITE_COLOR,
