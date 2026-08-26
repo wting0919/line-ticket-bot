@@ -818,13 +818,49 @@ def build_view_show_card(
                             "🔑",
                             "會員資訊",
                             member,
-                         )
+                        )
                     ]
                     if member
                     else []
                 ),
             ],
             margin="md",
+        ),
+
+        # 有售票網址才顯示售票按鈕
+        *(
+            [
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "margin": "sm",
+                    "backgroundColor": BUTTON_COLOR,
+                    "cornerRadius": "10px",
+                    "paddingTop": "10px",
+                    "paddingBottom": "10px",
+                    "paddingStart": "12px",
+                    "paddingEnd": "12px",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "action": {
+                        "type": "uri",
+                        "label": "前往售票網站",
+                        "uri": ticket_url,
+                    },
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "🎟️ 前往售票網站",
+                            "size": "sm",
+                            "weight": "bold",
+                            "color": WHITE_COLOR,
+                            "align": "center",
+                        }
+                    ],
+                }
+            ]
+            if ticket_url
+            else []
         ),
 
     ]
