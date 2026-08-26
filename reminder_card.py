@@ -534,6 +534,11 @@ def build_ticket_countdown_card(
 
     urgent = minutes == 10
 
+
+    ticket_url = (
+        show.get("售票網址") or ""
+    ).strip()
+
     body_contents = [
         build_status_area([
             build_waiting_tag("待搶票")
@@ -582,6 +587,53 @@ def build_ticket_countdown_card(
             label="售票平台",
             value=show.get("售票平台"),
             margin="lg",
+        ),
+
+        *(
+            [
+                {
+                    "type": "box",
+                    "layout": "horizontal",
+                    "margin": "sm",
+                    "paddingAll": "10px",
+                    "backgroundColor": SECTION_COLOR,
+                    "cornerRadius": "10px",
+                    "alignItems": "center",
+                    "action": {
+                        "type": "uri",
+                        "label": "前往售票網站",
+                        "uri": ticket_url,
+                    },
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "🔗",
+                            "size": "sm",
+                            "flex": 0,
+                        },
+                        {
+                            "type": "text",
+                            "text": "售票網址",
+                            "size": "xs",
+                            "weight": "bold",
+                            "color": SUBTEXT_COLOR,
+                            "margin": "sm",
+                            "flex": 3,
+                        },
+                        {
+                            "type": "text",
+                            "text": "前往售票網站 →",
+                            "size": "xs",
+                            "weight": "bold",
+                            "color": TEXT_COLOR,
+                            "align": "end",
+                            "flex": 5,
+                        },
+                    ],
+                }
+            ]
+            if ticket_url
+            else []
         ),
 
         build_info_row(

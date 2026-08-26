@@ -694,6 +694,10 @@ def build_view_show_card(
         show.get("售票平台")
     )
 
+    ticket_url = (
+        show.get("售票網址") or ""
+    ).strip()
+
     price_quantity = format_price(
         show.get("價格張數")
     )
@@ -782,46 +786,46 @@ def build_view_show_card(
             icon="🎟️",
             title="搶票資訊",
             rows=[
-            (
-                "🕒",
-                "搶票時間",
-                ticket_time,
-            ),
-            (
-                "🌐",
-                "售票平台",
-                platform,
-            ),
-            (
-                "💰",
-                "價格張數",
-                price_quantity,
-            ),
-            *(
-                [
-                    (
-                        "🚩",
-                        "售票階段",
-                        sale_stage,
-                    )
-                ]
-                if sale_stage
-                else []
-            ),
-            *(
-                [
-                    (
-                        "🔑",
-                        "會員資訊",
-                        member,
-                    )
-                ]
-                if member
-                else []
-            ),
-        ],
-        margin="md",
-    ),
+                (
+                    "🕒",
+                    "搶票時間",
+                    ticket_time,
+                ),
+                (
+                    "🌐",
+                    "售票平台",
+                    platform,
+                ),
+                (
+                    "💰",
+                    "價格張數",
+                    price_quantity,
+                ),
+                *(
+                    [
+                        (
+                            "🚩",
+                            "售票階段",
+                            sale_stage,
+                        )
+                    ]
+                    if sale_stage
+                    else []
+                ),
+                *(
+                    [
+                        (
+                            "🔑",
+                            "會員資訊",
+                            member,
+                         )
+                    ]
+                    if member
+                    else []
+                ),
+            ],
+            margin="md",
+        ),
 
     ]
 

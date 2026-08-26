@@ -429,6 +429,11 @@ def build_ticket_show_rows(show):
         ),
     ]
 
+    ticket_url_row = build_ticket_url_row(show)
+
+    if ticket_url_row:
+        rows.append(ticket_url_row)
+
     append_row(
         rows,
         "💰",
@@ -459,6 +464,7 @@ def build_ticket_show_rows(show):
     )
 
     return rows
+
 
 def build_pickup_show_rows(show):
     """
@@ -933,6 +939,64 @@ def build_show_list_card(
         ),
         contents=bubble,
     )
+
+
+def build_ticket_url_row(show):
+    """
+    有售票網址時建立可直接開啟的連結列。
+    沒有網址則不顯示。
+    """
+
+    url = str(
+        show.get("售票網址") or ""
+    ).strip()
+
+    if not url:
+        return None
+
+    if not (
+        url.startswith("https://")
+        or url.startswith("http://")
+    ):
+        return None
+
+    return {
+        "type": "box",
+        "layout": "horizontal",
+        "margin": "xs",
+        "alignItems": "center",
+        "action": {
+            "type": "uri",
+            "label": "開啟售票網站",
+            "uri": url,
+        },
+        "contents": [
+            {
+                "type": "text",
+                "text": "🔗",
+                "size": "xs",
+                "flex": 0,
+            },
+            {
+                "type": "text",
+                "text": "開啟售票網站",
+                "size": "xs",
+                "color": BUTTON_COLOR,
+                "weight": "bold",
+                "margin": "sm",
+                "flex": 1,
+                "wrap": True,
+            },
+            {
+                "type": "text",
+                "text": "↗",
+                "size": "sm",
+                "color": BUTTON_COLOR,
+                "flex": 0,
+            },
+        ],
+    }
+
 
 
 # =========================================================

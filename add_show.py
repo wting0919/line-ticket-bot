@@ -270,6 +270,34 @@ def handle_add_show_flow(event, text, user_id):
     if step == "platform":
 
         data["售票平台"] = text
+        state["step"] = "ticket_url"
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=(
+                    "🔗 請輸入售票網址\n\n"
+                    "例如：\n"
+                    "https://kktix.com/events/xxxxx\n\n"
+                    "沒有網址可按略過"
+                ),
+                quick_reply=simple_quick_reply([
+                    ("➖ 略過", "略過"),
+                    ("❌ 取消", "取消")
+                ])
+            )
+        )
+
+        return True
+
+    if step == "ticket_url":
+
+        data["售票網址"] = (
+            ""
+            if text == "略過"
+            else text.strip()
+        )
+
         state["step"] = "price"
 
         config.line_bot_api.reply_message(
@@ -277,7 +305,7 @@ def handle_add_show_flow(event, text, user_id):
             TextSendMessage(
                 text=(
                     "💰 請輸入價格與張數\n\n"
-                    "例如：$3800*2"
+                    "例如：3800*2"
                 ),
                 quick_reply=simple_quick_reply([
                     ("❌ 取消", "取消")
@@ -578,6 +606,12 @@ def handle_add_show_flow(event, text, user_id):
             f"📅 {format_show_dates(data['演出日期'])}\n"
             f"🕒 {format_datetime(data['搶票時間'])}\n"
             f"🌐 {data['售票平台']}\n"
+        )
+
+        if data.get("售票網址"):
+            reply += f"🔗 {data['售票網址']}\n"
+
+        reply += (
             f"💰 {data['價格張數']}\n"
         )
 
@@ -664,6 +698,7 @@ def handle_add_show_flow(event, text, user_id):
             "演出日期": data.get("演出日期", ""),
             "搶票時間": data.get("搶票時間", ""),
             "售票平台": data.get("售票平台", ""),
+            "售票網址": data.get("售票網址", ""),
             "價格張數": data.get("價格張數", ""),
             "會員資訊": data.get("會員資訊", ""),
             "注意事項": data.get("注意事項", ""),
