@@ -88,7 +88,7 @@ def check_reminders():
 
 
             if (
-                remind_time <= now <= remind_time + timedelta(minutes=3)
+                now >= remind_time
                 and not show["提醒"]["前一天"]
             ):
 
