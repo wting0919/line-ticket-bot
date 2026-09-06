@@ -30,9 +30,9 @@ from reminder_card import (
 
 def check_reminders():
 
-    print("提醒檢查執行", datetime.now())
-
     now = datetime.now() + timedelta(hours=8)
+
+    print("提醒檢查執行", now, flush=True)
 
     shows = load_data()
 
@@ -87,9 +87,20 @@ def check_reminders():
             )
 
 
+            print(
+                "前一天提醒：",
+                f"現在={now}",
+                f"提醒時間={remind_time}",
+                f"已提醒={show['提醒']['前一天']}",
+                f"搶票狀態={show.get('搶票狀態')}",
+                flush=True,
+            )
+
+
             if (
                 now >= remind_time
                 and not show["提醒"]["前一天"]
+                and show.get("搶票狀態") != "已搶票"
             ):
 
                 try:
@@ -136,6 +147,7 @@ def check_reminders():
                 <= diff 
                 < timedelta(minutes=31)
                 and not show["提醒"]["30分鐘"]
+                and show.get("搶票狀態") != "已搶票"
             ):
 
 
@@ -173,6 +185,7 @@ def check_reminders():
                 <= diff 
                 < timedelta(minutes=11)
                 and not show["提醒"]["10分鐘"]
+                and show.get("搶票狀態") != "已搶票"
             ):
 
                 print(">>> 發送10分鐘提醒")
