@@ -211,4 +211,4 @@ def edit_field_quick_reply(page=1):
 
     return simple_quick_reply([
         ("🔑 會員資訊", "會員資訊"),
-        ("🔔 注意事項", "注意事項
+        ("🔔 注意事項", "注意事項"),
