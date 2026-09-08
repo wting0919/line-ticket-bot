@@ -7,6 +7,7 @@ from linebot.models import (
     MessageAction,
 )
 
+
 # =====================
 # 查看列表 Quick Reply
 # =====================
@@ -41,13 +42,17 @@ def list_reply(reply, count):
     )
 
 
+# =====================
+# 主選單
+# =====================
+
 def menu_reply(text):
 
     return TextSendMessage(
         text=text,
         quick_reply=QuickReply(
             items=[
-                
+
                 QuickReplyButton(
                     action=MessageAction(
                         label="➕ 新增演出",
@@ -83,10 +88,14 @@ def menu_reply(text):
                     )
                 ),
 
-
             ]
         )
     )
+
+
+# =====================
+# 會員選擇 Quick Reply
+# =====================
 
 def member_quick_reply(
     selected=None,
@@ -148,6 +157,10 @@ def member_quick_reply(
     return QuickReply(items=items)
 
 
+# =====================
+# 通用 Quick Reply
+# =====================
+
 def simple_quick_reply(buttons):
 
     items = []
@@ -166,9 +179,17 @@ def simple_quick_reply(buttons):
     return QuickReply(items=items)
 
 
+# =====================
+# 修改演出欄位 Quick Reply
+# =====================
+
 def edit_field_quick_reply(page=1):
 
-    if page ==1:
+    # -----------------
+    # 第 1 頁
+    # -----------------
+
+    if page == 1:
 
         return simple_quick_reply([
             ("🎤 藝人", "藝人"),
@@ -182,12 +203,12 @@ def edit_field_quick_reply(page=1):
             ("🚩 售票階段", "售票階段"),
             ("➡️ 下一頁", "修改下一頁"),
             ("❌ 取消", "取消"),
-         ])
-        
+        ])
+
+    # -----------------
+    # 第 2 頁
+    # -----------------
+
     return simple_quick_reply([
         ("🔑 會員資訊", "會員資訊"),
-        ("🔔 注意事項", "注意事項"),
-        ("📦 取票日期", "取票日期"),
-        ("📝 備註", "備註"),
-        ("❌ 取消", "取消")
-    ])
+        ("🔔 注意事項", "注意事項
