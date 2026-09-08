@@ -54,6 +54,7 @@ ALLOWED_FIELDS = {
     "備註",
 }
 
+
 FIELD_HINTS = {
     "藝人": "請輸入新的藝人",
     "活動": "請選擇新的活動類型",
@@ -71,21 +72,76 @@ FIELD_HINTS = {
 }
 
 
+# =========================================================
+# 共用：取得演出
+# =========================================================
+
+def get_show_by_id(show_id):
+
+    return next(
+        (
+            item
+            for item in load_data()
+            if item.get("id") == show_id
+        ),
+        None,
+    )
+
+
+# =========================================================
+# 共用：建立修改欄位選單
+# =========================================================
+
+def show_edit_menu(event, user_id, message=None):
+
+    state = get_state(user_id)
+
+    if not isinstance(state, dict):
+        return False
+
+    page = state.get(
+        "field_page",
+        1
+    )
+
+    if message is None:
+        message = "✏️ 請選擇要修改的欄位"
+
+    config.line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(
+            text=message,
+            quick_reply=edit_field_quick_reply(page)
+        )
+    )
+
+    return True
+
+
+# =========================================================
+# 開始修改演出
+# =========================================================
+
 def start_edit_show(event, text, user_id):
 
     state = get_state(user_id)
 
-    if isinstance(state, dict) and "shows" in state:
-
+    if (
+        isinstance(state, dict)
+        and "shows" in state
+    ):
         shows = state["shows"]
 
     else:
-
         shows = get_all_shows()
 
     try:
+
         show_id = int(
-            text.replace("修改ID", "").strip()
+            text.replace(
+                "修改ID",
+                ""
+            ).strip()
         )
 
     except ValueError:
@@ -105,7 +161,7 @@ def start_edit_show(event, text, user_id):
             for item in shows
             if item.get("id") == show_id
         ),
-        None
+        None,
     )
 
     if show is None:
@@ -119,7 +175,6 @@ def start_edit_show(event, text, user_id):
 
         return True
 
-
     set_state(
         user_id,
         {
@@ -130,19 +185,27 @@ def start_edit_show(event, text, user_id):
         }
     )
 
+    message = (
+        "✏️ 修改演出\n\n"
+        f"🎤 {show.get('藝人', '')}\n"
+        f"🏷️ {show.get('活動', '')}\n"
+    )
+
+    if show.get("活動名稱"):
+
+        message += (
+            f"✨ {show.get('活動名稱')}\n"
+        )
+
+    message += (
+        "\n請選擇要修改的欄位\n"
+        "修改完成後可繼續選其他欄位"
+    )
+
     config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
-            text=(
-                "✏️ 修改演出\n\n"
-                f"🎤 {show.get('藝人', '')}\n"
-                + (
-                    f"✨ {show.get('活動名稱')}\n\n"
-                    if show.get("活動名稱")
-                    else "\n"
-                )
-                + "請選擇要修改的欄位"
-            ),
+            text=message,
             quick_reply=edit_field_quick_reply(1)
         )
     )
@@ -150,7 +213,88 @@ def start_edit_show(event, text, user_id):
     return True
 
 
-def handle_edit_show_flow(event, text, user_id):
+# =========================================================
+# 修改成功後
+# 不離開修改模式
+# =========================================================
+
+def edit_success_menu(
+    event,
+    user_id,
+    show,
+    field,
+    old_value,
+    new_value,
+):
+
+    if field == "演出日期":
+
+        old_display = (
+            format_show_dates(old_value)
+            if old_value
+            else "無"
+        )
+
+        new_display = (
+            format_show_dates(new_value)
+            if new_value
+            else "無"
+        )
+
+    else:
+
+        old_display = (
+            old_value
+            if old_value
+            else "無"
+        )
+
+        new_display = (
+            new_value
+            if new_value
+            else "無"
+        )
+
+    message = (
+        "✅ 修改成功\n"
+        "──────────\n"
+        f"🎤 {show.get('藝人', '')}\n"
+        f"🏷️ {show.get('活動', '')}\n"
+    )
+
+    if show.get("活動名稱"):
+
+        message += (
+            f"✨ {show['活動名稱']}\n"
+        )
+
+    message += (
+        "──────────\n"
+        f"✏️ {field}\n"
+        f"🔸 原本：{old_display}\n"
+        f"🔹 修改後：{new_display}\n"
+        "──────────\n"
+        "還可以繼續修改其他欄位"
+    )
+
+    show_edit_menu(
+        event,
+        user_id,
+        message
+    )
+
+    return True
+
+
+# =========================================================
+# 修改演出主流程
+# =========================================================
+
+def handle_edit_show_flow(
+    event,
+    text,
+    user_id
+):
 
     state = get_state(user_id)
 
@@ -158,11 +302,54 @@ def handle_edit_show_flow(event, text, user_id):
         not isinstance(state, dict)
         or state.get("mode") != "修改演出"
     ):
+
         return False
+
+    step = state.get("step")
+
+    # =====================================================
+    # 自訂注意事項時的取消
+    # 只回到注意事項選單
+    # =====================================================
+
+    if (
+        text == "取消"
+        and step == "custom_reminder"
+    ):
+
+        state["step"] = "reminder"
+
+        set_state(
+            user_id,
+            state
+        )
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=reminder_message(
+                    selected
+                ),
+                quick_reply=reminder_quick_reply()
+            )
+        )
+
+        return True
+
+    # =====================================================
+    # 一般取消
+    # =====================================================
 
     if text == "取消":
 
-        clear_state(user_id)
+        clear_state(
+            user_id
+        )
 
         config.line_bot_api.reply_message(
             event.reply_token,
@@ -173,15 +360,69 @@ def handle_edit_show_flow(event, text, user_id):
 
         return True
 
-    if state.get("step") == "field":
+    # =====================================================
+    # FIELD：選擇欄位
+    # =====================================================
 
-        # =====================
-        # 修改欄位翻頁
-        # =====================
+    if step == "field":
+
+        # -------------------------------------------------
+        # 完成修改
+        # -------------------------------------------------
+
+        if text == "完成修改":
+
+            show = get_show_by_id(
+                state["show_id"]
+            )
+
+            clear_state(
+                user_id
+            )
+
+            if show:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text=(
+                            "✅ 修改完成\n"
+                            "──────────\n"
+                            f"🎤 {show.get('藝人', '')}\n"
+                            f"🏷️ {show.get('活動', '')}\n"
+                            + (
+                                f"✨ {show.get('活動名稱')}\n"
+                                if show.get("活動名稱")
+                                else ""
+                            )
+                            + "已離開修改模式"
+                        )
+                    )
+                )
+
+            else:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="✅ 修改完成"
+                    )
+                )
+
+            return True
+
+        # -------------------------------------------------
+        # 下一頁
+        # -------------------------------------------------
 
         if text == "修改下一頁":
 
             state["field_page"] = 2
+
+            set_state(
+                user_id,
+                state
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -193,10 +434,18 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
+        # -------------------------------------------------
+        # 上一頁
+        # -------------------------------------------------
 
         if text == "修改上一頁":
 
             state["field_page"] = 1
+
+            set_state(
+                user_id,
+                state
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -208,10 +457,9 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-
-        # =====================
-        # 防止輸入非欄位文字
-        # =====================
+        # -------------------------------------------------
+        # 不認識的欄位
+        # -------------------------------------------------
 
         if text not in ALLOWED_FIELDS:
 
@@ -220,22 +468,29 @@ def handle_edit_show_flow(event, text, user_id):
                 TextSendMessage(
                     text="請使用下方按鈕選擇欄位",
                     quick_reply=edit_field_quick_reply(
-                        state.get("field_page", 1)
+                        state.get(
+                            "field_page",
+                            1
+                        )
                     )
                 )
             )
 
             return True
 
-
-        # =====================
-        # 修改活動
-        # =====================
+        # =================================================
+        # 活動
+        # =================================================
 
         if text == "活動":
 
             state["field"] = "活動"
             state["step"] = "activity"
+
+            set_state(
+                user_id,
+                state
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -247,15 +502,19 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-
-        # =====================
-        # 修改售票階段
-        # =====================
+        # =================================================
+        # 售票階段
+        # =================================================
 
         if text == "售票階段":
 
             state["field"] = "售票階段"
             state["step"] = "sale_stage"
+
+            set_state(
+                user_id,
+                state
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -272,29 +531,46 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-
-        # =====================
-        # 修改注意事項
-        # =====================
+        # =================================================
+        # 注意事項
+        # =================================================
 
         if text == "注意事項":
 
             state["field"] = "注意事項"
             state["step"] = "reminder"
 
-            show = next(
-                (
-                    item
-                    for item in load_data()
-                    if item["id"] == state["show_id"]
-                ),
-                None,
+            show = get_show_by_id(
+                state["show_id"]
             )
 
+            if show is None:
+
+                clear_state(
+                    user_id
+                )
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="❌ 找不到這筆演出"
+                    )
+                )
+
+                return True
+
             state["selected_reminders"] = (
-                show.get("注意事項", "").splitlines()
-                if show and show.get("注意事項")
+                show.get(
+                    "注意事項",
+                    ""
+                ).splitlines()
+                if show.get("注意事項")
                 else []
+            )
+
+            set_state(
+                user_id,
+                state
             )
 
             config.line_bot_api.reply_message(
@@ -303,16 +579,15 @@ def handle_edit_show_flow(event, text, user_id):
                     text=reminder_message(
                         state["selected_reminders"]
                     ),
-                    quick_reply=reminder_quick_reply(),
+                    quick_reply=reminder_quick_reply()
                 )
             )
 
             return True
 
-
-        # =====================
+        # =================================================
         # 一般文字欄位
-        # =====================
+        # =================================================
 
         state["field"] = text
         state["step"] = "value"
@@ -334,120 +609,28 @@ def handle_edit_show_flow(event, text, user_id):
             ("❌ 取消", "取消")
         )
 
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=FIELD_HINTS[text],
-                quick_reply=simple_quick_reply(buttons)
-            )
+        set_state(
+            user_id,
+            state
         )
-
-        return True
-
-        if text == "活動":
-
-            state["field"] = "活動"
-            state["step"] = "activity"
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text="🏷 請選擇活動類型",
-                    quick_reply=activity_quick_reply()
-                )
-            )
-
-            return True
-
-        if text == "售票階段":
-
-            state["field"] = "售票階段"
-            state["step"] = "sale_stage"
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text="🚩 請選擇新的售票階段",
-                    quick_reply=simple_quick_reply([
-                        ("會員預售", "會員預售"),
-                        ("卡友優先", "卡友優先"),
-                        ("公售", "公售"),
-                        ("❌ 取消", "取消"),
-                    ])
-                )
-            )
-
-            return True
-
-        if text == "注意事項":
-
-            state["field"] = "注意事項"
-            state["step"] = "reminder"
-
-            show = next(
-                (
-                    item
-                    for item in load_data()
-                    if item["id"] == state["show_id"]
-                ),
-                None,
-            )
-
-            state["selected_reminders"] = (
-                show.get("注意事項", "").splitlines()
-                if show and show.get("注意事項")
-                else []
-            )
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text=reminder_message(
-                        state["selected_reminders"]
-                    ),
-                    quick_reply=reminder_quick_reply(),
-                )
-            )
-
-            return True
-
-        state["field"] = text
-        state["step"] = "value"
-
-        buttons = []
-
-        if text in {
-            "會員資訊",
-            "售票網址",
-            "取票日期",
-            "備註",
-        }:
-            buttons.append(("🗑 清除", "清除"))
-
-        buttons.append(("❌ 取消", "取消"))
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
                 text=FIELD_HINTS[text],
-                quick_reply=simple_quick_reply(buttons)
+                quick_reply=simple_quick_reply(
+                    buttons
+                )
             )
         )
 
         return True
 
-    if state.get("step") == "activity":
+    # =====================================================
+    # 活動
+    # =====================================================
 
-        if text == "取消":
-
-            clear_state(user_id)
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="已取消修改演出")
-            )
-
-            return True
+    if step == "activity":
 
         if text not in ACTIVITY_VALUES:
 
@@ -461,234 +644,75 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        show = next(
-            (
-                item
-                for item in load_data()
-                if item["id"] == state["show_id"]
-            ),
-            None,
+        show = get_show_by_id(
+            state["show_id"]
         )
 
         if show is None:
-            clear_state(user_id)
+
+            clear_state(
+                user_id
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="❌ 找不到這筆演出"
+                )
+            )
+
             return True
 
-        old_value = show.get("活動") or "其他"
+        old_value = (
+            show.get("活動")
+            or "其他"
+        )
 
         show["活動"] = text
 
-        update_show(show)
-
-        clear_state(user_id)
-
-        header = (
-            "✅ 修改成功\n"
-            "──────────\n"
-            f"🎤 {show.get('藝人', '')}\n"
-            f"🏷️ {show.get('活動', '')}\n"
-        )
-
-        if show.get("活動名稱"):
-            header += f"✨ {show['活動名稱']}\n"
-
-        header += "──────────\n"
-
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=(
-                    header
-                    + "✏️ 活動\n"
-                    + f"🔸 原本：{old_value}\n"
-                    + f"🔹 修改後：{text}"
-                )
-            )
-        )
-
-        return True
-
-    if state.get("step") == "reminder":
-
-        selected = state.setdefault(
-            "selected_reminders",
-            []
-        )
-
-        if text == "略過":
-
-            show = next(
-                (
-                    item
-                    for item in load_data()
-                    if item["id"] == state["show_id"]
-                ),
-                None,
-            )
-
-            if show is None:
-                clear_state(user_id)
-                return True
-
-            old_value = show.get("注意事項") or ""
-
-            show["注意事項"] = ""
+        try:
 
             update_show(show)
 
-            clear_state(user_id)
+        except Exception as e:
+
+            print(
+                "修改活動失敗：",
+                repr(e),
+                flush=True
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(
-                    text=(
-                        "✅ 修改成功\n"
-                        "──────────\n"
-                        f"🎤 {show.get('藝人', '')}\n"
-                        f"🏷️ {show.get('活動', '')}\n"
-                        + (
-                            f"✨ {show.get('活動名稱')}\n"
-                            if show.get("活動名稱")
-                            else ""
-                        )
-                        + "──────────\n"
-                        "✏️ 注意事項\n"
-                        f"🔸 原本：{old_value or '無'}\n"
-                        "🔹 修改後：無"
-                    )
+                    text=f"❌ 修改失敗\n{e}"
                 )
             )
 
             return True
 
-        if text == "完成":
+        state["step"] = "field"
+        state.pop("field", None)
 
-            if not selected:
-
-                config.line_bot_api.reply_message(
-                    event.reply_token,
-                    TextSendMessage(
-                        text="請至少選擇一項，或按「略過」",
-                        quick_reply=reminder_quick_reply(),
-                    )
-                )
-
-                return True
-
-            show = next(
-                (
-                    item
-                    for item in load_data()
-                    if item["id"] == state["show_id"]
-                ),
-                None,
-            )
-
-            if show is None:
-                clear_state(user_id)
-                return True
-
-            old_value = show.get("注意事項") or ""
-
-            new_value = "\n".join(selected)
-
-            show["注意事項"] = new_value
-
-            update_show(show)
-
-            clear_state(user_id)
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text=(
-                        "✅ 修改成功\n"
-                        "──────────\n"
-                        f"🎤 {show.get('藝人', '')}\n"
-                        f"🏷️ {show.get('活動', '')}\n"
-                        + (
-                            f"✨ {show.get('活動名稱')}\n"
-                            if show.get("活動名稱")
-                            else ""
-                        )
-                        + "──────────\n"
-                        "✏️ 注意事項\n"
-                        f"🔸 原本：{old_value or '無'}\n"
-                        f"🔹 修改後：{new_value}"
-                    )
-                )
-            )
-
-            return True
-
-        if text == "自訂提醒":
-
-            state["step"] = "custom_reminder"
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text="請輸入注意事項"
-                )
-            )
-
-            return True
-
-        if text in REMINDER_OPTIONS:
-
-            if text not in selected:
-
-                selected.append(text)
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text=reminder_message(selected),
-                    quick_reply=reminder_quick_reply(),
-                )
-            )
-
-            return True
-
-    if state.get("step") == "custom_reminder":
-
-        text = text.strip()
-
-        if not text:
-
-            config.line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(
-                    text="注意事項不可空白"
-                )
-            )
-
-            return True
-
-        selected = state.setdefault(
-            "selected_reminders",
-            []
+        set_state(
+            user_id,
+            state
         )
 
-        if text not in selected:
-
-            selected.append(text)
-
-        state["step"] = "reminder"
-
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=reminder_message(
-                    selected
-                ),
-                quick_reply=reminder_quick_reply(),
-            )
+        return edit_success_menu(
+            event,
+            user_id,
+            show,
+            "活動",
+            old_value,
+            text
         )
 
-        return True
+    # =====================================================
+    # 售票階段
+    # =====================================================
 
-    if state.get("step") == "sale_stage":
+    if step == "sale_stage":
 
         if text not in [
             "會員預售",
@@ -711,66 +735,391 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        show = next(
-            (
-                item
-                for item in load_data()
-                if item["id"] == state["show_id"]
-            ),
-            None,
+        show = get_show_by_id(
+            state["show_id"]
         )
 
         if show is None:
-            clear_state(user_id)
+
+            clear_state(
+                user_id
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text="❌ 找不到這筆演出"
+                )
+            )
+
             return True
 
-        old_value = show.get("售票階段") or ""
+        old_value = (
+            show.get("售票階段")
+            or ""
+        )
 
         show["售票階段"] = text
 
-        update_show(show)
+        try:
 
-        clear_state(user_id)
+            update_show(show)
+
+        except Exception as e:
+
+            print(
+                "修改售票階段失敗：",
+                repr(e),
+                flush=True
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=f"❌ 修改失敗\n{e}"
+                )
+            )
+
+            return True
+
+        state["step"] = "field"
+        state.pop("field", None)
+
+        set_state(
+            user_id,
+            state
+        )
+
+        return edit_success_menu(
+            event,
+            user_id,
+            show,
+            "售票階段",
+            old_value,
+            text
+        )
+
+    # =====================================================
+    # 注意事項
+    # =====================================================
+
+    if step == "reminder":
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        # -------------------------------------------------
+        # 略過
+        # -------------------------------------------------
+
+        if text == "略過":
+
+            show = get_show_by_id(
+                state["show_id"]
+            )
+
+            if show is None:
+
+                clear_state(
+                    user_id
+                )
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="❌ 找不到這筆演出"
+                    )
+                )
+
+                return True
+
+            old_value = (
+                show.get("注意事項")
+                or ""
+            )
+
+            show["注意事項"] = ""
+
+            try:
+
+                update_show(show)
+
+            except Exception as e:
+
+                print(
+                    "修改注意事項失敗：",
+                    repr(e),
+                    flush=True
+                )
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text=f"❌ 修改失敗\n{e}"
+                    )
+                )
+
+                return True
+
+            state["step"] = "field"
+            state.pop(
+                "selected_reminders",
+                None
+            )
+
+            set_state(
+                user_id,
+                state
+            )
+
+            return edit_success_menu(
+                event,
+                user_id,
+                show,
+                "注意事項",
+                old_value,
+                ""
+            )
+
+        # -------------------------------------------------
+        # 完成
+        # -------------------------------------------------
+
+        if text == "完成":
+
+            if not selected:
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="請至少選擇一項，或按「略過」",
+                        quick_reply=reminder_quick_reply()
+                    )
+                )
+
+                return True
+
+            show = get_show_by_id(
+                state["show_id"]
+            )
+
+            if show is None:
+
+                clear_state(
+                    user_id
+                )
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text="❌ 找不到這筆演出"
+                    )
+                )
+
+                return True
+
+            old_value = (
+                show.get("注意事項")
+                or ""
+            )
+
+            new_value = "\n".join(
+                selected
+            )
+
+            show["注意事項"] = new_value
+
+            try:
+
+                update_show(show)
+
+            except Exception as e:
+
+                print(
+                    "修改注意事項失敗：",
+                    repr(e),
+                    flush=True
+                )
+
+                config.line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(
+                        text=f"❌ 修改失敗\n{e}"
+                    )
+                )
+
+                return True
+
+            state["step"] = "field"
+            state.pop(
+                "selected_reminders",
+                None
+            )
+
+            set_state(
+                user_id,
+                state
+            )
+
+            return edit_success_menu(
+                event,
+                user_id,
+                show,
+                "注意事項",
+                old_value,
+                new_value
+            )
+
+        # -------------------------------------------------
+        # 自訂
+        # -------------------------------------------------
+
+        if text in {
+            "自訂",
+            "自訂提醒",
+        }:
+
+            state["step"] = "custom_reminder"
+
+            set_state(
+                user_id,
+                state
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "✏️ 請輸入注意事項\n\n"
+                        "輸入完成後會回到注意事項選單"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        # -------------------------------------------------
+        # 預設注意事項
+        # -------------------------------------------------
+
+        if text in REMINDER_OPTIONS:
+
+            if text not in selected:
+
+                selected.append(
+                    text
+                )
+
+            set_state(
+                user_id,
+                state
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=reminder_message(
+                        selected
+                    ),
+                    quick_reply=reminder_quick_reply()
+                )
+            )
+
+            return True
+
+        # -------------------------------------------------
+        # 不認識
+        # -------------------------------------------------
 
         config.line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(
-                text=(
-                    "✅ 修改成功\n"
-                    "──────────\n"
-                    f"🎤 {show.get('藝人','')}\n"
-                    f"🏷️ {show.get('活動','')}\n"
-                    + (
-                        f"✨ {show.get('活動名稱')}\n"
-                        if show.get("活動名稱")
-                        else ""
-                    )
-                    + "──────────\n"
-                    "✏️ 售票階段\n"
-                    f"🔸 原本：{old_value or '無'}\n"
-                    f"🔹 修改後：{text}"
-                )
+                text="請使用下方按鈕選擇注意事項",
+                quick_reply=reminder_quick_reply()
             )
         )
 
         return True
 
-    if state.get("step") == "value":
+    # =====================================================
+    # 自訂注意事項
+    # =====================================================
 
-        field = state["field"]
+    if step == "custom_reminder":
 
-        show = next(
-            (
-                item
-                for item in load_data()
-                if item["id"] == state["show_id"]
-            ),
-            None
+        text = text.strip()
+
+        if not text:
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 注意事項不可空白\n\n"
+                        "請重新輸入，或按「取消」"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消")
+                    ])
+                )
+            )
+
+            return True
+
+        selected = state.setdefault(
+            "selected_reminders",
+            []
+        )
+
+        if text not in selected:
+
+            selected.append(
+                text
+            )
+
+        state["step"] = "reminder"
+
+        set_state(
+            user_id,
+            state
+        )
+
+        config.line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text=reminder_message(
+                    selected
+                ),
+                quick_reply=reminder_quick_reply()
+            )
+        )
+
+        return True
+
+    # =====================================================
+    # 一般欄位
+    # =====================================================
+
+    if step == "value":
+
+        field = state.get(
+            "field"
+        )
+
+        show = get_show_by_id(
+            state["show_id"]
         )
 
         if show is None:
 
-            clear_state(user_id)
+            clear_state(
+                user_id
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -783,69 +1132,71 @@ def handle_edit_show_flow(event, text, user_id):
 
         try:
 
+            # -------------------------------------------------
+            # 演出日期
+            # -------------------------------------------------
+
             if field == "演出日期":
 
-                new_value = normalize_show_date(text)
+                new_value = normalize_show_date(
+                    text
+                )
+
+            # -------------------------------------------------
+            # 搶票時間
+            # -------------------------------------------------
 
             elif field == "搶票時間":
 
-                new_value = normalize_ticket_time(text)
+                new_value = normalize_ticket_time(
+                    text
+                )
+
+            # -------------------------------------------------
+            # 取票日期
+            # -------------------------------------------------
 
             elif field == "取票日期":
 
                 if text == "清除":
+
                     new_value = ""
+
                 else:
+
                     new_value = normalize_pickup_date(
                         text,
-                        show.get("演出日期", "")
+                        show.get(
+                            "演出日期",
+                            ""
+                        )
                     )
 
-            elif field == "會員資訊":
+            # -------------------------------------------------
+            # 可清除文字欄位
+            # -------------------------------------------------
+
+            elif field in {
+                "會員資訊",
+                "售票網址",
+                "備註",
+            }:
 
                 if text == "清除":
+
                     new_value = ""
+
                 else:
-                    new_value = text
 
+                    new_value = text.strip()
 
-            elif field == "售票網址":
-
-                if text == "清除":
-                    new_value = ""
-                else:
-                    new_value = text
-
-
-            elif field == "備註":
-
-                if text == "清除":
-                    new_value = ""
-                else:
-                    new_value = text
+            # -------------------------------------------------
+            # 其他
+            # -------------------------------------------------
 
             else:
 
-                new_value = text
-
-            old_value = show.get(field) or ""
-
-            show[field] = new_value
-
-            if field in {"演出日期", "搶票時間"}:
-
-                show["提醒"]["前一天"] = False
-                show["提醒"]["30分鐘"] = False
-                show["提醒"]["10分鐘"] = False
-
-            if field == "演出日期":
-
-                show["提醒"]["演出日"] = False
-
-                if show.get("取票日期"):
-                    show["提醒"]["取票"] = False
-
-            update_show(show)
+                new_value = text.strip()
 
         except ValueError:
 
@@ -854,7 +1205,7 @@ def handle_edit_show_flow(event, text, user_id):
                 TextSendMessage(
                     text=(
                         "❌ 格式不正確，請重新輸入\n\n"
-                        "輸入「取消」可取消修改"
+                        "輸入「取消」可回到修改欄位"
                     )
                 )
             )
@@ -863,7 +1214,11 @@ def handle_edit_show_flow(event, text, user_id):
 
         except Exception as e:
 
-            print("修改演出失敗：", repr(e), flush=True)
+            print(
+                "修改演出失敗：",
+                repr(e),
+                flush=True
+            )
 
             config.line_bot_api.reply_message(
                 event.reply_token,
@@ -874,50 +1229,148 @@ def handle_edit_show_flow(event, text, user_id):
 
             return True
 
-        clear_state(user_id)
+        # -------------------------------------------------
+        # 記錄原值
+        # -------------------------------------------------
+
+        old_value = (
+            show.get(field)
+            or ""
+        )
+
+        # -------------------------------------------------
+        # 寫入新值
+        # -------------------------------------------------
+
+        show[field] = new_value
+
+        # -------------------------------------------------
+        # 修改日期／搶票時間後
+        # 相關提醒重新計算
+        # -------------------------------------------------
+
+        if field in {
+            "演出日期",
+            "搶票時間",
+        }:
+
+            show.setdefault(
+                "提醒",
+                {}
+            )
+
+            show["提醒"]["前一天"] = False
+            show["提醒"]["30分鐘"] = False
+            show["提醒"]["10分鐘"] = False
+
+        # -------------------------------------------------
+        # 修改演出日期
+        # 演出日提醒、取票提醒也要重置
+        # -------------------------------------------------
 
         if field == "演出日期":
 
-            old_value = format_show_dates(old_value)
-            display_value = format_show_dates(new_value)
+            show.setdefault(
+                "提醒",
+                {}
+            )
 
-        else:
+            show["提醒"]["演出日"] = False
 
-            old_value = old_value or "無"
-            display_value = new_value or "無"
+            if show.get("取票日期"):
 
-        header = (
-            "✅ 修改成功\n"
-            "──────────\n"
-            f"🎤 {show.get('藝人', '')}\n"
-            f"🏷️ {show.get('活動', '')}\n"
-        )
+                show["提醒"]["取票"] = False
 
-        if show.get("活動名稱"):
-            header += f"✨ {show['活動名稱']}\n"
+        # -------------------------------------------------
+        # 寫入資料庫
+        # -------------------------------------------------
 
-        header += "──────────\n"
+        try:
 
-        config.line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(
-                text=(
-                    header
-                    + f"✏️ {field}\n"
-                    + f"🔸 原本：{old_value}\n"
-                    + f"🔹 修改後：{display_value}"
+            update_show(
+                show
+            )
+
+        except Exception as e:
+
+            print(
+                "更新資料庫失敗：",
+                repr(e),
+                flush=True
+            )
+
+            config.line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(
+                    text=(
+                        "❌ 修改失敗\n\n"
+                        f"{e}\n\n"
+                        "資料沒有成功更新，"
+                        "你可以繼續重新輸入。"
+                    )
                 )
             )
+
+            return True
+
+        # -------------------------------------------------
+        # 修改成功
+        #
+        # ★ 不 clear_state
+        # ★ 回到 field
+        # -------------------------------------------------
+
+        state["step"] = "field"
+        state.pop(
+            "field",
+            None
         )
 
-        return True
+        set_state(
+            user_id,
+            state
+        )
 
-    clear_state(user_id)
+        return edit_success_menu(
+            event,
+            user_id,
+            show,
+            field,
+            old_value,
+            new_value
+        )
+
+    # =====================================================
+    # 未知狀態
+    # 不要直接清掉
+    # =====================================================
+
+    print(
+        "⚠️ 修改流程狀態異常：",
+        "step =", repr(step),
+        "text =", repr(text),
+        "state =", repr(state),
+        flush=True
+    )
+
+    set_state(
+        user_id,
+        state
+    )
 
     config.line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(
-            text="❌ 修改狀態異常，請重新操作"
+            text=(
+                "⚠️ 目前修改流程仍然保留。\n\n"
+                "請繼續操作，或按「取消」結束。"
+            ),
+            quick_reply=edit_field_quick_reply(
+                state.get(
+                    "field_page",
+                    1
+                )
+            )
         )
     )
 
