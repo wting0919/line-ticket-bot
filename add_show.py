@@ -539,7 +539,7 @@ def handle_add_show_flow(event, text, user_id):
 
             return True
 
-        if text == "自訂提醒":
+        if text == "自訂":
 
             state["step"] = "custom_reminder"
 
