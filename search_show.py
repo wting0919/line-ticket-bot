@@ -54,13 +54,7 @@ def get_show_name(show):
     """
     取得演出名稱。
 
-    新資料：
-        活動名稱 = 完整演出名稱
-        藝人 = 空白
-
-    舊資料相容：
-        若活動名稱有值，優先使用活動名稱。
-        若活動名稱沒有值，退回使用藝人。
+    活動名稱 = 完整演出名稱
     """
 
     activity_name = (
@@ -69,13 +63,6 @@ def get_show_name(show):
 
     if activity_name:
         return activity_name
-
-    artist = (
-        show.get("藝人") or ""
-    ).strip()
-
-    if artist:
-        return artist
 
     return "未命名演出"
 
@@ -123,10 +110,6 @@ def handle_search_show(event, text, user_id):
         # =================================================
 
         show_name = get_show_name(show)
-
-        artist = str(
-            show.get("藝人", "")
-        )
 
         activity = str(
             show.get("活動", "")
@@ -267,7 +250,6 @@ def handle_search_show(event, text, user_id):
 
             content = " ".join([
                 show_name,
-                artist,
                 activity,
                 activity_name,
                 date,
@@ -329,13 +311,11 @@ def handle_search_show(event, text, user_id):
             show.get("活動") or ""
         ).strip()
 
-        # 新格式：
+        # 演出名稱：
         # 🎤 SEVENTEEN WORLD TOUR [NEW_] IN JAPAN
-        # 🏷️ 演唱會
         #
-        # 舊資料也同樣正常：
-        # 活動名稱有值 → 使用活動名稱
-        # 沒有活動名稱 → 使用藝人
+        # 活動：
+        # 🏷️ 演唱會
 
         reply += (
             "\n──────────\n"

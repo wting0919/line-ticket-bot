@@ -132,6 +132,7 @@ def member_quick_reply(
                     text="完成"
                 )
             )
+        )
 
     if allow_skip:
 
@@ -142,6 +143,7 @@ def member_quick_reply(
                     text="略過"
                 )
             )
+        )
 
     items.append(
         QuickReplyButton(

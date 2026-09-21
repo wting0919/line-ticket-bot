@@ -108,15 +108,13 @@ def handle_complete_pickup(
 
                 else:
 
-                    title = "｜".join(
-                        part
-                        for part in [
-                            show.get("藝人", ""),
-                            show.get("活動", ""),
-                            show.get("活動名稱", ""),
-                        ]
-                        if part
-                    )
+                    title = show.get(
+                        "活動名稱",
+                        ""
+                    ).strip()
+
+                    if not title:
+                        title = "未命名演出"
 
                     reply = (
                         "✅ 已完成取票\n"

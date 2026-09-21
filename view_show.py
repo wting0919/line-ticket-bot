@@ -140,13 +140,7 @@ def get_show_name(show):
     """
     取得演出名稱。
 
-    新資料：
-        活動名稱 = 完整演出名稱
-        藝人 = 空白
-
-    舊資料相容：
-        若有活動名稱，優先使用活動名稱。
-        若活動名稱沒有值，退回使用藝人。
+    活動名稱 = 完整演出名稱
     """
 
     activity_name = (
@@ -155,13 +149,6 @@ def get_show_name(show):
 
     if activity_name:
         return activity_name
-
-    artist = (
-        show.get("藝人") or ""
-    ).strip()
-
-    if artist:
-        return artist
 
     return "未命名演出"
 
@@ -695,12 +682,6 @@ def build_view_show_card(
     建立完整演出詳細卡片。
     """
 
-    # 新格式：
-    # 活動名稱 = 完整演出名稱
-    #
-    # 舊格式：
-    # 若活動名稱沒有值，get_show_name()
-    # 會自動退回藝人。
     show_name = get_show_name(show)
 
     activity = safe_text(

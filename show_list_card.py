@@ -85,13 +85,7 @@ def get_show_name(show):
     """
     取得演出名稱。
 
-    新資料：
-        活動名稱 = 完整演出名稱
-        藝人 = 空白
-
-    舊資料相容：
-        若活動名稱有值，優先使用活動名稱。
-        若活動名稱沒有值，退回使用藝人。
+    活動名稱 = 完整演出名稱
     """
 
     activity_name = (
@@ -100,13 +94,6 @@ def get_show_name(show):
 
     if activity_name:
         return activity_name
-
-    artist = (
-        show.get("藝人") or ""
-    ).strip()
-
-    if artist:
-        return artist
 
     return "未命名演出"
 

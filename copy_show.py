@@ -90,23 +90,13 @@ def handle_copy_show(event, text, user_id):
     # =====================================================
     # 演出名稱
     #
-    # 新格式：
     # 活動名稱 = 完整演出名稱
-    #
-    # 舊資料：
-    # 如果沒有活動名稱，但有藝人，
-    # 保留藝人作為暫時的演出名稱。
     # =====================================================
 
-    if not (
+    new_show["活動名稱"] = (
         new_show.get("活動名稱")
         or ""
-    ).strip():
-
-        new_show["活動名稱"] = (
-            new_show.get("藝人")
-            or ""
-        ).strip()
+    ).strip()
 
     # =====================================================
     # 重置提醒
@@ -244,12 +234,6 @@ def handle_copy_show(event, text, user_id):
     if new_show.get("活動名稱"):
         message += (
             f"🎤 {new_show['活動名稱']}\n"
-        )
-
-    elif new_show.get("藝人"):
-        # 相容舊資料
-        message += (
-            f"🎤 {new_show['藝人']}\n"
         )
 
     message += (

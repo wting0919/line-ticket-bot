@@ -301,15 +301,7 @@ def get_show_title(show):
     """
     Reminder 共用演出名稱。
 
-    新資料格式：
-        活動名稱 = 完整演出名稱
-        藝人 = 空白
-
-    舊資料相容：
-        若活動名稱有值，優先使用活動名稱。
-        若活動名稱沒有值，退回使用藝人。
-
-    不再將藝人與活動名稱拆成主標題／副標題。
+    活動名稱 = 完整演出名稱。
     """
 
     activity_name = (
@@ -319,16 +311,6 @@ def get_show_title(show):
     if activity_name:
         return (
             activity_name,
-            None,
-        )
-
-    artist = (
-        show.get("藝人") or ""
-    ).strip()
-
-    if artist:
-        return (
-            artist,
             None,
         )
 

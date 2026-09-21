@@ -227,43 +227,16 @@ def get_show_title(show):
     """
     回傳今日待辦顯示的演出名稱。
 
-    新資料格式：
-    - 活動名稱 = 完整演出名稱
-    - 藝人 = 空白
-
-    舊資料相容：
-    - 若同時存在藝人與活動名稱，
-      活動名稱作為主標題，藝人作為副標題。
-    - 若只有藝人，則直接顯示藝人。
+    活動名稱就是完整演出名稱。
     """
-
-    artist = (
-        show.get("藝人") or ""
-    ).strip()
 
     activity_name = (
         show.get("活動名稱") or ""
     ).strip()
 
-    # 新格式：
-    # 活動名稱本身就是完整的演出名稱
-    if activity_name:
-        # 舊資料若仍有藝人，保留藝人作為副標題
-        if artist:
-            return (
-                activity_name,
-                artist,
-            )
-
-        return (
-            activity_name,
-            None,
-        )
-
-    # 舊資料只有藝人
     return (
         safe_text(
-            artist,
+            activity_name,
             "未命名演出",
         ),
         None,
