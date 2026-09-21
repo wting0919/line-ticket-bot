@@ -20,6 +20,40 @@ import config
 
 
 # =====================
+# 演出名稱
+# =====================
+
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
+
+
+# =====================
 # 刪除功能
 # =====================
 
@@ -94,15 +128,7 @@ def handle_delete_show(
 
             else:
 
-                title = "｜".join(
-                    part
-                    for part in [
-                        target.get("藝人", ""),
-                        target.get("活動", ""),
-                        target.get("活動名稱", ""),
-                    ]
-                    if part
-                )
+                title = get_show_name(target)
 
                 reply = (
                     "✅ 已刪除演出\n"

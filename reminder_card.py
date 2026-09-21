@@ -223,6 +223,7 @@ def build_text_section(
         ],
     }
 
+
 def format_reminders(
     reminders,
 ):
@@ -295,14 +296,21 @@ def build_milk_tea_divider():
         ],
     }
 
+
 def get_show_title(show):
     """
-    Reminder 共用標題。
-    """
+    Reminder 共用演出名稱。
 
-    artist = safe_text(
-        show.get("藝人"),
-    )
+    新資料格式：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+
+    不再將藝人與活動名稱拆成主標題／副標題。
+    """
 
     activity_name = (
         show.get("活動名稱") or ""
@@ -310,14 +318,25 @@ def get_show_title(show):
 
     if activity_name:
         return (
-            artist,
             activity_name,
+            None,
+        )
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return (
+            artist,
+            None,
         )
 
     return (
-        artist,
+        "未命名演出",
         None,
     )
+
 
 # =========================================================
 # 查看這一筆詳細資料
@@ -361,6 +380,7 @@ def build_detail_button(show):
             }
         ],
     }
+
 
 # =========================================================
 # 通用 Bubble
@@ -485,7 +505,6 @@ def build_tomorrow_ticket_card(show):
             margin="lg",
         ),
 
-
         *(
             [
                 build_info_row(
@@ -516,6 +535,7 @@ def build_tomorrow_ticket_card(show):
     return build_reminder_bubble(
         show=show,
         header_title="🎟 明天記得準時搶票！",
+        header_subtitle="",
         body_contents=body_contents,
         alt_text="🎟 明日搶票提醒",
     )
@@ -533,7 +553,6 @@ def build_ticket_countdown_card(
     title, subtitle = get_show_title(show)
 
     urgent = minutes == 10
-
 
     ticket_url = (
         show.get("售票網址") or ""
@@ -656,7 +675,6 @@ def build_ticket_countdown_card(
             else []
         ),
 
-
         build_text_section(
             "🔔 提醒事項",
             format_reminders(
@@ -761,6 +779,7 @@ def build_pickup_reminder_card(show):
     return build_reminder_bubble(
         show=show,
         header_title="📦 可以取票囉！",
+        header_subtitle="",
         body_contents=body_contents,
         alt_text="📦 取票提醒",
     )
@@ -859,6 +878,7 @@ def build_show_day_reminder_card(show):
     return build_reminder_bubble(
         show=show,
         header_title="🎤 好好享受今天的演出 ✨",
+        header_subtitle="",
         body_contents=body_contents,
         alt_text="🎤 演出日提醒",
     )

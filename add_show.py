@@ -1,3 +1,4 @@
+```python
 import config
 
 from linebot.models import TextSendMessage
@@ -118,7 +119,7 @@ def start_add_show(event, user_id):
 
     state = {
         "mode": "新增演出",
-        "step": "artist",
+        "step": "show_name",
         "data": {},
     }
 
@@ -132,8 +133,9 @@ def start_add_show(event, user_id):
         TextSendMessage(
             text=(
                 "➕ 新增演出\n\n"
-                "請輸入藝人\n\n"
-                "例如：SEVENTEEN"
+                "請輸入演出名稱\n\n"
+                "例如：\n"
+                "SEVENTEEN WORLD TOUR [NEW_] IN JAPAN"
             ),
             quick_reply=simple_quick_reply([
                 ("❌ 取消", "取消"),
@@ -242,10 +244,17 @@ def handle_add_show_flow(event, text, user_id):
         return True
 
     # =====================================================
-    # 藝人
+    # 演出名稱
+    #
+    # 新版：
+    # 不再分開輸入「藝人」與「活動名稱」
+    #
+    # 資料庫仍使用原本的「活動名稱」欄位，
+    # 新增資料直接把完整演出名稱存進去。
+    # 「藝人」欄位維持空字串，避免改資料庫結構。
     # =====================================================
 
-    if step == "artist":
+    if step == "show_name":
 
         text = text.strip()
 
@@ -255,15 +264,20 @@ def handle_add_show_flow(event, text, user_id):
                 event,
                 TextSendMessage(
                     text=(
-                        "❌ 藝人名稱不可空白\n\n"
-                        "請重新輸入藝人"
-                    )
+                        "❌ 演出名稱不可空白\n\n"
+                        "請重新輸入演出名稱"
+                    ),
+                    quick_reply=simple_quick_reply([
+                        ("❌ 取消", "取消"),
+                    ])
                 )
             )
 
             return True
 
-        data["藝人"] = text
+        data["活動名稱"] = text
+        data["藝人"] = ""
+
         state["step"] = "activity"
 
         set_state(
@@ -300,42 +314,6 @@ def handle_add_show_flow(event, text, user_id):
             return True
 
         data["活動"] = text
-        state["step"] = "activity_name"
-
-        set_state(
-            user_id,
-            state
-        )
-
-        reply_message(
-            event,
-            TextSendMessage(
-                text=(
-                    "✨ 請輸入活動名稱\n\n"
-                    "例如：BE THE SUN\n\n"
-                    "沒有可按略過"
-                ),
-                quick_reply=simple_quick_reply([
-                    ("➖ 略過", "略過"),
-                    ("❌ 取消", "取消"),
-                ])
-            )
-        )
-
-        return True
-
-    # =====================================================
-    # 活動名稱
-    # =====================================================
-
-    if step == "activity_name":
-
-        data["活動名稱"] = (
-            ""
-            if text == "略過"
-            else text.strip()
-        )
-
         state["step"] = "show_date"
 
         set_state(
@@ -964,18 +942,16 @@ def handle_add_show_flow(event, text, user_id):
             state
         )
 
+        # -------------------------------------------------
+        # 確認資料
+        # -------------------------------------------------
+
         reply = (
             "📋 請確認新增資料\n"
             "──────────\n"
-            f"🎤 {data.get('藝人', '')}\n"
+            f"🎤 {data.get('活動名稱', '')}\n"
             f"🏷️ {data.get('活動', '')}\n"
         )
-
-        if data.get("活動名稱"):
-
-            reply += (
-                f"✨ {data['活動名稱']}\n"
-            )
 
         reply += (
             f"📅 {format_show_dates(data['演出日期'])}\n"
@@ -1058,15 +1034,9 @@ def handle_add_show_flow(event, text, user_id):
                 success = (
                     "✅ 已新增演出\n"
                     "──────────\n"
-                    f"🎤 {inserted_show.get('藝人', '')}\n"
+                    f"🎤 {inserted_show.get('活動名稱', '')}\n"
                     f"🏷️ {inserted_show.get('活動', '')}\n"
                 )
-
-                if inserted_show.get("活動名稱"):
-
-                    success += (
-                        f"✨ {inserted_show['活動名稱']}\n"
-                    )
 
                 success += (
                     f"📅 {format_show_dates(inserted_show['演出日期'])}\n"
@@ -1107,7 +1077,7 @@ def handle_add_show_flow(event, text, user_id):
 
         if text == "重新填寫":
 
-            state["step"] = "artist"
+            state["step"] = "show_name"
             state["data"] = {}
 
             state.pop(
@@ -1133,7 +1103,11 @@ def handle_add_show_flow(event, text, user_id):
             reply_message(
                 event,
                 TextSendMessage(
-                    text="請重新輸入藝人",
+                    text=(
+                        "請重新輸入演出名稱\n\n"
+                        "例如：\n"
+                        "SEVENTEEN WORLD TOUR [NEW_] IN JAPAN"
+                    ),
                     quick_reply=simple_quick_reply([
                         ("❌ 取消", "取消"),
                     ])
@@ -1164,10 +1138,17 @@ def handle_add_show_flow(event, text, user_id):
 
         # -------------------------------------------------
         # 建立演出資料
+        #
+        # 注意：
+        # DB 原本的「活動名稱」欄位繼續使用，
+        # 新版直接存完整的「演出名稱」。
+        #
+        # 「藝人」欄位保留，但新資料為空字串，
+        # 不需要修改 Supabase schema。
         # -------------------------------------------------
 
         show = {
-            "藝人": data.get("藝人", ""),
+            "藝人": "",
             "活動": data.get("活動", ""),
             "活動名稱": data.get("活動名稱", ""),
 
@@ -1221,8 +1202,8 @@ def handle_add_show_flow(event, text, user_id):
                 show
             )
 
-            # insert_show 如果沒有回傳資料，
-            # 就繼續使用原本的 show
+            # insert_show 如果有回傳資料，
+            # 就使用 DB 實際寫入後的資料。
             if result is not None:
                 show = result
 
@@ -1285,15 +1266,9 @@ def handle_add_show_flow(event, text, user_id):
         success = (
             "✅ 已新增演出\n"
             "──────────\n"
-            f"🎤 {show.get('藝人', '')}\n"
+            f"🎤 {show.get('活動名稱', '')}\n"
             f"🏷️ {show.get('活動', '')}\n"
         )
-
-        if show.get("活動名稱"):
-
-            success += (
-                f"✨ {show['活動名稱']}\n"
-            )
 
         success += (
             f"📅 {format_show_dates(show['演出日期'])}\n"

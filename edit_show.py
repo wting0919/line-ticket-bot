@@ -1,3 +1,4 @@
+```python
 from linebot.models import TextSendMessage
 
 from data import (
@@ -38,10 +39,17 @@ from theme import (
 import config
 
 
+# =========================================================
+# 可修改欄位
+#
+# 演出名稱：
+# 對使用者只顯示「演出名稱」
+# 實際資料庫仍使用原本的「活動名稱」欄位
+# =========================================================
+
 ALLOWED_FIELDS = {
-    "藝人",
+    "演出名稱",
     "活動",
-    "活動名稱",
     "演出日期",
     "搶票時間",
     "價格張數",
@@ -56,9 +64,12 @@ ALLOWED_FIELDS = {
 
 
 FIELD_HINTS = {
-    "藝人": "請輸入新的藝人",
+    "演出名稱": (
+        "請輸入新的演出名稱\n\n"
+        "例如：\n"
+        "SEVENTEEN WORLD TOUR [NEW_] IN JAPAN"
+    ),
     "活動": "請選擇新的活動類型",
-    "活動名稱": "請輸入新的活動名稱",
     "演出日期": "請輸入新的演出日期\n例如：10/1",
     "搶票時間": "請輸入新的搶票時間\n例如：9/1 12:00",
     "價格張數": "請輸入新的價格張數\n例如：3800*2",
@@ -67,7 +78,11 @@ FIELD_HINTS = {
     "會員資訊": "請輸入新的會員資訊\n也可按「清除」",
     "注意事項": "請選擇新的注意事項",
     "售票階段": "請選擇新的售票階段",
-    "取票日期": "請輸入新的取票日期\n例如：5天前、9/25\n也可按「清除」",
+    "取票日期": (
+        "請輸入新的取票日期\n"
+        "例如：5天前、9/25\n"
+        "也可按「清除」"
+    ),
     "備註": "請輸入新的備註\n也可按「清除」",
 }
 
@@ -85,6 +100,28 @@ def get_show_by_id(show_id):
             if item.get("id") == show_id
         ),
         None,
+    )
+
+
+# =========================================================
+# 共用：取得演出名稱
+#
+# 新資料：
+#   活動名稱 = 完整演出名稱
+#
+# 舊資料：
+#   優先使用活動名稱
+#   沒有活動名稱時才使用藝人
+#
+# 這樣舊資料也可以正常顯示。
+# =========================================================
+
+def get_show_name(show):
+
+    return (
+        show.get("活動名稱")
+        or show.get("藝人")
+        or ""
     )
 
 
@@ -185,17 +222,13 @@ def start_edit_show(event, text, user_id):
         }
     )
 
+    show_name = get_show_name(show)
+
     message = (
         "✏️ 修改演出\n\n"
-        f"🎤 {show.get('藝人', '')}\n"
+        f"🎤 {show_name}\n"
         f"🏷️ {show.get('活動', '')}\n"
     )
-
-    if show.get("活動名稱"):
-
-        message += (
-            f"✨ {show.get('活動名稱')}\n"
-        )
 
     message += (
         "\n請選擇要修改的欄位\n"
@@ -255,20 +288,13 @@ def edit_success_menu(
             else "無"
         )
 
+    show_name = get_show_name(show)
+
     message = (
         "✅ 修改成功\n"
         "──────────\n"
-        f"🎤 {show.get('藝人', '')}\n"
+        f"🎤 {show_name}\n"
         f"🏷️ {show.get('活動', '')}\n"
-    )
-
-    if show.get("活動名稱"):
-
-        message += (
-            f"✨ {show['活動名稱']}\n"
-        )
-
-    message += (
         "──────────\n"
         f"✏️ {field}\n"
         f"🔸 原本：{old_display}\n"
@@ -382,20 +408,17 @@ def handle_edit_show_flow(
 
             if show:
 
+                show_name = get_show_name(show)
+
                 config.line_bot_api.reply_message(
                     event.reply_token,
                     TextSendMessage(
                         text=(
                             "✅ 修改完成\n"
                             "──────────\n"
-                            f"🎤 {show.get('藝人', '')}\n"
+                            f"🎤 {show_name}\n"
                             f"🏷️ {show.get('活動', '')}\n"
-                            + (
-                                f"✨ {show.get('活動名稱')}\n"
-                                if show.get("活動名稱")
-                                else ""
-                            )
-                            + "已離開修改模式"
+                            "已離開修改模式"
                         )
                     )
                 )
@@ -595,15 +618,18 @@ def handle_edit_show_flow(
         buttons = []
 
         if text in {
+            "演出名稱",
             "會員資訊",
             "售票網址",
             "取票日期",
             "備註",
         }:
 
-            buttons.append(
-                ("🗑 清除", "清除")
-            )
+            if text != "演出名稱":
+
+                buttons.append(
+                    ("🗑 清除", "清除")
+                )
 
         buttons.append(
             ("❌ 取消", "取消")
@@ -1133,10 +1159,47 @@ def handle_edit_show_flow(
         try:
 
             # -------------------------------------------------
+            # 演出名稱
+            #
+            # 使用者看到的是「演出名稱」
+            # DB 實際寫入「活動名稱」
+            # -------------------------------------------------
+
+            if field == "演出名稱":
+
+                text = text.strip()
+
+                if not text:
+
+                    config.line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(
+                            text=(
+                                "❌ 演出名稱不可空白\n\n"
+                                "請重新輸入演出名稱"
+                            )
+                        )
+                    )
+
+                    return True
+
+                old_value = get_show_name(show)
+
+                new_value = text
+
+                show["活動名稱"] = new_value
+
+                # 新版不再使用藝人欄位。
+                # 舊資料如果原本有藝人，保留資料庫原值，
+                # 不破壞舊資料。
+                #
+                # 顯示時會優先使用活動名稱。
+
+            # -------------------------------------------------
             # 演出日期
             # -------------------------------------------------
 
-            if field == "演出日期":
+            elif field == "演出日期":
 
                 new_value = normalize_show_date(
                     text
@@ -1160,7 +1223,9 @@ def handle_edit_show_flow(
 
                 if text == "清除":
 
-                    new_value = ""
+                    # timestamp 欄位不能存 ""
+                    # 必須使用 None → Supabase NULL
+                    new_value = None
 
                 else:
 
@@ -1231,18 +1296,24 @@ def handle_edit_show_flow(
 
         # -------------------------------------------------
         # 記錄原值
+        #
+        # 演出名稱要顯示使用者實際看到的名稱
         # -------------------------------------------------
 
-        old_value = (
-            show.get(field)
-            or ""
-        )
+        if field != "演出名稱":
+
+            old_value = (
+                show.get(field)
+                or ""
+            )
 
         # -------------------------------------------------
         # 寫入新值
         # -------------------------------------------------
 
-        show[field] = new_value
+        if field != "演出名稱":
+
+            show[field] = new_value
 
         # -------------------------------------------------
         # 修改日期／搶票時間後
@@ -1321,6 +1392,7 @@ def handle_edit_show_flow(
         # -------------------------------------------------
 
         state["step"] = "field"
+
         state.pop(
             "field",
             None

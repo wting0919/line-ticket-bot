@@ -132,7 +132,6 @@ def member_quick_reply(
                     text="完成"
                 )
             )
-        )
 
     if allow_skip:
 
@@ -143,7 +142,6 @@ def member_quick_reply(
                     text="略過"
                 )
             )
-        )
 
     items.append(
         QuickReplyButton(
@@ -184,11 +182,12 @@ def simple_quick_reply(buttons):
 # =====================
 
 def edit_field_quick_reply(page=1):
+
     if page == 1:
+
         return simple_quick_reply([
-            ("🎤 藝人", "藝人"),
+            ("🎤 演出名稱", "演出名稱"),
             ("🏷️ 活動", "活動"),
-            ("✨ 活動名稱", "活動名稱"),
             ("📅 演出日期", "演出日期"),
             ("🕒 搶票時間", "搶票時間"),
             ("🌐 售票平台", "售票平台"),

@@ -48,6 +48,7 @@ from theme import (
     build_activity_badge_row,
 )
 
+
 # =========================================================
 # 基本工具
 # =========================================================
@@ -68,6 +69,7 @@ def normalize_today(today=None):
         datetime.min.time(),
     )
 
+
 # =========================================================
 # Header
 # =========================================================
@@ -83,6 +85,7 @@ def build_header():
         logo_size=44,
         compact=True,
     )
+
 
 # =========================================================
 # 下一場演出
@@ -160,6 +163,36 @@ def get_next_show(
     return candidates[0]
 
 
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
+
+
 def build_next_show_card(
     show,
     show_date,
@@ -218,13 +251,7 @@ def build_next_show_card(
         "",
     )
 
-    artist = safe_text(
-        show.get("藝人"),
-    )
-
-    activity_name = (
-        show.get("活動名稱") or ""
-    ).strip()
+    show_name = get_show_name(show)
 
     activity = safe_text(
         show.get("活動")
@@ -288,26 +315,13 @@ def build_next_show_card(
 
                     {
                         "type": "text",
-                        "text": artist,
+                        "text": show_name,
                         "size": "sm",
                         "weight": "bold",
                         "color": TEXT_COLOR,
                         "margin": "sm",
                         "wrap": True,
                     },
-
-                    *(
-                        [{
-                            "type": "text",
-                            "text": activity_name,
-                            "size": "xxs",
-                            "color": SUBTEXT_COLOR,
-                            "margin": "2px",
-                            "wrap": True,
-                        }]
-                        if activity_name
-                        else []
-                    ),
                 ],
             },
             {
@@ -500,6 +514,7 @@ def build_menu_area():
             ),
         ]
     }
+
 
 # =========================================================
 # 建立 Dashboard

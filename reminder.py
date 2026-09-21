@@ -24,6 +24,41 @@ from reminder_card import (
     build_show_day_reminder_card,
 )
 
+
+# =====================
+# 演出名稱
+# =====================
+
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
+
+
 # =====================
 # 提醒功能
 # =====================
@@ -57,23 +92,19 @@ def check_reminders():
 
         print(
             "提醒狀態：",
-            f"{show.get('藝人', '')}｜"
-            f"{show.get('活動', '')}｜"
-            f"{show.get('活動名稱', '')}",
+            f"{get_show_name(show)}｜"
+            f"{show.get('活動', '')}",
             show["提醒"],
         )
 
-
         show.setdefault("搶票狀態", "待搶票")
         show.setdefault("取票狀態", "未取票")
-
 
         try:
 
             ticket_time = parse_datetime(
                 show["搶票時間"]
             )
-
 
             # 前一天 21:00
 
@@ -86,7 +117,6 @@ def check_reminders():
                 microsecond=0
             )
 
-
             print(
                 "前一天提醒：",
                 f"現在={now}",
@@ -95,7 +125,6 @@ def check_reminders():
                 f"搶票狀態={show.get('搶票狀態')}",
                 flush=True,
             )
-
 
             if (
                 now >= remind_time
@@ -123,36 +152,31 @@ def check_reminders():
                     show["提醒"]["前一天"] = True
                     update_show(show)
 
-
             diff = ticket_time - now
 
             print("=" * 50)
             print("現在時間：", now)
             print(
                 "演出：",
-                f"{show.get('藝人', '')}｜"
-                f"{show.get('活動', '')}｜"
-                f"{show.get('活動名稱', '')}",
+                f"{get_show_name(show)}｜"
+                f"{show.get('活動', '')}",
             )
             print("搶票時間：", ticket_time)
             print("剩餘：", diff)
             print("30分鐘：", show["提醒"]["30分鐘"])
             print("10分鐘：", show["提醒"]["10分鐘"])
 
-
             # 前30分鐘
 
             if (
                 timedelta(minutes=29)
-                <= diff 
+                <= diff
                 < timedelta(minutes=31)
                 and not show["提醒"]["30分鐘"]
                 and show.get("搶票狀態") != "已搶票"
             ):
 
-
                 print(">>> 發送30分鐘提醒")
-
 
                 try:
 
@@ -177,19 +201,17 @@ def check_reminders():
                     show["提醒"]["30分鐘"] = True
                     update_show(show)
 
-
             # 前10分鐘
 
             if (
                 timedelta(minutes=9)
-                <= diff 
+                <= diff
                 < timedelta(minutes=11)
                 and not show["提醒"]["10分鐘"]
                 and show.get("搶票狀態") != "已搶票"
             ):
 
                 print(">>> 發送10分鐘提醒")
-
 
                 try:
 
@@ -214,13 +236,11 @@ def check_reminders():
                     show["提醒"]["10分鐘"] = True
                     update_show(show)
 
-
         except Exception as e:
 
             print(
                 f"提醒錯誤：{e}"
             )
-
 
         # =====================
         # 取票提醒
@@ -247,7 +267,6 @@ def check_reminders():
                     and show.get("搶票狀態") == "已搶票"
                 ):
 
-                   
                     try:
 
                         config.line_bot_api.push_message(
@@ -255,12 +274,22 @@ def check_reminders():
                             build_pickup_reminder_card(show),
                         )
 
-                        ticket_master = show.get("搶票大師", "").strip()
-                        pickup_person = show.get("取票人", "").strip()
+                        ticket_master = show.get(
+                            "搶票大師",
+                            ""
+                        ).strip()
+
+                        pickup_person = show.get(
+                            "取票人",
+                            ""
+                        ).strip()
 
                         if pickup_person:
 
-                            if ticket_master and ticket_master != pickup_person:
+                            if (
+                                ticket_master
+                                and ticket_master != pickup_person
+                            ):
 
                                 config.push_mention_message(
                                     config.GROUP_ID,
@@ -299,9 +328,8 @@ def check_reminders():
 
                 print(
                     "取票提醒處理錯誤：",
-                    f"{show.get('藝人', '')}｜"
-                    f"{show.get('活動', '')}｜"
-                    f"{show.get('活動名稱', '')}",
+                    f"{get_show_name(show)}｜"
+                    f"{show.get('活動', '')}",
                     repr(error),
                     flush=True,
                 )
@@ -370,18 +398,27 @@ def check_reminders():
                     show["提醒"]["演出日"] = True
                     update_show(show)
 
-
                     if (
                         show.get("搶票狀態") == "已搶票"
                         and show.get("取票狀態") != "已取票"
                     ):
 
-                        ticket_master = show.get("搶票大師", "").strip()
-                        pickup_person = show.get("取票人", "").strip()
+                        ticket_master = show.get(
+                            "搶票大師",
+                            ""
+                        ).strip()
+
+                        pickup_person = show.get(
+                            "取票人",
+                            ""
+                        ).strip()
 
                         if pickup_person:
 
-                            if ticket_master and ticket_master != pickup_person:
+                            if (
+                                ticket_master
+                                and ticket_master != pickup_person
+                            ):
 
                                 config.push_mention_message(
                                     config.GROUP_ID,
@@ -411,7 +448,6 @@ def check_reminders():
                         flush=True,
                     )
 
-
         except Exception as e:
 
             print(
@@ -419,6 +455,7 @@ def check_reminders():
                 repr(e),
                 flush=True,
             )
+
 
 # =====================
 # 今日重點
@@ -442,6 +479,7 @@ def send_today_summary():
             repr(e),
             flush=True,
         )
+
 
 def clean_finished_shows():
 
@@ -474,11 +512,9 @@ def clean_finished_shows():
 
                 print(
                     "🗑️ 已自動清除：",
-                    f"{show.get('藝人', '')}｜"
-                    f"{show.get('活動', '')}｜"
-                    f"{show.get('活動名稱', '')}",
+                    f"{get_show_name(show)}｜"
+                    f"{show.get('活動', '')}",
                 )
-
 
         except Exception as e:
 
@@ -488,7 +524,6 @@ def clean_finished_shows():
             )
 
             keep_shows.append(show)
-
 
     if len(keep_shows) != len(shows):
 
@@ -517,6 +552,5 @@ def clean_finished_shows():
                     repr(e),
                     flush=True,
                 )
-        
 
     print("清除完成")

@@ -60,6 +60,7 @@ WEEKDAY_TEXT = [
     "日",
 ]
 
+
 # =========================================================
 # 日期格式
 # =========================================================
@@ -129,6 +130,40 @@ def format_date_with_weekday(value):
         f"{date_value.strftime('%Y/%m/%d')}"
         f"（{weekday}）"
     )
+
+
+# =========================================================
+# 演出名稱
+# =========================================================
+
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若有活動名稱，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
 
 
 # =========================================================
@@ -293,6 +328,7 @@ def build_info_row(
         ],
     }
 
+
 # =========================================================
 # 共用資訊區塊
 # =========================================================
@@ -375,6 +411,7 @@ def build_detail_section(
         "contents": contents,
     }
 
+
 # =========================================================
 # 提醒事項區塊
 # =========================================================
@@ -452,6 +489,7 @@ def build_reminder_section(
             },
         ],
     }
+
 
 # =========================================================
 # 備註區塊
@@ -657,17 +695,17 @@ def build_view_show_card(
     建立完整演出詳細卡片。
     """
 
-    artist = safe_text(
-        show.get("藝人"),
-    )
+    # 新格式：
+    # 活動名稱 = 完整演出名稱
+    #
+    # 舊格式：
+    # 若活動名稱沒有值，get_show_name()
+    # 會自動退回藝人。
+    show_name = get_show_name(show)
 
     activity = safe_text(
         show.get("活動"),
     )
-
-    activity_name = (
-        show.get("活動名稱") or ""
-    ).strip()
 
     status = show.get(
         "搶票狀態",
@@ -728,7 +766,6 @@ def build_view_show_card(
 
     note = show.get("備註")
 
-
     body_contents = [
 
         build_activity_badge_row(activity),
@@ -739,24 +776,12 @@ def build_view_show_card(
             "contents": [
                 {
                     "type": "text",
-                    "text": artist,
+                    "text": show_name,
                     "size": "lg",
                     "weight": "bold",
                     "color": TEXT_COLOR,
                     "wrap": True,
                 },
-                *(
-                    [{
-                        "type": "text",
-                        "text": activity_name,
-                        "size": "sm",
-                        "color": SUBTEXT_COLOR,
-                        "margin": "xs",
-                        "wrap": True,
-                    }]
-                    if activity_name
-                    else []
-                ),
             ],
         },
 
@@ -865,7 +890,6 @@ def build_view_show_card(
 
     ]
 
-
     if reminders:
 
         body_contents.extend(
@@ -878,7 +902,6 @@ def build_view_show_card(
                 ),
             ]
         )
-
 
     if status == "已搶票":
 
@@ -931,7 +954,6 @@ def build_view_show_card(
             ]
         )
 
-
     if note:
 
         body_contents.extend(
@@ -950,7 +972,6 @@ def build_view_show_card(
             pickup_status=pickup_status,
         )
     )
-
 
     bubble = {
         "type": "bubble",
@@ -990,7 +1011,7 @@ def build_view_show_card(
 
     return FlexSendMessage(
         alt_text=(
-            f"🎤 {artist}"
+            f"🎤 {show_name}"
             "｜演出詳細"
         ),
         contents=bubble,
@@ -998,6 +1019,7 @@ def build_view_show_card(
             view_navigation_quick_reply()
         ),
     )
+
 
 # =========================================================
 # 查看功能

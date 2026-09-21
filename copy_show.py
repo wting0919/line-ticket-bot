@@ -88,6 +88,27 @@ def handle_copy_show(event, text, user_id):
     new_show.pop("updated_at", None)
 
     # =====================================================
+    # 演出名稱
+    #
+    # 新格式：
+    # 活動名稱 = 完整演出名稱
+    #
+    # 舊資料：
+    # 如果沒有活動名稱，但有藝人，
+    # 保留藝人作為暫時的演出名稱。
+    # =====================================================
+
+    if not (
+        new_show.get("活動名稱")
+        or ""
+    ).strip():
+
+        new_show["活動名稱"] = (
+            new_show.get("藝人")
+            or ""
+        ).strip()
+
+    # =====================================================
     # 重置提醒
     # =====================================================
 
@@ -207,6 +228,7 @@ def handle_copy_show(event, text, user_id):
             "mode": "修改演出",
             "step": "field",
             "show_id": new_show.get("id"),
+            "field_page": 1,
         }
     )
 
@@ -217,16 +239,21 @@ def handle_copy_show(event, text, user_id):
     message = (
         "✅ 已建立複製演出\n"
         "──────────\n"
-        f"🎤 {new_show.get('藝人', '')}\n"
-        f"🏷️ {new_show.get('活動', '')}\n"
     )
 
     if new_show.get("活動名稱"):
         message += (
-            f"✨ {new_show['活動名稱']}\n"
+            f"🎤 {new_show['活動名稱']}\n"
+        )
+
+    elif new_show.get("藝人"):
+        # 相容舊資料
+        message += (
+            f"🎤 {new_show['藝人']}\n"
         )
 
     message += (
+        f"🏷️ {new_show.get('活動', '')}\n"
         "──────────\n"
         "已清除：\n"
         "🕒 搶票時間\n"
@@ -242,7 +269,7 @@ def handle_copy_show(event, text, user_id):
         event.reply_token,
         TextSendMessage(
             text=message,
-            quick_reply=edit_field_quick_reply()
+            quick_reply=edit_field_quick_reply(1)
         )
     )
 

@@ -78,6 +78,40 @@ def get_list_config(mode):
 
 
 # =========================================================
+# 演出名稱
+# =========================================================
+
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
+
+
+# =========================================================
 # 基本工具
 # =========================================================
 
@@ -260,6 +294,7 @@ def build_pickup_status_tag(show):
         text_color=WAITING_TEXT_COLOR,
     )
 
+
 # =========================================================
 # 資訊列
 # =========================================================
@@ -347,6 +382,7 @@ def build_status_area(
         "contents": tags,
     }
 
+
 def append_row(
     rows,
     icon,
@@ -369,6 +405,7 @@ def append_row(
             value=value,
         )
     )
+
 
 def format_reminders(reminder):
     """
@@ -403,7 +440,6 @@ def build_all_show_rows(show):
             margin="sm",
         ),
     ]
-
 
     return rows
 
@@ -532,14 +568,9 @@ def build_show_list_item(
     建立可點擊的單筆演出資料。
     """
 
-    artist = safe_text(
-        show.get("藝人"),
-        show.get("演出名稱"),
+    show_name = get_show_name(
+        show
     )
-
-    activity_name = (
-        show.get("活動名稱") or ""
-    ).strip()
 
     action_text = get_show_action_text(
         show=show,
@@ -581,31 +612,20 @@ def build_show_list_item(
                     "contents": [
 
                         build_activity_badge(
-                            safe_text(show.get("活動"))
+                            safe_text(
+                                show.get("活動")
+                            )
                         ),
 
                         {
                             "type": "text",
-                            "text": artist,
+                            "text": show_name,
                             "size": "sm",
                             "weight": "bold",
                             "color": TEXT_COLOR,
                             "margin": "sm",
                             "wrap": True,
                         },
-
-                        *(
-                            [{
-                                "type": "text",
-                                "text": activity_name,
-                                "size": "xxs",
-                                "color": SUBTEXT_COLOR,
-                                "margin": "2px",
-                                "wrap": True,
-                            }]
-                            if activity_name
-                            else []
-                        ),
                     ],
                 },
                 {
@@ -661,6 +681,7 @@ def build_show_list_item(
         },
         "contents": contents,
     }
+
 
 # =========================================================
 # 空白狀態
@@ -996,7 +1017,6 @@ def build_ticket_url_row(show):
             },
         ],
     }
-
 
 
 # =========================================================

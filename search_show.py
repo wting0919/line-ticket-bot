@@ -20,6 +20,7 @@ from ui import (
 
 import config
 
+
 # 關鍵字別名
 
 KEYWORD_ALIAS = {
@@ -43,6 +44,40 @@ KEYWORD_ALIAS = {
     "未取": "未取票",
     "已取": "已取票",
 }
+
+
+# =========================================================
+# 演出名稱
+# =========================================================
+
+def get_show_name(show):
+    """
+    取得演出名稱。
+
+    新資料：
+        活動名稱 = 完整演出名稱
+        藝人 = 空白
+
+    舊資料相容：
+        若活動名稱有值，優先使用活動名稱。
+        若活動名稱沒有值，退回使用藝人。
+    """
+
+    activity_name = (
+        show.get("活動名稱") or ""
+    ).strip()
+
+    if activity_name:
+        return activity_name
+
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
+
+    if artist:
+        return artist
+
+    return "未命名演出"
 
 
 def handle_search_show(event, text, user_id):
@@ -72,6 +107,7 @@ def handle_search_show(event, text, user_id):
                 )
             )
         )
+
         return True
 
     shows = get_all_shows()
@@ -82,84 +118,158 @@ def handle_search_show(event, text, user_id):
 
     for show in shows:
 
-        name = " ".join([
-            str(show.get("藝人", "")),
-            str(show.get("活動", "")),
-            str(show.get("活動名稱", "")),
-        ])
-        date = str(show.get("演出日期", ""))
-        platform = str(show.get("售票平台", ""))
-        ticket = str(show.get("搶票狀態", ""))
-        pickup = str(show.get("取票狀態", ""))
-        note = str(show.get("備註", ""))
+        # =================================================
+        # 演出名稱
+        # =================================================
+
+        show_name = get_show_name(show)
+
+        artist = str(
+            show.get("藝人", "")
+        )
+
+        activity = str(
+            show.get("活動", "")
+        )
+
+        activity_name = str(
+            show.get("活動名稱", "")
+        )
+
+        # =================================================
+        # 其他搜尋欄位
+        # =================================================
+
+        date = str(
+            show.get("演出日期", "")
+        )
+
+        platform = str(
+            show.get("售票平台", "")
+        )
+
+        ticket = str(
+            show.get("搶票狀態", "")
+        )
+
+        pickup = str(
+            show.get("取票狀態", "")
+        )
+
+        member = str(
+            show.get("會員資訊", "")
+        )
+
+        note = str(
+            show.get("備註", "")
+        )
 
         matched = False
 
-        # ===== 今天 =====
+        # =================================================
+        # 今天
+        # =================================================
+
         if keyword in ("今天", "今日"):
 
-            matched = date.startswith(today.strftime("%Y/%m/%d"))
+            matched = date.startswith(
+                today.strftime("%Y/%m/%d")
+            )
 
-        # ===== 本月 =====
+        # =================================================
+        # 本月
+        # =================================================
+
         elif keyword == "本月":
 
-            matched = date.startswith(today.strftime("%Y/%m"))
+            matched = date.startswith(
+                today.strftime("%Y/%m")
+            )
 
-        # ===== 月份 =====
+        # =================================================
+        # 月份
+        # =================================================
+
         elif keyword.endswith("月"):
 
             try:
 
-                month = int(keyword.replace("月", ""))
+                month = int(
+                    keyword.replace(
+                        "月",
+                        ""
+                    )
+                )
 
-                matched = f"/{month:02d}/" in date
+                matched = (
+                    f"/{month:02d}/" in date
+                )
 
             except ValueError:
 
                 pass
 
-        # ===== 狀態 =====
+        # =================================================
+        # 狀態
+        # =================================================
+
         elif keyword in (
             "待搶",
             "待搶票",
             "等待搶票",
         ):
 
-            matched = ticket == "待搶票"
+            matched = (
+                ticket == "待搶票"
+            )
 
         elif keyword in (
             "已搶",
             "已搶票",
         ):
 
-            matched = ticket == "已搶票"
+            matched = (
+                ticket == "已搶票"
+            )
 
         elif keyword in (
             "未搶",
             "未搶到",
         ):
 
-            matched = ticket == "未搶到"
+            matched = (
+                ticket == "未搶到"
+            )
 
         elif keyword in (
             "未取",
             "未取票",
         ):
 
-            matched = pickup == "未取票"
+            matched = (
+                pickup == "未取票"
+            )
 
         elif keyword in (
             "已取",
             "已取票",
         ):
 
-            matched = pickup == "已取票"
+            matched = (
+                pickup == "已取票"
+            )
 
-        # ===== 一般模糊搜尋 =====
+        # =================================================
+        # 一般模糊搜尋
+        # =================================================
+
         else:
 
             content = " ".join([
-                name,
+                show_name,
+                artist,
+                activity,
+                activity_name,
                 date,
                 platform,
                 ticket,
@@ -176,6 +286,10 @@ def handle_search_show(event, text, user_id):
 
             results.append(show)
 
+    # =====================================================
+    # 沒有結果
+    # =====================================================
+
     if not results:
 
         config.line_bot_api.reply_message(
@@ -184,33 +298,49 @@ def handle_search_show(event, text, user_id):
                 text=f"找不到「{keyword}」相關演出"
             )
         )
+
         return True
 
-    reply = f"🔍 搜尋結果（{len(results)}）"
+    # =====================================================
+    # 搜尋結果
+    # =====================================================
 
-    for i, show in enumerate(results, start=1):
+    reply = (
+        f"🔍 搜尋結果（{len(results)}）"
+    )
+
+    for i, show in enumerate(
+        results,
+        start=1,
+    ):
 
         ticket_status = format_ticket_status(
-            show.get("搶票狀態", "待搶票")
+            show.get(
+                "搶票狀態",
+                "待搶票"
+            )
         )
 
-        artist = show.get("藝人", "")
-        activity = show.get("活動", "")
-        activity_name = show.get("活動名稱", "")
-
-        title = "｜".join(
-            part
-            for part in [
-                artist,
-                activity,
-                activity_name,
-            ]
-            if part
+        show_name = get_show_name(
+            show
         )
+
+        activity = (
+            show.get("活動") or ""
+        ).strip()
+
+        # 新格式：
+        # 🎤 SEVENTEEN WORLD TOUR [NEW_] IN JAPAN
+        # 🏷️ 演唱會
+        #
+        # 舊資料也同樣正常：
+        # 活動名稱有值 → 使用活動名稱
+        # 沒有活動名稱 → 使用藝人
 
         reply += (
             "\n──────────\n"
-            f"{i}. 🎤 {title or '未命名演出'}\n"
+            f"{i}. 🎤 {show_name}\n"
+            f"🏷️ {activity or '未設定'}\n"
             f"📅 {format_show_dates(show.get('演出日期', ''))}\n"
             f"{ticket_status}"
         )
@@ -237,3 +367,5 @@ def handle_search_show(event, text, user_id):
             len(results)
         )
     )
+
+    return True

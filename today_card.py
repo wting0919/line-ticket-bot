@@ -222,27 +222,50 @@ def build_info_row(
         ],
     }
 
+
 def get_show_title(show):
     """
-    回傳今日待辦顯示的標題。
+    回傳今日待辦顯示的演出名稱。
+
+    新資料格式：
+    - 活動名稱 = 完整演出名稱
+    - 藝人 = 空白
+
+    舊資料相容：
+    - 若同時存在藝人與活動名稱，
+      活動名稱作為主標題，藝人作為副標題。
+    - 若只有藝人，則直接顯示藝人。
     """
 
-    artist = safe_text(
-        show.get("藝人"),
-    )
+    artist = (
+        show.get("藝人") or ""
+    ).strip()
 
     activity_name = (
         show.get("活動名稱") or ""
     ).strip()
 
+    # 新格式：
+    # 活動名稱本身就是完整的演出名稱
     if activity_name:
+        # 舊資料若仍有藝人，保留藝人作為副標題
+        if artist:
+            return (
+                activity_name,
+                artist,
+            )
+
         return (
-            artist,
             activity_name,
+            None,
         )
 
+    # 舊資料只有藝人
     return (
-        artist,
+        safe_text(
+            artist,
+            "未命名演出",
+        ),
         None,
     )
 
@@ -386,6 +409,7 @@ def build_task_item(
         }
 
     return item
+
 
 # =========================================================
 # Section 元件
@@ -706,7 +730,6 @@ def get_today_ticket_shows(today=None):
 
     today = normalize_today(today)
 
-
     waiting_shows = (
         get_waiting_shows()
         or []
@@ -729,7 +752,6 @@ def get_today_pickup_shows(today=None):
 
     today = normalize_today(today)
 
-
     pickup_shows = (
         get_pickup_shows()
         or []
@@ -751,7 +773,6 @@ def get_today_show_shows(today=None):
     """
 
     today = normalize_today(today)
-
 
     all_shows = (
         get_all_shows()
@@ -846,6 +867,7 @@ def sort_today_show_shows(shows):
         key=get_first_show_date,
     )
 
+
 # =========================================================
 # 今日搶票項目
 # =========================================================
@@ -897,6 +919,7 @@ def build_ticket_item(
         )
 
     title, subtitle = get_show_title(show)
+
     return build_task_item(
         title=title,
         subtitle=subtitle,
@@ -969,6 +992,7 @@ def build_pickup_item(
         )
 
     title, subtitle = get_show_title(show)
+
     return build_task_item(
         title=title,
         subtitle=subtitle,
@@ -1032,6 +1056,7 @@ def build_show_item(
         )
 
     title, subtitle = get_show_title(show)
+
     return build_task_item(
         title=title,
         subtitle=subtitle,
