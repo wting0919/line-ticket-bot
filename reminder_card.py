@@ -517,7 +517,6 @@ def build_tomorrow_ticket_card(show):
     return build_reminder_bubble(
         show=show,
         header_title="🎟 明天記得準時搶票！",
-        header_subtitle="",
         body_contents=body_contents,
         alt_text="🎟 明日搶票提醒",
     )
